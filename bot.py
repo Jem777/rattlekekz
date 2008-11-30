@@ -72,8 +72,9 @@ if __name__ == "__main__":
     # initialize logging
     log.startLogging(sys.stdout)
     # create factory protocol and application
-    f = LogBotFactory("test")
+    f = LogBotFactory("test.log")
     # connect factory to this host and port
-    reactor.connectSSL("kekz.net", 23002, f, ssl.ClientContextFactory())
+    # reactor.listenSSL(23002, f, ssl.ClientContextFactory(), backlog=50)
+    reactor.connectSSL("85.165.71.220", 23002, f, ssl.ClientContextFactory())
     # run bot
     reactor.run()

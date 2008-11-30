@@ -16,8 +16,8 @@ class KekzClient(basic.LineOnlyReceiver):
     #decoder=json.JSONDecoder()
     #encoder=json.JSONEncoder()
 
-    clientident="Python" #das muss später alles weg
-    verInt="1"
+    clientident="Ze$8hAbeVe0y" #das muss später alles weg
+    verInt="0"
     netVer="netkekZ4 beta 20080910"
     
     def msgReceived(self,nick,channel,msg):
@@ -83,6 +83,9 @@ class KekzClient(basic.LineOnlyReceiver):
         print data
 
     def kekzCode920(self,data):
+        print data
+
+    def kekzCode988(self, data):
         print data
 
     def kekzCodeUnbekannt(self, data):
