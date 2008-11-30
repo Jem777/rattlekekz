@@ -77,7 +77,6 @@ if __name__ == "__main__":
     f = LogBotFactory("test.log")
     # connect factory to this host and port
     # reactor.listenSSL(23002, f, ssl.ClientContextFactory(), backlog=50)
-    #reactor.connectSSL("85.165.71.220", 23002, f, ssl.ClientContextFactory())
     #reactor.connectSSL("kekz.net", 23002, f, ssl.ClientContextFactory())
     reactor.connectSSL("pitix.ath.cx", 23002, f, ssl.ClientContextFactory())
     # run bot
