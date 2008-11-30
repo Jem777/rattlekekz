@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Die Module für die Datenverarbeitung:
+# Die Module fÃ¼r die Datenverarbeitung:
 import json, re
 from hashlib import sha1
 
-# Die Module für twisted
+# Die Module fÃ¼r twisted
 from twisted.internet import reactor, protocol, task
 from twisted.protocols import basic
 
@@ -16,7 +16,7 @@ class KekzClient(basic.LineOnlyReceiver):
     #decoder=json.JSONDecoder()
     #encoder=json.JSONEncoder()
 
-    clientident="Python" #das muss später alles weg
+    clientident="Python" #das muss spÃ¤ter alles weg
     verInt="1"
     netVer="netkekZ4 beta 20080910"
     
@@ -24,7 +24,7 @@ class KekzClient(basic.LineOnlyReceiver):
         """Diese Methode wird aufgerufen, wenn eine Nachricht emfangen wird"""
 
     def connectionMade(self):
-        #print "Hier fängt alles an"
+        #print "Hier fÃ¤ngt alles an"
         self.sendHandshake(self.clientident,self.verInt,self.netVer)
 
     def connectionLost(self,data):
@@ -60,7 +60,7 @@ class KekzClient(basic.LineOnlyReceiver):
         self.getRooms()
 
     def kekzCode010(self,data):
-        """Erzeugt List aus Dictionaries der Räume"""
+        """Erzeugt List aus Dictionaries der RÃ¤ume"""
         json.JSONDecoder().decode() #decoder.decode(data)
         self.sendLogin(self.Nickname, self.Passwort, self.Channel)
     

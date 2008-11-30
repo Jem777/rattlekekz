@@ -63,8 +63,7 @@ class LogBotFactory(protocol.ClientFactory):
         #self.channel = channel
         self.filename = filename
     def clientConnectionLost(self, connector, reason):
-        """If we get disconnected, reconnect to server."""
-        connector.connect()
+        print "connection lost:", reason
     def clientConnectionFailed(self, connector, reason):
         print "connection failed:", reason
         reactor.stop()
