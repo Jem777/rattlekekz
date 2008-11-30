@@ -49,7 +49,7 @@ class KekzClient(basic.LineOnlyReceiver):
         """Anfordern der Raumliste"""
         self.sendLine('010')
 
-    def loginSend(self,nick,passhash,room):
+    def sendLogin(self,nick,passhash,room):
         self.sendLine('020 %s#%s#%s' % (nick,passhash,room))
     
 
@@ -61,11 +61,11 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def kekzCode010(self,data):
         """Erzeugt List aus Dictionaries der Räume"""
-        json.JSONDecoder().decode() #decoder.decode(data)
+        json.JSONDecoder().decode(data) #decoder.decode(data)
         self.sendLogin(self.Nickname, self.Passwort, self.Channel)
     
     def kekzCode020(self,data):
-        json.JSONDecoder().decode()
+        json.JSONDecoder().decode(data)
 
     def kekzCode088(self,data):
         pass
@@ -92,7 +92,7 @@ class KekzClient(basic.LineOnlyReceiver):
         print "Fehler: unbekannter kekzCode: "
 
         
-    def LineReceived(self,data):
+    def lineReceived(self,data):
         nummer=data[:3]
         string=data[4:]
         try:

@@ -52,8 +52,8 @@ class LogBot(KekzProtocol.KekzClient):
         # Check to see if they're sending me a private message
     def kekzCode901(self,data):
         self.logger.log(data)
-    def dataReceived(self):
-        self.logger.log("shit!")
+    #def dataReceived(self,data):
+    #    self.logger.log("shit! "+data)
 
 class LogBotFactory(protocol.ClientFactory):
     """A factory for LogBots.
@@ -77,6 +77,8 @@ if __name__ == "__main__":
     f = LogBotFactory("test.log")
     # connect factory to this host and port
     # reactor.listenSSL(23002, f, ssl.ClientContextFactory(), backlog=50)
-    reactor.connectSSL("85.165.71.220", 23002, f, ssl.ClientContextFactory())
+    #reactor.connectSSL("85.165.71.220", 23002, f, ssl.ClientContextFactory())
+    #reactor.connectSSL("kekz.net", 23002, f, ssl.ClientContextFactory())
+    reactor.connectSSL("pitix.ath.cx", 23002, f, ssl.ClientContextFactory())
     # run bot
     reactor.run()
