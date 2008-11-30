@@ -45,13 +45,15 @@ class LogBot(KekzProtocol.KekzClient):
     def joined(self, channel):
         """This will get called when the bot joins the channel."""
         self.logger.log("[I have joined %s]" % channel)
-    def msgRecieved(self, user, channel, msg):
+    def msgReceived(self, user, channel, msg):
         """This will get called when the bot receives a message."""
         user = user.split("!", 1)[0]
         self.logger.log("<%s> %s" % (user, msg))
         # Check to see if they're sending me a private message
     def kekzCode901(self,data):
         self.logger.log(data)
+    def dataReceived(self):
+        self.logger.log("shit!")
 
 class LogBotFactory(protocol.ClientFactory):
     """A factory for LogBots.
