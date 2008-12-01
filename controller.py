@@ -19,9 +19,7 @@ class KekzBot(KekzProtocol.KekzClient):
     
     def startPing(self):
         """startet das Senden des Pings"""
-        task.LoopingCall(KekzProtocol.KekzClient.sendPing(self)).start(60)
-        # l = task.LoopingCall(KekzProtocol.KekzClient.sendPing(self)).start(60)
-        # l.start(60.0)
+        task.LoopingCall(KekzProtocol.KekzClient.sendPing,self).start(60)
     
     def receivedHandshake(self, passworthash):
         self.startPing()

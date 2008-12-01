@@ -119,7 +119,7 @@ class KekzClient(basic.LineOnlyReceiver):
     def pingTimeout(self):
         pass
 
-    def sendPing():
+    def sendPing(self):
         if self.pingAnswer is False:
             self.sendLine("088")
             self.lastPing = time.time()
