@@ -34,7 +34,19 @@ class KekzClient(basic.LineOnlyReceiver):
     def loginDone(self, user):
         """Wird aufgerufen, wenn man sich erfolgreich eingeloggt hat
         user ist ein dictionary"""
-
+    
+    def erfolgRegistrierung(self):
+        pass
+    
+    def erfolgNeuesPasswort(self):
+        pass
+    
+    def receivedProfil(name,ort,homepage,hobbies):
+        pass
+    
+    def erfolgNeuesProfil(self):
+        pass
+    
     def receivedMsg(self,nick,channel,msg):
         """Diese Methode wird aufgerufen, wenn eine Nachricht emfangen wird"""
 
@@ -46,9 +58,15 @@ class KekzClient(basic.LineOnlyReceiver):
     def connectionLost(self,data):
         pass
 
+
     def sendHandshake(self,clientident,verInt,netVer):
         handShakeVersion = sha1(clientident+'#'+verInt+'#'+netVer).hexdigest()
         self.sendLine('000 '+handShakeVersion)
+
+    def sendDebugInfo(self,client,ver,os,java):
+        """Sendet die Infos für Debugzwecke auslesbar von Administratoren"""
+        Infos={"client":client,"ver":ver,"os":os,"java":java}
+        self.sendLine("001 "+json.JSONEncoder().decode(Infos))
 
     def getRooms(self):
         """Anfordern der Raumliste"""
@@ -56,7 +74,30 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def sendLogin(self,nick,passhash,room):
         self.sendLine('020 %s#%s#%s' % (nick,passhash,room))
-        
+
+    def registriereNick(self,nick,pwhash,email):
+        """Registrieren"""
+        Daten={"nick":nick,"passwd":pwhash,"email":email}
+        self.sendLine("030 "+json.JSONEncoder().decode(Daten))
+
+    def aenderePasswort(self,passwd,passwdneu):
+        """Ändere Passwort in passwdneu - Beide sind schon ein Hash"""
+        Daten={"passwd":passwd,"passwdnew":passwdneu}
+        self.sendLine("031 "+json.JSONEncoder().decode(Daten))
+
+    def updateProfil(self,name,ort,homepage,hobbies,passwd):
+        """Das Profil updaten - passwd ist schon ein Hash"""
+        Daten={"name":name,"ort":ort,"homepage":homepage,"hobbies":hobbies,"passwd":passwd}
+        self.sendLine("040 "+json.JSONEncoder().decode(Daten))
+
+    def sendPing(self):
+        if self.pingAnswer is False:
+            self.sendLine("088")
+            self.lastPing = time.time()
+            self.Ping = True
+        else:
+            self.pingTimeout()
+
     def sendMsg(self, channel, msg):
         if msg.isspace(): pass
         else: self.sendLine("100 %s %s" % (channel,msg))
@@ -67,6 +108,7 @@ class KekzClient(basic.LineOnlyReceiver):
         elif command=="/sendm": pass
         elif command=="/msg" or "/p": pass 
         else: self.sendLine("101 %s %s %s" % (channel,command,msg))
+
 
     def kekzCode000(self,data):
         self.pwhash=data
@@ -80,6 +122,20 @@ class KekzClient(basic.LineOnlyReceiver):
     def kekzCode020(self,data):
         userdata=json.JSONDecoder().decode(data)
         self.loginDone(userdata)
+
+    def kekzCode030(self,data):
+        self.erfolgRegistrierung()
+
+    def kekzCode031(self,data):
+        self.erfolgNeuesPasswort()
+
+    def kekzCode040(self,data):
+        dic=json.JSONDecoder().decode(data)
+        name,ort,homepage,hobbies=dic.values()
+        self.receivedProfil(name,ort,homepage,hobbies)
+
+    def kekzCode041(self,data):
+        self.erfolgNeuesProfil()
 
     def kekzCode088(self,data):
         self.receivedPing(self.lastPing-time.time())
@@ -117,12 +173,4 @@ class KekzClient(basic.LineOnlyReceiver):
             attribut(string)
 
     def pingTimeout(self):
-        pass
-
-    def sendPing(self):
-        if self.pingAnswer is False:
-            self.sendLine("088")
-            self.lastPing = time.time()
-            self.Ping = True
-        else:
-            self.pingTimeout()
+        self.connectionLost("Ping Timeout")
