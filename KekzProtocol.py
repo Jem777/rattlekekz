@@ -27,6 +27,9 @@ class KekzClient(basic.LineOnlyReceiver):
         """Wird aufgerufen, wenn beim Login die Rooms empfangen werden
         rooms ist ein dictionary"""
     
+    def receivedPing(self, ping):
+        """Wird gerufen wenn Ping ermittelt wurde. Selbiger wird als Parameter übergeben"""
+    
     def loginDone(self, user):
         """Wird aufgerufen, wenn man sich erfolgreich eingeloggt hat
         user ist ein dictionary"""
@@ -34,11 +37,7 @@ class KekzClient(basic.LineOnlyReceiver):
     def sendPing(self):
         """sendet den Ping alle 90 Sekunden"""
         self.sendLine("088")
-        
-    def startPing(self):
-        """startet das Senden des Pings"""
-        l = task.LoopingCall(self.sendPing)
-        l.start(90.0)
+    
     def receivedMsg(self,nick,channel,msg):
         """Diese Methode wird aufgerufen, wenn eine Nachricht emfangen wird"""
 
@@ -49,7 +48,6 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def connectionLost(self,data):
         pass
-
 
     def sendHandshake(self,clientident,verInt,netVer):
         handShakeVersion = sha1(clientident+'#'+verInt+'#'+netVer).hexdigest()
@@ -73,8 +71,6 @@ class KekzClient(basic.LineOnlyReceiver):
         elif command=="/msg" or "/p": pass 
         else: sendLine("101 %s %s %s" % (channel,command,msg))
 
-
-
     def kekzCode000(self,data):
         self.pwhash=data
         self.receivedHandshake()
@@ -89,7 +85,7 @@ class KekzClient(basic.LineOnlyReceiver):
         self.loginDone(userdata)
 
     def kekzCode088(self,data):
-        ping=lastPing-time.time()
+        self.receivedPing(lastPing-time.time())
         pingAnswer=false
 
     def kekzCode100(self,data):
