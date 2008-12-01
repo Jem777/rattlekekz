@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Die Module für die Datenverarbeitung:
-import json, re
+import json, re, time
 from hashlib import sha1
 
 # Die Module für twisted
@@ -89,7 +89,8 @@ class KekzClient(basic.LineOnlyReceiver):
         self.loginDone(userdata)
 
     def kekzCode088(self,data):
-        pass
+        ping=lastPing-time.time()
+        pingAnswer=false
 
     def kekzCode100(self,data):
         foo=data.split(" ")
@@ -122,3 +123,14 @@ class KekzClient(basic.LineOnlyReceiver):
             attribut=getattr(self, "kekzCodeUnbekannt")
         else: 
             attribut(string)
+
+    def pingTimeout():
+        pass
+
+    def sendPing():
+        if pingAnswer is false:
+            sendLine("088")
+            lastPing = time.time()
+            Ping = true
+        else:
+            pingTimeout()
