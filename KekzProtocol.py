@@ -20,8 +20,19 @@ class KekzClient(basic.LineOnlyReceiver):
     verInt="0"
     netVer="netkekZ4 beta 20080910"
     
-    def msgReceived(self,nick,channel,msg):
+    def receivedMsg(self,nick,channel,msg):
         """Diese Methode wird aufgerufen, wenn eine Nachricht emfangen wird"""
+
+    def receivedHandshake(self,passworthash):
+        """Wird abgerufen, wenn der Server den Handshake beantwortet"""
+
+    def receivedRooms(self,rooms):
+        """Wird aufgerufen, wenn beim Login die Rooms empfangen werden
+        rooms ist ein dictionary"""
+    
+    def loginDone(self, user):
+        """Wird aufgerufen, wenn man sich erfolgreich eingeloggt hat
+        user ist ein dictionary"""
 
     def connectionMade(self):
         #print "Hier fängt alles an"
@@ -29,7 +40,7 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def connectionLost(self,data):
         pass
-
+    
     def sendMsg(self, channel, msg):
         if msg.isspace(): pass
         else: sendLine("100 %s %s" % (channel,msg))
@@ -56,16 +67,16 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def kekzCode000(self,data):
         self.pwhash=data
-        print "foo"
-        self.getRooms()
+        self.receivedHandshake()
 
     def kekzCode010(self,data):
         """Erzeugt List aus Dictionaries der Räume"""
-        json.JSONDecoder().decode(data) #decoder.decode(data)
-        self.sendLogin(self.Nickname, self.Passwort, self.Channel)
+        rooms=json.JSONDecoder().decode(data) #decoder.decode(data)
+        self.receivedRooms(rooms)
     
     def kekzCode020(self,data):
-        json.JSONDecoder().decode(data)
+        userdata=json.JSONDecoder().decode(data)
+        self.loginDone(userdata)
 
     def kekzCode088(self,data):
         pass

@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # twisted imports
 import KekzProtocol
@@ -45,13 +46,12 @@ class LogBot(KekzProtocol.KekzClient):
     def joined(self, channel):
         """This will get called when the bot joins the channel."""
         self.logger.log("[I have joined %s]" % channel)
-    def msgReceived(self, user, channel, msg):
+    def receivedMsg(self, user, channel, msg):
         """This will get called when the bot receives a message."""
         user = user.split("!", 1)[0]
         self.logger.log("<%s> %s" % (user, msg))
         # Check to see if they're sending me a private message
-    def kekzCode901(self,data):
-        self.logger.log(data)
+
     #def dataReceived(self,data):
     #    self.logger.log("shit! "+data)
 
