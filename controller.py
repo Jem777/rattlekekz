@@ -3,7 +3,7 @@
 
 # twisted imports
 import KekzProtocol
-from twisted.internet import reactor, protocol, ssl
+from twisted.internet import reactor, protocol, ssl, task
 # system imports
 import time, sys
 from OpenSSL import SSL
@@ -19,8 +19,9 @@ class KekzBot(KekzProtocol.KekzClient):
     
     def startPing(self):
         """startet das Senden des Pings"""
-        l = task.LoopingCall(KeckProtocol.KekzClient.sendPing())
-        l.start(60.0)
+        task.LoopingCall(KekzProtocol.KekzClient.sendPing(self)).start(60)
+        # l = task.LoopingCall(KekzProtocol.KekzClient.sendPing(self)).start(60)
+        # l.start(60.0)
     
     def receivedHandshake(self, passworthash):
         self.startPing()
@@ -38,3 +39,27 @@ class KekzBot(KekzProtocol.KekzClient):
     def connectionLost(self, reason):
         KekzProtocol.KekzClient.connectionLost(self, reason)
         print reason
+
+class KekzFactory(protocol.ClientFactory):
+    """A factory for LogBots.
+    A new protocol instance will be created each time we connect to the server.
+    """
+    # the class of the protocol to build when new connection is made
+    protocol = KekzBot
+    def __init__(self):
+        print "starting ..."
+    def clientConnectionLost(self, connector, reason):
+        print "connection lost:", reason
+    def clientConnectionFailed(self, connector, reason):
+        print "connection failed:", reason
+        reactor.stop()
+
+if __name__ == "__main__":
+    # create factory protocol and application
+    f = KekzFactory()
+    # connect factory to this host and port
+    # reactor.listenSSL(23002, f, ssl.ClientContextFactory(), backlog=50)
+    #reactor.connectSSL("kekz.net", 23002, f, ssl.ClientContextFactory())
+    reactor.connectSSL("127.0.0.1", 23002, f, ssl.ClientContextFactory())
+    # run bot
+    reactor.run()    

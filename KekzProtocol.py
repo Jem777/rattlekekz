@@ -6,16 +6,17 @@ import json, re, time
 from hashlib import sha1
 
 # Die Module für twisted
-from twisted.internet import reactor, protocol, task
+from twisted.internet import reactor, protocol
 from twisted.protocols import basic
 
 
 class KekzClient(basic.LineOnlyReceiver):
     Nickname=""
     Password=None
+    pingAnswer=False
     #decoder=json.JSONDecoder()
     #encoder=json.JSONEncoder()
-    ping=False
+
     clientident="Ze$8hAbeVe0y" #das muss später alles weg
     verInt="0"
     netVer="netkekZ4 beta 20080910"
@@ -34,16 +35,12 @@ class KekzClient(basic.LineOnlyReceiver):
         """Wird aufgerufen, wenn man sich erfolgreich eingeloggt hat
         user ist ein dictionary"""
 
-#    def sendPing(self):
-#        """sendet den Ping alle 90 Sekunden"""
-#        self.sendLine("088")
-    
     def receivedMsg(self,nick,channel,msg):
         """Diese Methode wird aufgerufen, wenn eine Nachricht emfangen wird"""
 
     def connectionMade(self):
         """diese Methode wird aufgerufen, wenn die SSL Verbindung aufgebaut wurde"""
-        #reactor.callLater(10.0, self.startPing)
+        reactor.callLater(10.0, self.startPing)
         self.sendHandshake(self.clientident,self.verInt,self.netVer)
 
     def connectionLost(self,data):
@@ -62,14 +59,14 @@ class KekzClient(basic.LineOnlyReceiver):
         
     def sendMsg(self, channel, msg):
         if msg.isspace(): pass
-        else: sendLine("100 %s %s" % (channel,msg))
+        else: self.sendLine("100 %s %s" % (channel,msg))
 
     def sendSlashCommand(self,command,channel,msg):
         if msg.isspace(): pass
         if command=="/exit": pass #self.exit()
         elif command=="/sendm": pass
         elif command=="/msg" or "/p": pass 
-        else: sendLine("101 %s %s %s" % (channel,command,msg))
+        else: self.sendLine("101 %s %s %s" % (channel,command,msg))
 
     def kekzCode000(self,data):
         self.pwhash=data
@@ -85,8 +82,8 @@ class KekzClient(basic.LineOnlyReceiver):
         self.loginDone(userdata)
 
     def kekzCode088(self,data):
-        self.receivedPing(lastPing-time.time())
-        pingAnswer=False
+        self.receivedPing(self.lastPing-time.time())
+        self.pingAnswer=false
 
     def kekzCode100(self,data):
         foo=data.split(" ")
@@ -103,13 +100,12 @@ class KekzClient(basic.LineOnlyReceiver):
     def kekzCode920(self,data):
         print data
 
-    def kekzCode988(self,data):
+    def kekzCode988(self, data):
         print data
 
-    def kekzCodeUnbekannt(self,data):
+    def kekzCodeUnbekannt(self, data):
         print "Fehler: unbekannter kekzCode: "
 
-        
     def lineReceived(self,data):
         nummer=data[:3]
         string=data[4:]
@@ -121,12 +117,12 @@ class KekzClient(basic.LineOnlyReceiver):
             attribut(string)
 
     def pingTimeout(self):
-        self.connectionLost("Pingtimeout")
+        pass
 
-    def sendPing(self):
-        if pingAnswer is False:
-            sendLine("088")
-            lastPing = time.time()
-            Ping = true
+    def sendPing():
+        if self.pingAnswer is False:
+            self.sendLine("088")
+            self.lastPing = time.time()
+            self.Ping = True
         else:
-            pingTimeout()
+            self.pingTimeout()
