@@ -38,19 +38,3 @@ class KekzBot(KekzProtocol.KekzClient):
     def connectionLost(self, reason):
         KekzProtocol.KekzClient.connectionLost(self, reason)
         print reason
-    
-class KekzFactory(protocol.ClientFactory):
-    
-    def clientConnectionLost(self, connector, reason):
-        print "connection lost:", reason
-    def clientConnectionFailed(self, connector, reason):
-        print "connection failed:", reason
-        reactor.stop()
-
-if __name__ == "__main__":
-    f = KekzFactory()
-    # connect factory to this host and port
-    #reactor.connectSSL("kekz.net", 23002, f, ssl.ClientContextFactory())
-    reactor.connectSSL("pitix.ath.cx", 23002, f, ssl.ClientContextFactory())
-    # run bot
-    reactor.run()
