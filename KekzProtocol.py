@@ -35,16 +35,16 @@ class KekzClient(basic.LineOnlyReceiver):
         """Wird aufgerufen, wenn man sich erfolgreich eingeloggt hat
         user ist ein dictionary"""
     
-    def erfolgRegistrierung(self):
+    def successRegistered(self):
         pass
     
-    def erfolgNeuesPasswort(self):
+    def successChangedPassword(self):
         pass
     
-    def receivedProfil(name,ort,homepage,hobbies):
+    def receivedProfile(name,location,homepage,hobbies):
         pass
     
-    def erfolgNeuesProfil(self):
+    def successNewProfileSet(self):
         pass
     
     def receivedMsg(self,nick,channel,msg):
@@ -75,17 +75,17 @@ class KekzClient(basic.LineOnlyReceiver):
     def sendLogin(self,nick,passhash,room):
         self.sendLine('020 %s#%s#%s' % (nick,passhash,room))
 
-    def registriereNick(self,nick,pwhash,email):
+    def registerNick(self,nick,pwhash,email):
         """Registrieren"""
         Daten={"nick":nick,"passwd":pwhash,"email":email}
         self.sendLine("030 "+json.JSONEncoder().decode(Daten))
 
-    def aenderePasswort(self,passwd,passwdneu):
+    def changePasswort(self,passwd,passwdneu):
         """Ändere Passwort in passwdneu - Beide sind schon ein Hash"""
         Daten={"passwd":passwd,"passwdnew":passwdneu}
         self.sendLine("031 "+json.JSONEncoder().decode(Daten))
 
-    def updateProfil(self,name,ort,homepage,hobbies,passwd):
+    def updateProfile(self,name,ort,homepage,hobbies,passwd):
         """Das Profil updaten - passwd ist schon ein Hash"""
         Daten={"name":name,"ort":ort,"homepage":homepage,"hobbies":hobbies,"passwd":passwd}
         self.sendLine("040 "+json.JSONEncoder().decode(Daten))
@@ -159,7 +159,7 @@ class KekzClient(basic.LineOnlyReceiver):
     def kekzCode988(self, data):
         print data
 
-    def kekzCodeUnbekannt(self, data):
+    def kekzCodeUnknown(self, data):
         print "Fehler: unbekannter kekzCode: "
 
     def lineReceived(self,data):
