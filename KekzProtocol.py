@@ -15,7 +15,7 @@ class KekzClient(basic.LineOnlyReceiver):
     Password=None
     #decoder=json.JSONDecoder()
     #encoder=json.JSONEncoder()
-
+    ping=False
     clientident="Ze$8hAbeVe0y" #das muss später alles weg
     verInt="0"
     netVer="netkekZ4 beta 20080910"
@@ -34,16 +34,16 @@ class KekzClient(basic.LineOnlyReceiver):
         """Wird aufgerufen, wenn man sich erfolgreich eingeloggt hat
         user ist ein dictionary"""
 
-    def sendPing(self):
-        """sendet den Ping alle 90 Sekunden"""
-        self.sendLine("088")
+#    def sendPing(self):
+#        """sendet den Ping alle 90 Sekunden"""
+#        self.sendLine("088")
     
     def receivedMsg(self,nick,channel,msg):
         """Diese Methode wird aufgerufen, wenn eine Nachricht emfangen wird"""
 
     def connectionMade(self):
         """diese Methode wird aufgerufen, wenn die SSL Verbindung aufgebaut wurde"""
-        reactor.callLater(10.0, self.startPing)
+        #reactor.callLater(10.0, self.startPing)
         self.sendHandshake(self.clientident,self.verInt,self.netVer)
 
     def connectionLost(self,data):
@@ -86,7 +86,7 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def kekzCode088(self,data):
         self.receivedPing(lastPing-time.time())
-        pingAnswer=false
+        pingAnswer=False
 
     def kekzCode100(self,data):
         foo=data.split(" ")
@@ -103,10 +103,10 @@ class KekzClient(basic.LineOnlyReceiver):
     def kekzCode920(self,data):
         print data
 
-    def kekzCode988(self, data):
+    def kekzCode988(self,data):
         print data
 
-    def kekzCodeUnbekannt(self, data):
+    def kekzCodeUnbekannt(self,data):
         print "Fehler: unbekannter kekzCode: "
 
         
@@ -120,11 +120,11 @@ class KekzClient(basic.LineOnlyReceiver):
         else: 
             attribut(string)
 
-    def pingTimeout():
-        pass
+    def pingTimeout(self):
+        self.connectionLost("Pingtimeout")
 
-    def sendPing():
-        if pingAnswer is false:
+    def sendPing(self):
+        if pingAnswer is False:
             sendLine("088")
             lastPing = time.time()
             Ping = true
