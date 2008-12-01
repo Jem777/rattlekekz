@@ -20,9 +20,6 @@ class KekzClient(basic.LineOnlyReceiver):
     verInt="0"
     netVer="netkekZ4 beta 20080910"
     
-    def receivedMsg(self,nick,channel,msg):
-        """Diese Methode wird aufgerufen, wenn eine Nachricht emfangen wird"""
-
     def receivedHandshake(self,passworthash):
         """Wird abgerufen, wenn der Server den Handshake beantwortet"""
 
@@ -34,23 +31,16 @@ class KekzClient(basic.LineOnlyReceiver):
         """Wird aufgerufen, wenn man sich erfolgreich eingeloggt hat
         user ist ein dictionary"""
 
+    def receivedMsg(self,nick,channel,msg):
+        """Diese Methode wird aufgerufen, wenn eine Nachricht emfangen wird"""
+
     def connectionMade(self):
-        #print "Hier fängt alles an"
+        """diese Methode wird aufgerufen, wenn die SSL Verbindung aufgebaut wurde"""
         self.sendHandshake(self.clientident,self.verInt,self.netVer)
 
     def connectionLost(self,data):
         pass
-    
-    def sendMsg(self, channel, msg):
-        if msg.isspace(): pass
-        else: sendLine("100 %s %s" % (channel,msg))
 
-    def sendSlashCommand(self,command,channel,msg):
-        if msg.isspace(): pass
-        if command=="/exit": pass #self.exit()
-        elif command=="/sendm": pass
-        elif command=="/msg" or "/p": pass 
-        else: sendLine("101 %s %s %s" % (channel,command,msg))
 
     def sendHandshake(self,clientident,verInt,netVer):
         handShakeVersion = sha1(clientident+'#'+verInt+'#'+netVer).hexdigest()
@@ -62,7 +52,18 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def sendLogin(self,nick,passhash,room):
         self.sendLine('020 %s#%s#%s' % (nick,passhash,room))
-    
+        
+    def sendMsg(self, channel, msg):
+        if msg.isspace(): pass
+        else: sendLine("100 %s %s" % (channel,msg))
+
+    def sendSlashCommand(self,command,channel,msg):
+        if msg.isspace(): pass
+        if command=="/exit": pass #self.exit()
+        elif command=="/sendm": pass
+        elif command=="/msg" or "/p": pass 
+        else: sendLine("101 %s %s %s" % (channel,command,msg))
+
 
 
     def kekzCode000(self,data):
@@ -88,7 +89,7 @@ class KekzClient(basic.LineOnlyReceiver):
 
         if not msg: return
 
-        self.msgReceived(nick,channel,msg)
+        self.receivedMsg(nick,channel,msg)
 
     def kekzCode901(self,data):
         print data

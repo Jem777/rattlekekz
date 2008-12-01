@@ -9,7 +9,7 @@ from twisted.python import log
 import time, sys
 from OpenSSL import SSL
 
-class KekzBot(KekzProtocol.KekzClient):
+class KekzControl(KekzProtocol.KekzClient):
     Nickname = "tester"
     Passwort='a94a8fe5ccb19ba61c4c0873d391e987982fbbd3'
     Channel="dev"
