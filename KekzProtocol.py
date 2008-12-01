@@ -31,11 +31,20 @@ class KekzClient(basic.LineOnlyReceiver):
         """Wird aufgerufen, wenn man sich erfolgreich eingeloggt hat
         user ist ein dictionary"""
 
+    def sendPing(self):
+        """sendet den Ping alle 90 Sekunden"""
+        self.sendLine("088")
+        
+    def startPing(self):
+        """startet das Senden des Pings"""
+        l = task.LoopingCall(self.sendPing)
+        l.start(90.0)
     def receivedMsg(self,nick,channel,msg):
         """Diese Methode wird aufgerufen, wenn eine Nachricht emfangen wird"""
 
     def connectionMade(self):
         """diese Methode wird aufgerufen, wenn die SSL Verbindung aufgebaut wurde"""
+        reactor.callLater(10.0, self.startPing)
         self.sendHandshake(self.clientident,self.verInt,self.netVer)
 
     def connectionLost(self,data):
