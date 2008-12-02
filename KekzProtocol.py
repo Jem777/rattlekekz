@@ -50,6 +50,15 @@ class KekzClient(basic.LineOnlyReceiver):
     def receivedMsg(self,nick,channel,msg):
         """Diese Methode wird aufgerufen, wenn eine Nachricht emfangen wird"""
 
+    def privMsg(self,nick,msg):
+        """privMsg ist die positive Rückmeldung vom Server, dass die Nachricht übermittelt wurde.
+        Der Client sollte erst in diesem Moment die Nachricht im PrivateLog darstellen. von KekzNet"""
+
+    def botMsg(self,botname,msg):
+        """Die Bot-Nachricht wird verwendet, um Nachrichten vom Systembot (~SilentBot) an den User zu
+        übermitteln. Dies kann eine Fehlermeldung oder Informationen sein. Eine solche Nachricht muss
+        im aktuell angewählten Fenster sichtbar gemacht werden. von KekzNet"""
+
     def connectionMade(self):
         """diese Methode wird aufgerufen, wenn die SSL Verbindung aufgebaut wurde"""
         reactor.callLater(10.0, self.startPing)
@@ -109,6 +118,9 @@ class KekzClient(basic.LineOnlyReceiver):
         elif command=="/msg" or "/p": pass 
         else: self.sendLine("101 %s %s %s" % (channel,command,msg))
 
+    def sendPrivMsg(self,nick,msg):
+        self.sendLine('102 %s%s' % (nick,msg))
+
 
     def kekzCode000(self,data):
         self.pwhash=data
@@ -144,11 +156,32 @@ class KekzClient(basic.LineOnlyReceiver):
     def kekzCode100(self,data):
         foo=data.split(" ")
         channel,nick=foo[0],foo[1]
-        msg=" ".join(foo[1:])
+        msg=" ".join(foo[2:])
 
         if not msg: return
 
         self.receivedMsg(nick,channel,msg)
+
+    def kekzCode102(self,data):
+        foo=data.split(" ")
+        nick=foo[0]
+        msg=" ".join(foo[1:])
+        self.receivedMsg(nick,self.Nickname,msg)
+
+    def kekzCode103(self,data):
+        foo=data.split(" ")
+        nick=foo[0]
+        msg=" ".join(foo[1:])
+        self.privMsg(nick,msg)
+
+    def kekzCode109(self,data):
+        foo=data.split(" ")
+        nick=foo[0]
+        msg=" ".join(foo[1:])
+        self.botMsg(nick,msg)
+    
+    def kekzCode110(self,data):
+        pass
 
     def kekzCode901(self,data):
         print data
