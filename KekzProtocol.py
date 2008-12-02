@@ -157,9 +157,7 @@ class KekzClient(basic.LineOnlyReceiver):
         foo=data.split(" ")
         channel,nick=foo[0],foo[1]
         msg=" ".join(foo[2:])
-
         if not msg: return
-
         self.receivedMsg(nick,channel,msg)
 
     def kekzCode102(self,data):
@@ -201,7 +199,7 @@ class KekzClient(basic.LineOnlyReceiver):
         try:
             attribut=getattr(self, "kekzCode"+nummer)
         except AttributeError:
-            attribut=getattr(self, "kekzCodeUnbekannt")
+            attribut=getattr(self, "kekzCodeUnknown")
         else: 
             attribut(string)
 
