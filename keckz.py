@@ -3,6 +3,6 @@
 
 import controller
 
-controller = Controller()
+controller = controller.Controller()
 controller.init()
 controller.doSomething()
