@@ -3,8 +3,8 @@
 
 def __init__(self, controller):
     self.controller = controller
-    print "initialisizing model"
+    print "[MODEL] initialisizing model"
     
 def sendToServer(self, string):
-    print "sending to server: " + string
+    print "[MODEL] sending to server: " + string
     
