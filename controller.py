@@ -17,5 +17,5 @@ class Controller:
         
     def doSomething(self):
         print "[CONTROLLER] Do something!"
-        self.model.outputStuff("doin something!")
-        self.view.sendToServer("some stuff")
+        self.view.outputStuff("doin something!")
+        self.model.sendToServer("some stuff")
