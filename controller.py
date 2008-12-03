@@ -5,8 +5,6 @@ import kekzprotocol, view
 class Controller:
     def __init__(self):
         print "[CONTROLLER] Initialisizing..."
-        
-    def init(self):
         print "[CONTROLLER] Spawning model&view"
         self.model = kekzprotocol.KekzProtocol(self)
         self.view = view.View(self)

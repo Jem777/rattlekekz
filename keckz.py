@@ -4,5 +4,4 @@
 import controller
 
 controller = controller.Controller()
-controller.init()
 controller.doSomething()
