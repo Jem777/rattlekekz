@@ -7,4 +7,4 @@ class KekzProtocol:
         
     def sendToServer(self, string):
         print "[MODEL] sending to server: " + string
-    
+        

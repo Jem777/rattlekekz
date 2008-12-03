@@ -8,6 +8,14 @@ class Controller:
         
     def init(self):
         print "[CONTROLLER] Spawning model&view"
+        self.model = KekzProtocol(self)
+        self.view = View(self)
         
     def gotConnection(self):
-        print "[CONTROLLER] we got a connection!"
+        print "[CONTROLLER] we got a connection! lets tell the view"
+        self.view.outputStuff("connection made.")
+        
+    def doSomething(self):
+        print "[CONTROLLER] Do something!"
+        self.model.outputStuff("doin something!")
+        self.view.sendToServer("some stuff")

@@ -4,4 +4,5 @@
 import controller
 
 controller = Controller()
-
+controller.init()
+controller.doSomething()
