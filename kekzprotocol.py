@@ -143,9 +143,9 @@ class KekzClient(basic.LineOnlyReceiver):
         self.Controller.successNewPassword()
 
     def kekzCode040(self,data):
-        dic=json.JSONDecoder().decode(data)
-        name,ort,homepage,hobbies=dic.values()
-        self.Controller.receivedProfil(name,ort,homepage,hobbies)
+        tokens=json.JSONDecoder().decode(data)
+        name,ort,homepage,hobbies=tokens
+        self.Controller.receivedProfile(name,ort,homepage,hobbies)
 
     def kekzCode041(self,data):
         self.Controller.successNewProfile()
