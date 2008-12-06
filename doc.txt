@@ -1,0 +1,36 @@
+METHODEN vom kekprotocol.py
+
+
+für den controller
+
+können gerufen werden (Argumente in klammern)
+
+self.protocol.startConnection(server,port)
+self.protocol.sendHandshake(clientident,verInt,netVer)
+self.protocol.sendDebugInfo(client,ver,os,java)
+self.protocol.getRooms()
+self.protocol.sendLogin(nick,passhash,room)
+self.protocol.registerNick(nick,pwhash,email)
+self.protocol.changePassword(passwd,passwdnew)
+self.protocol.updateProfile(name,ort,homepage,hobbies,passwd)
+self.protocol.startPing()
+self.protocol.sendPing()
+self.protocol.sendMsg(channel,msg)
+self.protocol.sendSlashCommand(command,channel,msg) wenn eine msg mit / anfängt, wird sie automatisch hiermit bearbeitet
+self.protocol.sendPrivMsg(nick,msg)
+
+
+müssen in den controller implementiert sein:
+
+def receivedHandshake(self)
+def receivedRooms(self,rooms)
+def successLogin(self,nick,status,room)
+def successRegister(self)
+def successNewPassword(self)
+def receivedProfil(self,name,ort,homepage,hobbies)
+def successNewProfile(self)
+def receivedPing(self,deltaPing)
+def receivedMsg(self,nick,channel,msg) channel kann auch self.Nickname sein, bei privaten unterhaltungen
+def privMsg(self,nick,msg) eigene nachricht ist angekommen, erst dann darf sie angezeigt werden
+def botMsg(self,nick,msg)
+def Error(message)
