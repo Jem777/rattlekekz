@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import controller
+import controllerKeckz
 
-controller = controller.Controller()
-controller.doSomething()
+controller = controller(self)
