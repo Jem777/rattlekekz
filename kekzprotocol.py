@@ -80,7 +80,7 @@ class KekzClient(basic.LineOnlyReceiver):
             self.lastPing = time.time()
             self.pingAnswer = True
         else:
-            self.Controller.pingTimeout()
+            self.controller.pingTimeout()
 
     def sendMsg(self, channel, msg):
         """Send a message to a channel"""
