@@ -67,7 +67,7 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def startPing(self):
         """Starts to Ping"""
-        task.Clock.callLater(10,task.LoopingCall(self.sendPing,self).start(60))
+        reactor.callLater(10,task.LoopingCall(self.sendPing,self).start(60))
         #task.LoopingCall(self.sendPing,self).start(60)
 
     def sendPing(self):

@@ -3,4 +3,4 @@
 
 import controllerKeckz
 
-controller = controller(self)
+controller = Kekzcontroller()
