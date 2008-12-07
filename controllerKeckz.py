@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import kekzprotocol, view
+import kekzprotocol, cli
 
 #modell = kekzprotocol(self)
 #view = view(self)
@@ -9,12 +9,15 @@ import kekzprotocol, view
 class Kekzcontroller():
     def __init__(self):
         self.modell = kekzprotocol.KekzClient(self)
-        self.view = view.View(self)
+        self.view = curses.View(self)
     
     def startConnection(self,server,port):
-        modell.startConnection(server,port)
+        self.modell.startConnection(server,port)
     
     """the following methods are required by kekzprotocol"""
+    def gotConnection(self):
+        pass
+    
     def receivedHandshake(self):
         pass
     
