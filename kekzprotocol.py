@@ -124,7 +124,7 @@ class KekzClient(basic.LineOnlyReceiver):
     def kekzCode000(self,data):
         self.pwhash=data
         self.controller.receivedHandshake()
-        
+        self.startPing()
 
     def kekzCode010(self,data):
         """Creats an array of rooms received """
