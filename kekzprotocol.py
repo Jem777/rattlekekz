@@ -16,13 +16,10 @@ class KekzClient(basic.LineOnlyReceiver):
     blablablubb
     
     TODO: alle Kommentare entfernen, die alten code beinhalten; mehr Methoden"""
-    #clientident="" #"Ze$8hAbeVe0y" das muss später alles weg
-    #verInt=""      #"0"
-    #netVer=""      #"netkekZ4 beta 20080910"
 
-    def __init__(self,Object):
+    def __init__(self,controller):
         """Called, when an object of the KekzClient class is created"""
-        self.controller=Object
+        self.controller=controller
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
@@ -38,8 +35,7 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def sendHandshake(self,hash):
         """The Handshake has to be send first, after a ssl connection is established"""
-        #handShakeVersion = sha1(clientident+'#'+verInt+'#'+netVer).hexdigest()  #das wird noch in das view verschoben, sodass das protocol kein sha1 braucht
-        self.sendLine('000 '+ hash) #handShakeVersion
+        self.sendLine('000 '+ hash)
 
     def sendDebugInfo(self,client,ver,os,java):
         """Sends the information for the Debugger"""
@@ -71,7 +67,8 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def startPing(self):
         """Starts to Ping"""
-        task.LoopingCall(self.sendPing,self).start(60)
+        task.Clock.callLater(10,task.LoopingCall(self.sendPing,self).start(60))
+        #task.LoopingCall(self.sendPing,self).start(60)
 
     def sendPing(self):
         """Sends the ping, this needn't to be called by the controller, just startPing"""
@@ -127,6 +124,7 @@ class KekzClient(basic.LineOnlyReceiver):
     def kekzCode000(self,data):
         self.pwhash=data
         self.controller.receivedHandshake()
+        
 
     def kekzCode010(self,data):
         """Creats an array of rooms received """

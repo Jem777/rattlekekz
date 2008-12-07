@@ -9,17 +9,18 @@ import kekzprotocol, cli
 class Kekzcontroller():
     def __init__(self):
         self.modell = kekzprotocol.KekzClient(self)
-        self.view = curses.View(self)
+        self.view = cli.View(self)
     
     def startConnection(self,server,port):
         self.modell.startConnection(server,port)
     
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
-        pass
+        self.modell.sendHandshake(self.view.foobar())
     
     def receivedHandshake(self):
-        pass
+        self.modell.sendDebugInfo()
+        
     
     def receivedRooms(self,rooms):
         pass
