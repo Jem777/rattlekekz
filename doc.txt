@@ -22,12 +22,13 @@ self.protocol.sendPrivMsg(nick,msg)
 
 müssen in den controller implementiert sein:
 
+def gotConnection(self)
 def receivedHandshake(self)
 def receivedRooms(self,rooms)
 def successLogin(self,nick,status,room)
 def successRegister(self)
 def successNewPassword(self)
-def receivedProfil(self,name,ort,homepage,hobbies)
+def receivedProfile(self,name,ort,homepage,hobbies)
 def successNewProfile(self)
 def receivedPing(self,deltaPing)
 def receivedMsg(self,nick,channel,msg) channel kann auch self.Nickname sein, bei privaten unterhaltungen
