@@ -20,7 +20,7 @@ self.protocol.sendSlashCommand(command,channel,msg) wenn eine msg mit / anfängt
 self.protocol.sendPrivMsg(nick,msg)
 
 
-müssen in den controller implementiert sein:
+sollten in den controller implementiert sein:
 
 def gotConnection(self)
 def receivedHandshake(self)

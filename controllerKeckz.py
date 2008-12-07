@@ -51,4 +51,8 @@ class Kekzcontroller():
     def Error(message):
         pass
     
-    
+    def unknownMethod(self):
+        print "Shit happens: The Controller wasn't able to respond to a call from the server"
+
+    def __getattr__(self, name):
+        return self.unknownMethod    
