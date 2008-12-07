@@ -7,10 +7,14 @@ import kekzprotocol, view
 #view = view(self)
 
 class Kekzcontroller():
-    def __init__(self,Object):
-        self.modell = kekzprotocol(self)
-        self.view = view(self)
+    def __init__(self):
+        self.modell = kekzprotocol.KekzClient(self)
+        self.view = view.View(self)
     
+    def startConnection(self,server,port):
+        modell.startConnection(server,port)
+    
+    """the following methods are required by kekzprotocol"""
     def receivedHandshake(self):
         pass
     
@@ -46,3 +50,5 @@ class Kekzcontroller():
     
     def Error(message):
         pass
+    
+    
