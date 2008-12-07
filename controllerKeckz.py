@@ -2,25 +2,27 @@
 # -*- coding: utf-8 -*-
 
 import kekzprotocol, cli
+import sys
 
 #modell = kekzprotocol(self)
 #view = view(self)
 
 class Kekzcontroller():
     def __init__(self):
-        self.modell = kekzprotocol.KekzClient(self)
+        self.model = kekzprotocol.KekzClient(self)
         self.view = cli.View(self)
     
     def startConnection(self,server,port):
-        self.modell.startConnection(server,port)
+        self.model.startConnection(server,port)
     
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
-        self.modell.sendHandshake(self.view.foobar())
+        self.model.sendHandshake(self.view.foobar())
     
     def receivedHandshake(self):
-        self.modell.sendDebugInfo()
-        
+        pythonversion=sys.version.split(" ")
+        self.model.sendDebugInfo(self.View.name,self.View.version,sys.platform,"Python "+pythonversion[0])
+        self.model.getRooms()
     
     def receivedRooms(self,rooms):
         pass
