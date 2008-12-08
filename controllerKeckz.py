@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import kekzprotocol, cli
-import os, sys, xreadlines
+import os, sys
 
 #modell = kekzprotocol(self)
 #view = view(self)
@@ -23,12 +23,12 @@ class Kekzcontroller():
             file.write("# Das ist die KECKz Konfigurationsdatei, für nähere Infos siehe 'man keckz'")
         file=open(configfile)
         array=file.readlines()
-        dictionary={}
+        self.configfile={}
         for i in array:
             if a.isspace() == False or a.startswith("#")==False or a.find("=")==-1:
                 a=i.split("=")
                 a=a[:2]
-                dic.update({a[0].strip():a[1].strip()})
+                self.configfile.update({a[0].strip():a[1].strip()})
 
 
     """the following methods are required by kekzprotocol"""
