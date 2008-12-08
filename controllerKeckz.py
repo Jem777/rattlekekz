@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import kekzprotocol, cli
-import sys
+import os, sys, xreadlines
 
 #modell = kekzprotocol(self)
 #view = view(self)
@@ -15,6 +15,22 @@ class Kekzcontroller():
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
     
+
+    def readConfigfile(self):
+        configfile=os.environ["HOME"]+os.sep+".keckz"
+        if os.path.exists(self.config) == False:
+            file=open(configfile, "w")
+            file.write("# Das ist die KECKz Konfigurationsdatei, für nähere Infos siehe 'man keckz'")
+        file=open(configfile)
+        array=file.readlines()
+        dictionary={}
+        for i in array:
+            if a.isspace() == False or a.startswith("#")==False or a.find("=")==-1:
+                a=i.split("=")
+                a=a[:2]
+                dic.update({a[0].strip():a[1].strip()})
+
+
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
         self.model.sendHandshake(self.view.foobar())
