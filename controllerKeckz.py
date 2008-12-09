@@ -17,15 +17,16 @@ class Kekzcontroller():
     
 
     def readConfigfile(self):
-        configfile=os.environ["HOME"]+os.sep+".keckz"
-        if os.path.exists(self.config) == False:
-            file=open(configfile, "w")
-            file.write("# Das ist die KECKz Konfigurationsdatei, für nähere Infos siehe 'man keckz'")
-        file=open(configfile)
-        array=file.readlines()
+        filepath=os.environ["HOME"]+os.sep+".keckz"
+        if os.path.exists(filepath) == False:
+            dotkeckz=open(filepath, "w")
+            dotkeckz.write("# Das ist die KECKz Konfigurationsdatei, für nähere Infos siehe 'man keckz'")
+            dotkeckz.flush()
+        dotkeckz=open(filepath)
+        array=dotkeckz.readlines()
         self.configfile={}
         for i in array:
-            if a.isspace() == False or a.startswith("#")==False or a.find("=")==-1:
+            if i.isspace() == False or i.startswith("#")==False or i.find("=")==-1:
                 a=i.split("=")
                 a=a[:2]
                 self.configfile.update({a[0].strip():a[1].strip()})
@@ -41,7 +42,19 @@ class Kekzcontroller():
         self.model.getRooms()
     
     def receivedRooms(self,rooms):
-        pass
+        # at first there has to be some kind of method transfering the rooms to the view
+        array=[]
+        for a in ["autologin","nick","passwd","room"]:
+            try:
+                array.append(self.configfile[a])
+            except:
+                array.append("")
+        if array[0]=="":
+            pass
+            # now the array is: ["","foo","bar",""] for example
+            # here the view has to get the information given (the array) and has to give back an array
+        self.model.sendLogin(array[1],array[2],array[3])
+            
     
     def successLogin(self,nick,status,room):
         pass
