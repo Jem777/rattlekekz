@@ -47,7 +47,7 @@ class KekzClient(basic.LineOnlyReceiver):
         # this should happen in the constructor, and only once.
 
     def getRooms(self):
-        """Request the List of Rooms for Login"""
+        """Request the List of Rooms for Login. You will receive a receivedRooms()"""
         self.sendLine('010')
 
     def sendLogin(self,nick,passhash,room):
@@ -61,16 +61,20 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def changePassword(self,passwd,passwdnew):
         """Change passwd to passwdnew - Both have to be a hash"""
-        Daten={"passwd":passwd,"passwdnew":passwdnew}
-        self.sendLine("031 "+json.JSONEncoder().encode(Daten))
+        #TODO: the hashing should perhaps be done automatically, by this class.
+        Data={"passwd":passwd,"passwdnew":passwdnew}
+        self.sendLine("031 "+json.JSONEncoder().encode(Data))
+        #TODO: again, here we are creating a new JSONEncoder object, which is unnessecary.
 
     def updateProfile(self,name,ort,homepage,hobbies,passwd):
         """Update the Profile - passwd has to be hashed"""
-        Daten={"name":name,"ort":ort,"homepage":homepage,"hobbies":hobbies,"passwd":passwd}
-        self.sendLine("040 "+json.JSONEncoder().encode(Daten))
+        Data={"name":name,"ort":ort,"homepage":homepage,"hobbies":hobbies,"passwd":passwd}
+        self.sendLine("040 "+json.JSONEncoder().encode(Data))
+        #TODO: again, here we are creating a new JSONEncoder object, which is unnessecary.
+        #TODO: make varnames english?
 
     def startPing(self):
-        """Starts to Ping"""
+        """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
         reactor.callLater(10,task.LoopingCall(self.sendPing,self).start(60))
         
         #task.LoopingCall(self.sendPing,self).start(60)
