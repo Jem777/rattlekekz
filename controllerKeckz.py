@@ -16,7 +16,6 @@ class Kekzcontroller():
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
     
-
     def readConfigfile(self):
         filepath=os.environ["HOME"]+os.sep+".keckz"
         if os.path.exists(filepath) == False:
@@ -84,7 +83,7 @@ class Kekzcontroller():
     def botMsg(self,nick,msg):
         pass
     
-    def gotException(message):
+    def gotException(self, message):
         pass
     
     def unknownMethod(self):
