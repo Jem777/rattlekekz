@@ -10,44 +10,50 @@ from twisted.internet import reactor, protocol, task, ssl
 from twisted.protocols import basic
 
 
-class KekzClient(basic.LineOnlyReceiver):
-    """
-    This is the main part of the Kekz.net protocol
-    This class expects the controller instance as parameter.
-    The class establishes an SSL/TLS connection to the server, and
-    sends occurring events to the controller, by saying controller.someEvent().
-    """
+class KekzClient(basic.LineOnlyReceiver, protocol.ClientFactory):
+    """This is the main part of the Kekz.net protocol
+    
+    blablablubb
+    
+    TODO: alle Kommentare entfernen, die alten code beinhalten; mehr Methoden"""
 
     def __init__(self,controller):
-        """Takes one argument: the instance of the controller Class."""
+        """Called, when an object of the KekzClient class is created"""
         self.controller=controller
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
 
     def startConnection(self,server,port):
-        """Initiate the connection."""
-        f = KekzFactory(self) # here, we instanciate a KekzFactory instance, that will proxy the events to the controller.
-        # TODO: this has to be reworked, propably we want to do this with self instead of f.
+        """starts the ssl connection"""
+        #f = KekzFactory(self)
+        f=self
         # connect factory to this host and port
         # reactor.listenSSL(23002, f, ssl.ClientContextFactory(), backlog=50)
         # reactor.connectSSL("kekz.net", 23002, f, ssl.ClientContextFactory())
         reactor.connectSSL(server, port, f, ssl.ClientContextFactory())
-        reactor.run()  
+        reactor.run()
+    
+    def buildProtocol(self, addr):
+        self.factory=self
+    
+    def clientConnectionLost(self, connector, reason):
+        self.controller.gotException("Verbindung verloren: "+str(reason))
+    def clientConnectionFailed(self, connector, reason):
+        self.controller.gotException("Verbindung kann nicht hergestellt werden: "+str(reason))
+        reactor.stop()
 
     def sendHandshake(self,hash):
         """The Handshake has to be send first, after a ssl connection is established"""
         self.sendLine('000 '+ hash)
 
     def sendDebugInfo(self,client,ver,os,java):
-        """Sends client informations to the server. used for debugging purposes."""
+        """Sends the information for the Debugger"""
         Infos={"client":client,"ver":ver,"os":os,"java":java}
         self.sendLine("001 "+json.JSONEncoder().encode(Infos))
-        # TODO: this looks shitty. we create a new JSONEncoder instance every time?
-        # this should happen in the constructor, and only once.
 
     def getRooms(self):
-        """Request the List of Rooms for Login. You will receive a receivedRooms()"""
+        """Request the List of Rooms for Login"""
         self.sendLine('010')
 
     def sendLogin(self,nick,passhash,room):
@@ -61,20 +67,16 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def changePassword(self,passwd,passwdnew):
         """Change passwd to passwdnew - Both have to be a hash"""
-        #TODO: the hashing should perhaps be done automatically, by this class.
-        Data={"passwd":passwd,"passwdnew":passwdnew}
-        self.sendLine("031 "+json.JSONEncoder().encode(Data))
-        #TODO: again, here we are creating a new JSONEncoder object, which is unnessecary.
+        Daten={"passwd":passwd,"passwdnew":passwdnew}
+        self.sendLine("031 "+json.JSONEncoder().encode(Daten))
 
     def updateProfile(self,name,ort,homepage,hobbies,passwd):
         """Update the Profile - passwd has to be hashed"""
-        Data={"name":name,"ort":ort,"homepage":homepage,"hobbies":hobbies,"passwd":passwd}
-        self.sendLine("040 "+json.JSONEncoder().encode(Data))
-        #TODO: again, here we are creating a new JSONEncoder object, which is unnessecary.
-        #TODO: make varnames english?
+        Daten={"name":name,"ort":ort,"homepage":homepage,"hobbies":hobbies,"passwd":passwd}
+        self.sendLine("040 "+json.JSONEncoder().encode(Daten))
 
     def startPing(self):
-        """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
+        """Starts to Ping"""
         reactor.callLater(10,task.LoopingCall(self.sendPing,self).start(60))
         
         #task.LoopingCall(self.sendPing,self).start(60)
@@ -219,12 +221,11 @@ class KekzClient(basic.LineOnlyReceiver):
         self.controller.Error(data)
 
 
-
+'''
 class KekzFactory(protocol.ClientFactory):
+    """A factory for KECKz. It produces various kinds of Kekzes
     """
-    A proxy/interface class. An instance of this class is given to reactor.connectSSL(), so that it can call
-    these methods. They are then sent to the controller. This class should be renamed and/or merged into either the model or the controller.
-    """
+    # the class of the protocol to build when new connection is made
     protocol = KekzClient
     def __init__(self,Object):
         self.Object=Object
@@ -233,3 +234,5 @@ class KekzFactory(protocol.ClientFactory):
     def clientConnectionFailed(self, connector, reason):
         self.Object.controller.gotException("Verbindung kann nicht hergestellt werden: "+str(reason))
         reactor.stop()
+        
+        '''
