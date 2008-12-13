@@ -220,7 +220,7 @@ class KekzFactory(protocol.ClientFactory):
     def __init__(self,Object):
         self.Object=Object
     def clientConnectionLost(self, connector, reason):
-        self.Object.controller.Error("Verbindung verloren: "+reason)
+        self.Object.controller.gotException("Verbindung verloren: "+reason)
     def clientConnectionFailed(self, connector, reason):
-        self.Object.controller.Error("Verbindung kann nicht hergestellt werden: "+reason)
+        self.Object.controller.gotException("Verbindung kann nicht hergestellt werden: "+reason)
         reactor.stop()

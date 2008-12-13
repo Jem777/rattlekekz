@@ -84,7 +84,7 @@ class Kekzcontroller():
     def botMsg(self,nick,msg):
         pass
     
-    def Error(message):
+    def gotException(message):
         pass
     
     def unknownMethod(self):
