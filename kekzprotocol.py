@@ -224,6 +224,10 @@ class KekzFactory(protocol.ClientFactory):
     """
     A proxy/interface class. An instance of this class is given to reactor.connectSSL(), so that it can call
     these methods. They are then sent to the controller. This class should be renamed and/or merged into either the model or the controller.
+    The merge into the main class has been delayed, because this reduces complexity. This might be needed in the future.
+    look at
+    http://twistedmatrix.com/documents/current/api/twisted.internet.protocol.ClientFactory.html
+    to see what the class inherits from ClientFactory, and what methods it needs to provide.
     """
     protocol = KekzClient
     def __init__(self,Object):
