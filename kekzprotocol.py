@@ -218,8 +218,6 @@ class KekzClient(basic.LineOnlyReceiver):
     def kekzCodeUnknown(self,data):
         self.controller.Error(data)
 
-
-
 class SSLInterfaceClass(protocol.ClientFactory):
     """
     A proxy/interface class. An instance of this class is given to reactor.connectSSL(), so that it can call
