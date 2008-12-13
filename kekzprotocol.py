@@ -213,9 +213,10 @@ class KekzClient(basic.LineOnlyReceiver):
 
 
 class KekzFactory(protocol.ClientFactory):
-    """A factory for KECKz. It produces various kinds of Kekzes
     """
-    # the class of the protocol to build when new connection is made
+    A proxy/interface class. An instance of this class is given to reactor.connectSSL(), so that it can call
+    these methods. They are then sent to the controller. This class should be renamed and/or merged into either the model or the controller.
+    """
     protocol = KekzClient
     def __init__(self,Object):
         self.Object=Object
