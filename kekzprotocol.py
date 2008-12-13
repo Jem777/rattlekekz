@@ -11,22 +11,24 @@ from twisted.protocols import basic
 
 
 class KekzClient(basic.LineOnlyReceiver):
-    """This is the main part of the Kekz.net protocol
-    
-    blablablubb
-    
-    TODO: alle Kommentare entfernen, die alten code beinhalten; mehr Methoden"""
+    """
+    This is the main part of the Kekz.net protocol
+    This class expects the controller instance as parameter.
+    The class establishes an SSL/TLS connection to the server, and
+    sends occurring events to the controller, by saying controller.someEvent().
+    """
 
     def __init__(self,controller):
-        """Called, when an object of the KekzClient class is created"""
+        """Takes one argument: the instance of the controller Class."""
         self.controller=controller
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
 
     def startConnection(self,server,port):
-        """starts the ssl connection"""
-        f = KekzFactory(self)
+        """Initiate the connection."""
+        f = KekzFactory(self) # here, we instanciate a KekzFactory instance, that will proxy the events to the controller.
+        # TODO: this has to be reworked, propably we want to do this with self instead of f.
         # connect factory to this host and port
         # reactor.listenSSL(23002, f, ssl.ClientContextFactory(), backlog=50)
         # reactor.connectSSL("kekz.net", 23002, f, ssl.ClientContextFactory())
@@ -38,9 +40,11 @@ class KekzClient(basic.LineOnlyReceiver):
         self.sendLine('000 '+ hash)
 
     def sendDebugInfo(self,client,ver,os,java):
-        """Sends the information for the Debugger"""
+        """Sends client informations to the server. used for debugging purposes."""
         Infos={"client":client,"ver":ver,"os":os,"java":java}
         self.sendLine("001 "+json.JSONEncoder().encode(Infos))
+        # TODO: this looks shitty. we create a new JSONEncoder instance every time?
+        # this should happen in the constructor, and only once.
 
     def getRooms(self):
         """Request the List of Rooms for Login"""
