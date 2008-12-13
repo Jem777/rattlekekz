@@ -10,7 +10,7 @@ from twisted.internet import reactor, protocol, task, ssl
 from twisted.protocols import basic
 
 
-class KekzClient(basic.LineOnlyReceiver):
+class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     """
     This is the main part of the Kekz.net protocol
     This class expects the controller instance as parameter.
@@ -32,8 +32,20 @@ class KekzClient(basic.LineOnlyReceiver):
         # connect factory to this host and port
         # reactor.listenSSL(23002, f, ssl.ClientContextFactory(), backlog=50)
         # reactor.connectSSL("kekz.net", 23002, f, ssl.ClientContextFactory())
-        reactor.connectSSL(server, port, f, ssl.ClientContextFactory())
-        reactor.run()  
+        reactor.connectSSL(server, port, self, ssl.ClientContextFactory())
+        reactor.run()
+
+    def buildProtocol(self, addr):
+        return self
+
+    def startedConnecting(self, connector):
+        pass
+
+    def clientConnectionFailed(self, connector, reason):
+        pass
+
+    def clientConnectionLost(self, connector, reason):
+        pass
 
     def sendHandshake(self,hash):
         """The Handshake has to be send first, after a ssl connection is established"""
