@@ -26,20 +26,18 @@ class KekzClient(basic.LineOnlyReceiver, protocol.ClientFactory):
 
     def startConnection(self,server,port):
         """starts the ssl connection"""
-        #f = KekzFactory(self)
-        f=self
         # connect factory to this host and port
         # reactor.listenSSL(23002, f, ssl.ClientContextFactory(), backlog=50)
         # reactor.connectSSL("kekz.net", 23002, f, ssl.ClientContextFactory())
-        reactor.connectSSL(server, port, f, ssl.ClientContextFactory())
+        reactor.connectSSL(server, port, self, ssl.ClientContextFactory())
         reactor.run()
     
-    def buildProtocol(self, addr):
-        self.factory=self
-    
     def clientConnectionLost(self, connector, reason):
+        """Called by the reactor"""
         self.controller.gotException("Verbindung verloren: "+str(reason))
+        
     def clientConnectionFailed(self, connector, reason):
+        """Called by the reactor"""
         self.controller.gotException("Verbindung kann nicht hergestellt werden: "+str(reason))
         reactor.stop()
 
