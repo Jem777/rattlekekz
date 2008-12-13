@@ -27,7 +27,7 @@ class KekzClient(basic.LineOnlyReceiver):
 
     def startConnection(self,server,port):
         """Initiate the connection."""
-        f = KekzFactory(self) # here, we instanciate a KekzFactory instance, that will proxy the events to the controller.
+        f = SSLInterfaceClass(self) # here, we instanciate a SSLInterfaceClass instance, that will proxy the events to the controller.
         # TODO: this has to be reworked, propably we want to do this with self instead of f.
         # connect factory to this host and port
         # reactor.listenSSL(23002, f, ssl.ClientContextFactory(), backlog=50)
@@ -220,7 +220,7 @@ class KekzClient(basic.LineOnlyReceiver):
 
 
 
-class KekzFactory(protocol.ClientFactory):
+class SSLInterfaceClass(protocol.ClientFactory):
     """
     A proxy/interface class. An instance of this class is given to reactor.connectSSL(), so that it can call
     these methods. They are then sent to the controller. This class should be renamed and/or merged into either the model or the controller.
