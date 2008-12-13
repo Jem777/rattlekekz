@@ -233,7 +233,7 @@ class SSLInterfaceClass(protocol.ClientFactory):
     def __init__(self,Object):
         self.Object=Object
     def clientConnectionLost(self, connector, reason):
-        self.Object.controller.gotException("Verbindung verloren: "+str(reason))
+        self.Object.controller.clientConnectionLost(reason)
     def clientConnectionFailed(self, connector, reason):
-        self.Object.controller.gotException("Verbindung kann nicht hergestellt werden: "+str(reason))
+        self.Object.controller.clientConnectionFailed(reason)
         reactor.stop()
