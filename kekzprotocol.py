@@ -6,7 +6,7 @@ import json, time
 #from hashlib import sha1
 
 # Modules for twisted
-from twisted.internet import reactor, protocol, task
+from twisted.internet import reactor, protocol, task, ssl
 from twisted.protocols import basic
 
 
@@ -68,6 +68,7 @@ class KekzClient(basic.LineOnlyReceiver):
     def startPing(self):
         """Starts to Ping"""
         reactor.callLater(10,task.LoopingCall(self.sendPing,self).start(60))
+        
         #task.LoopingCall(self.sendPing,self).start(60)
 
     def sendPing(self):
@@ -219,7 +220,7 @@ class KekzFactory(protocol.ClientFactory):
     def __init__(self,Object):
         self.Object=Object
     def clientConnectionLost(self, connector, reason):
-        self.Object.controller.Error("Verbindung verloren: "+reason)
+        self.Object.controller.Error("Verbindung verloren: "+str(reason))
     def clientConnectionFailed(self, connector, reason):
-        self.Object.controller.Error("Verbindung kann nicht hergestellt werden: "+reason)
+        self.Object.controller.Error("Verbindung kann nicht hergestellt werden: "+str(reason))
         reactor.stop()

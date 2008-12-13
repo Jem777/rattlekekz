@@ -3,4 +3,4 @@
 
 import controllerKeckz
 
-controller = Kekzcontroller()
+controllerKeckz.Kekzcontroller().startConnection('kekz.net','23002')

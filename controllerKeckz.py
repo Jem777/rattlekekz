@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import kekzprotocol, cli
+import kekzprotocol, cli, test
 import os, sys
 
 #modell = kekzprotocol(self)
@@ -10,7 +10,8 @@ import os, sys
 class Kekzcontroller():
     def __init__(self):
         self.model = kekzprotocol.KekzClient(self)
-        self.view = cli.View(self)
+        #self.view = cli.View(self)
+        self.view = test.view(self)
     
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
@@ -72,7 +73,7 @@ class Kekzcontroller():
         pass
     
     def receivedPing(self,deltaPing):
-        pass
+        view.displayMsg(deltaPing)
     
     def receivedMsg(self,nick,channel,msg):
         pass
