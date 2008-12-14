@@ -39,13 +39,13 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         return self
 
     def startedConnecting(self, connector):
-        pass
+        self.controller.startedConnection()
 
     def clientConnectionFailed(self, connector, reason):
-        pass
+        self.controller.failConnection(reason)
 
     def clientConnectionLost(self, connector, reason):
-        pass
+        self.controller.lostConnection(reason)
 
     def sendHandshake(self,hash):
         """The Handshake has to be send first, after a ssl connection is established"""
@@ -132,10 +132,10 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.gotConnection()
 
     def lineReceived(self,data):
-        nummer=data[:3]
+        number=data[:3]
         string=data[4:]
         try:
-            attribut=getattr(self, "kekzCode"+nummer)
+            attribut=getattr(self, "kekzCode"+number)
         except AttributeError:
             attribut=getattr(self, "kekzCodeUnknown")
             string=data
@@ -205,30 +205,30 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         pass
 
     def kekzCode901(self,data):
-        self.controller.Error(data)
+        self.controller.gotException(data)
 
     def kekzCode920(self,data):
-        self.controller.Error(data)
+        self.controller.gotException(data)
 
     def kekzCode921(self,data):
-        self.controller.Error(data)
+        self.controller.gotException(data)
 
     def kekzCode930(self,data):
-        self.controller.Error(data)
+        self.controller.gotException(data)
 
     def kekzCode940(self,data):
-        self.controller.Error(data)
+        self.controller.gotException(data)
 
     def kekzCode941(self,data):
         dic=json.JSONDecoder().decode(data)
         id,msg=dic["id"],dic["msg"]
-        self.controller.Error(id+" "+msg)
+        self.controller.gotException(id+" "+msg)
 
     def kekzCode988(self,data):
-        self.controller.Error(data)
+        self.controller.gotException(data)
 
     def kekzCodeUnknown(self,data):
-        self.controller.Error(data)
+        self.controller.gotException(data)
 
 class SSLInterfaceClass(protocol.ClientFactory):
     """

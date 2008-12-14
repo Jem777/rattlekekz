@@ -3,4 +3,4 @@
 
 import controllerKeckz
 
-controllerKeckz.Kekzcontroller().startConnection('127.0.0.1',23002)
+controllerKeckz.Kekzcontroller().startConnection('kekz.net',23002)
