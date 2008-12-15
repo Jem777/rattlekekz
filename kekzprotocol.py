@@ -27,9 +27,6 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def startConnection(self,server,port):
         """Initiate the connection."""
-        f = SSLInterfaceClass(self) # here, we instanciate a SSLInterfaceClass instance, that will proxy the events to the controller.
-        # TODO: this has to be reworked, propably we want to do this with self instead of f.
-        # connect factory to this host and port
         # reactor.listenSSL(23002, f, ssl.ClientContextFactory(), backlog=50)
         # reactor.connectSSL("kekz.net", 23002, f, ssl.ClientContextFactory())
         reactor.connectSSL(server, port, self, ssl.ClientContextFactory())
@@ -229,21 +226,3 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def kekzCodeUnknown(self,data):
         self.controller.gotException(data)
-
-class SSLInterfaceClass(protocol.ClientFactory):
-    """
-    A proxy/interface class. An instance of this class is given to reactor.connectSSL(), so that it can call
-    these methods. They are then sent to the controller. This class should be renamed and/or merged into either the model or the controller.
-    The merge into the main class has been delayed, because this reduces complexity. This might be needed in the future.
-    look at
-    http://twistedmatrix.com/documents/current/api/twisted.internet.protocol.ClientFactory.html
-    to see what the class inherits from ClientFactory, and what methods it needs to provide.
-    """
-    protocol = KekzClient
-    def __init__(self,Object):
-        self.Object=Object
-    def clientConnectionLost(self, connector, reason):
-        self.Object.controller.clientConnectionLost(reason)
-    def clientConnectionFailed(self, connector, reason):
-        self.Object.controller.clientConnectionFailed(reason)
-        reactor.stop()
