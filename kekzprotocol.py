@@ -194,7 +194,10 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.botMsg(nick,msg)
     
     def kekzCode110(self,data):
-        pass
+        rooms=data.split("#")
+        for i in range(len(rooms)):
+            rooms[i]=rooms[i].split(",")
+        self.controller.receivedRoomlist(rooms) # important note: rooms is build like this: [[roomname,user, max user, roomstatus, sysroom],[nextRoom...]]
 
     def kekzCode901(self,data):
         self.controller.gotException(data)
