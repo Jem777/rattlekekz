@@ -10,8 +10,8 @@ import os, sys
 class Kekzcontroller():
     def __init__(self):
         self.model = kekzprotocol.KekzClient(self)
-        #self.view = cli.View(self)
-        self.view = test.view(self)
+        self.view = cli.View(self)
+        #self.view = test.view(self)
 
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
@@ -49,7 +49,7 @@ class Kekzcontroller():
     def receivedHandshake(self):
         print 'Handshake suceed'
         pythonversion=sys.version.split(" ")
-        self.model.sendDebugInfo(self.View.name,self.View.version,sys.platform,"Python "+pythonversion[0])
+        self.model.sendDebugInfo(self.view.name,self.view.version,sys.platform,"Python "+pythonversion[0])
         self.model.getRooms()
 
     def receivedRooms(self,rooms):
@@ -64,7 +64,8 @@ class Kekzcontroller():
             pass
             # now the array is: ["","foo","bar",""] for example
             # here the view has to get the information given (the array) and has to give back an array
-        self.model.sendLogin(array[1],array[2],array[3])
+        #self.model.sendLogin(array[1],array[2],array[3])
+        self.model.sendLogin()
 
 
     def successLogin(self,nick,status,room):
@@ -86,13 +87,13 @@ class Kekzcontroller():
         view.displayMsg(str(deltaPing))
 
     def receivedMsg(self,nick,channel,msg):
-        pass
+        print nick+'@'+channel+':'+msg
 
     def privMsg(self,nick,msg):
-        pass
+        print nick+'(privat):'+msg
 
     def botMsg(self,nick,msg):
-        pass
+        print nick+':'+msg
 
     def gotException(self, message):
         print message

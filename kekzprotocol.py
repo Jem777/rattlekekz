@@ -22,8 +22,8 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         """Takes one argument: the instance of the controller Class."""
         self.controller=controller
         self.pingAnswer=False
-        self.pwhash=None
-        self.nickname=""
+        self.pwhash='68358d5d9cbbf39fe571ba41f26524b6'
+        self.nickname="tester"
 
     def startConnection(self,server,port):
         """Initiate the connection."""
@@ -87,8 +87,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def startPing(self):
         """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
-        reactor.callLater(10,task.LoopingCall(self.sendPing,self).start(60))
-        
+        reactor.callLater(10,task.LoopingCall(self.sendPing).start(60))
         #task.LoopingCall(self.sendPing,self).start(60)
 
     def sendPing(self):
@@ -132,6 +131,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.gotConnection()
 
     def lineReceived(self,data):
+        print data
         number=data[:3]
         string=data[4:]
         try:
@@ -145,7 +145,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def kekzCode000(self,data):
         self.pwhash=data
         self.controller.receivedHandshake()
-        self.startPing()
+        #self.startPing()
 
     def kekzCode010(self,data):
         """Creats an array of rooms received """

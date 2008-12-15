@@ -9,6 +9,8 @@ import time
 class view():
     def __init__(self,controller):
         self.controller=controller
+        self.name='KECKZ'
+        self.version='none o.o'
         #self.buildInterface()
     
     def buildInterface(self):
