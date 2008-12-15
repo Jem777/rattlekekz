@@ -30,6 +30,10 @@ class Kekzcontroller():
                 a=i.split("=")
                 a=a[:2]
                 self.configfile.update({a[0].strip():a[1].strip()})
+        if self.configfile.has_key("ok") and self.configfile["ok"]=="1":
+            pass
+        else:
+            self.configfile={}
 
 
     """the following methods are required by kekzprotocol"""
@@ -59,11 +63,11 @@ class Kekzcontroller():
         # at first there has to be some kind of method transfering the rooms to the view
         array=[]
         for a in ["autologin","nick","passwd","room"]:
-            try:
+            if self.configfile.has_key(a):
                 array.append(self.configfile[a])
-            except:
+            else:
                 array.append("")
-        if array[0]=="":
+        if array[0]=="" or array[0]=="False" or array[0]=="0":
             pass
             # now the array is: ["","foo","bar",""] for example
             # here the view has to get the information given (the array) and has to give back an array
