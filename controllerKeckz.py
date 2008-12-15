@@ -83,7 +83,7 @@ class Kekzcontroller():
         pass
 
     def receivedPing(self,deltaPing):
-        view.displayMsg(deltaPing)
+        view.displayMsg(str(deltaPing))
 
     def receivedMsg(self,nick,channel,msg):
         pass
