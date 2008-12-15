@@ -21,9 +21,11 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def __init__(self,controller):
         """Takes one argument: the instance of the controller Class."""
         self.controller=controller
+        self.encoder=json.JSONEncoder()
+        self.decoder=json.JSONDecoder()
         self.pingAnswer=False
-        self.pwhash='68358d5d9cbbf39fe571ba41f26524b6'
-        self.nickname="tester"
+        self.pwhash=None
+        self.nickname=""
 
     def startConnection(self,server,port):
         """Initiate the connection."""
@@ -51,9 +53,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def sendDebugInfo(self,client,ver,os,java):
         """Sends client informations to the server. used for debugging purposes."""
         Infos={"client":client,"ver":ver,"os":os,"java":java}
-        self.sendLine("001 "+json.JSONEncoder().encode(Infos))
-        # TODO: this looks shitty. we create a new JSONEncoder instance every time?
-        # this should happen in the constructor, and only once.
+        self.sendLine("001 "+self.encoder.encode(Infos))
 
     def getRooms(self):
         """Request the List of Rooms for Login. You will receive a receivedRooms()"""
@@ -66,26 +66,22 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def registerNick(self,nick,pwhash,email):
         """Register a new Nick"""
         Daten={"nick":nick,"passwd":pwhash,"email":email}
-        self.sendLine("030 "+json.JSONEncoder().encode(Daten))
+        self.sendLine("030 "+self.encoder.encode(Daten))
 
     def changePassword(self,passwd,passwdnew):
         """Change passwd to passwdnew - Both have to be a hash"""
         #TODO: the hashing should perhaps be done automatically, by this class.
         Data={"passwd":passwd,"passwdnew":passwdnew}
-        self.sendLine("031 "+json.JSONEncoder().encode(Data))
-        #TODO: again, here we are creating a new JSONEncoder object, which is unnessecary.
-
+        self.sendLine("031 "+self.encoder.encode(Data))
+        
     def updateProfile(self,name,ort,homepage,hobbies,passwd):
         """Update the Profile - passwd has to be hashed"""
         Data={"name":name,"ort":ort,"homepage":homepage,"hobbies":hobbies,"passwd":passwd}
-        self.sendLine("040 "+json.JSONEncoder().encode(Data))
-        #TODO: again, here we are creating a new JSONEncoder object, which is unnessecary.
-        #TODO: make varnames english?
+        self.sendLine("040 "+self.encoder.encode(Data))
 
     def startPing(self):
         """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
-        reactor.callLater(10,task.LoopingCall(self.sendPing).start(60))
-        #task.LoopingCall(self.sendPing,self).start(60)
+        reactor.callLater(10, lambda: task.LoopingCall(sendPing).start(60))
 
     def sendPing(self):
         """Sends the ping, this needn't to be called by the controller, just startPing"""
@@ -128,7 +124,6 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.gotConnection()
 
     def lineReceived(self,data):
-        print data
         number=data[:3]
         string=data[4:]
         try:
@@ -142,15 +137,15 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def kekzCode000(self,data):
         self.pwhash=data
         self.controller.receivedHandshake()
-        #self.startPing()
+        #self.startPing() TODO: Fix the send.ping() method
 
     def kekzCode010(self,data):
         """Creats an array of rooms received """
-        rooms=json.JSONDecoder().decode(data) #decoder.decode(data)
+        rooms=self.decoder.decode(data)
         self.controller.receivedRooms(rooms)
     
     def kekzCode020(self,data):
-        userdata=json.JSONDecoder().decode(data)
+        userdata=self.decoder.decode(data)
         nick,status,room=userdata["nick"],userdata["status"],userdata["room"]
         self.nickname=nick
         self.controller.successLogin(nick,status,room)
@@ -162,7 +157,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.successNewPassword()
 
     def kekzCode040(self,data):
-        dic=json.JSONDecoder().decode(data)
+        dic=self.decoder.decode(data)
         name,ort,homepage,hobbies=dic["name"],dic["ort"],dic["homepage"],dic["hobbies"]
         self.controller.receivedProfile(name,ort,homepage,hobbies)
 
@@ -217,7 +212,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.gotException(data)
 
     def kekzCode941(self,data):
-        dic=json.JSONDecoder().decode(data)
+        dic=self.decoder.decode(data)
         id,msg=dic["id"],dic["msg"]
         self.controller.gotException(id+" "+msg)
 

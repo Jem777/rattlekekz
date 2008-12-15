@@ -4,8 +4,8 @@
 import kekzprotocol, cli, test
 import os, sys
 
-#modell = kekzprotocol(self)
-#view = view(self)
+# Line for tester / test:
+# 020 tester#68358d5d9cbbf39fe571ba41f26524b6#dev
 
 class Kekzcontroller():
     def __init__(self):
@@ -17,10 +17,10 @@ class Kekzcontroller():
         self.model.startConnection(server,port)
 
     def readConfigfile(self):
-        filepath=os.environ["HOME"]+os.sep+".keckz"
+        filepath=os.environ["HOME"]+os.sep+".kekznet.conf"
         if os.path.exists(filepath) == False:
             dotkeckz=open(filepath, "w")
-            dotkeckz.write("# Das ist die KECKz Konfigurationsdatei, für nähere Infos siehe 'man keckz'")
+            dotkeckz.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
             dotkeckz.flush()
         dotkeckz=open(filepath)
         array=dotkeckz.readlines()
@@ -35,21 +35,24 @@ class Kekzcontroller():
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
         print 'connection ready'
-        self.model.sendHandshake(self.view.foobar())
+        self.model.sendHandshake(self.view.fubar())
 
     def startedConnection(self):
+        """indicates that the model is connecting. Here should be a call to the view later on"""
         print 'connecting ...'
 
     def lostConnection(self, reason):
+        """the connection was clean closed down. Here should be a call to the view later on"""
         print 'Verbindung beendet:'+str(reason)
 
     def failConnection(self, reason):
+        """the try to connect failed. Here should be a call to the view later on"""
         print 'Verbindungsversuch fehlgeschlagen:'+str(reason)
 
     def receivedHandshake(self):
-        print 'Handshake suceed'
+        print 'Handshake succeed'
         pythonversion=sys.version.split(" ")
-        self.model.sendDebugInfo(self.view.name,self.view.version,sys.platform,"Python "+pythonversion[0])
+        self.model.sendDebugInfo(self.view.name, self.view.version, sys.platform, "Python "+pythonversion[0])
         self.model.getRooms()
 
     def receivedRooms(self,rooms):
