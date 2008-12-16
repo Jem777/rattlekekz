@@ -21,8 +21,8 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def __init__(self,controller):
         """Takes one argument: the instance of the controller Class."""
         self.controller=controller
-        self.encoder=json.JSONEncoder()
-        self.decoder=json.JSONDecoder()
+        self.encoder=lambda x: json.JSONEncoder().encode(x)
+        self.decoder=lambda y: json.JSONDecoder().decode(y)
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
@@ -53,7 +53,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def sendDebugInfo(self,client,ver,os,java):
         """Sends client informations to the server. used for debugging purposes."""
         Infos={"client":client,"ver":ver,"os":os,"java":java}
-        self.sendLine("001 "+self.encoder.encode(Infos))
+        self.sendLine("001 "+self.encoder(Infos))
 
     def getRooms(self):
         """Request the List of Rooms for Login. You will receive a receivedRooms()"""
@@ -66,18 +66,18 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def registerNick(self,nick,pwhash,email):
         """Register a new Nick"""
         Daten={"nick":nick,"passwd":pwhash,"email":email}
-        self.sendLine("030 "+self.encoder.encode(Daten))
+        self.sendLine("030 "+self.encoder(Daten))
 
     def changePassword(self,passwd,passwdnew):
         """Change passwd to passwdnew - Both have to be a hash"""
         #TODO: the hashing should perhaps be done automatically, by this class.
         Data={"passwd":passwd,"passwdnew":passwdnew}
-        self.sendLine("031 "+self.encoder.encode(Data))
+        self.sendLine("031 "+self.encoder(Data))
         
-    def updateProfile(self,name,ort,homepage,hobbies,passwd):
+    def updateProfile(self,name,ort,homepage,hobbies,signature,passwd):
         """Update the Profile - passwd has to be hashed"""
-        Data={"name":name,"ort":ort,"homepage":homepage,"hobbies":hobbies,"passwd":passwd}
-        self.sendLine("040 "+self.encoder.encode(Data))
+        Data={"name":name,"ort":ort,"homepage":homepage,"hobbies":hobbies,"freitext":signature,"passwd":passwd}
+        self.sendLine("040 "+self.encoder(Data))
 
     def startPing(self):
         """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
@@ -141,11 +141,11 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def kekzCode010(self,data):
         """Creats an array of rooms received """
-        rooms=self.decoder.decode(data)
+        rooms=self.decoder(data)
         self.controller.receivedRooms(rooms)
     
     def kekzCode020(self,data):
-        userdata=self.decoder.decode(data)
+        userdata=self.decoder(data)
         nick,status,room=userdata["nick"],userdata["status"],userdata["room"]
         self.nickname=nick
         self.controller.successLogin(nick,status,room)
@@ -157,9 +157,9 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.successNewPassword()
 
     def kekzCode040(self,data):
-        dic=self.decoder.decode(data)
-        name,ort,homepage,hobbies=dic["name"],dic["ort"],dic["homepage"],dic["hobbies"]
-        self.controller.receivedProfile(name,ort,homepage,hobbies)
+        dic=self.decoder(data)
+        name,ort,homepage,hobbies,signature=dic["name"],dic["ort"],dic["homepage"],dic["hobbies"],dic["freitext"]
+        self.controller.receivedProfile(name,ort,homepage,hobbies,signature)
 
     def kekzCode041(self,data):
         self.controller.successNewProfile()
@@ -197,7 +197,46 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         rooms=data.split("#")
         for i in range(len(rooms)):
             rooms[i]=rooms[i].split(",")
-        self.controller.receivedRoomlist(rooms) # important note: rooms is build like this: [[roomname,user, max user, roomstatus, sysroom],[nextRoom...]]
+        self.controller.receivedRoomlist(rooms) # rooms is build like this: [[roomname,user, max user, roomstatus, sysroom],[nextRoom...]]
+    
+    def kekzCode200(self,data):
+        foo=data.split(" ")
+        room=foo[0]
+        rawuser=" ".join(foo[1:])
+        rawuser=self.decoder(rawuser)
+        users=[]
+        for i in len(rawuser):
+            username=rawuser[i]["name"]
+            if rawuser[i].has_key("away") and rawuser[i]["away"]=="z":
+                away=True
+            else:
+                away=False
+            if rawuser[i].has_key("stat"):
+                status=rawuser[i]["stat"]
+            else:
+                status="x"
+            users.append([username,away,status])
+        self.controller.receivedUserlist(room,users) # users is build like this: [[username,away,status],[nextUser,..]]
+    
+    def kekzCode201(self,data):
+        foo=data.split(" ")
+        room=foo[0]
+        rawuser=foo[1].split(",")
+        self.controller.joinUser(room,rawuser[0],rawuser[1],rawuser[2])
+
+    def kekzCode202(self,data):
+        foo=data.split(" ")
+        room=foo[0]
+        rawuser=foo[1].split(",")
+        self.controller.quitUser(room,rawuser[0],rawuser[1])
+
+    def kekzCode205(self,data):
+        foo=data.split(" ")
+        room=foo[0]
+        rawuser=foo[1].split(",")
+        if rawuser[1]=="z": away=True
+        else: away=False
+        self.controller.changedUserdata(room,rawuser[0],away,rawuser[2])
 
     def kekzCode901(self,data):
         self.controller.gotException(data)
@@ -215,7 +254,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.gotException(data)
 
     def kekzCode941(self,data):
-        dic=self.decoder.decode(data)
+        dic=self.decoder(data)
         id,msg=dic["id"],dic["msg"]
         self.controller.gotException(id+" "+msg)
 
