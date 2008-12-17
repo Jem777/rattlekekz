@@ -9,7 +9,6 @@ import json, time
 from twisted.internet import reactor, protocol, task, ssl
 from twisted.protocols import basic
 
-
 class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     """
     This is the main part of the Kekz.net protocol
@@ -26,6 +25,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
+        self.delimiter='\n'
 
     def startConnection(self,server,port):
         """Initiate the connection."""
@@ -112,9 +112,6 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def sendPrivMsg(self,nick,msg):
         """Private Msgs, they call be send with /m or in another window like a room"""
         self.sendLine('102 %s %s' % (nick,msg))
-
-    def sendJoin(self,room):
-        self.sendLine("223 "+room)
 
     def quitConnection(self):
         """ends the connection, usually getRooms is called afterwards"""
@@ -241,33 +238,6 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         else: away=False
         self.controller.changedUserdata(room,rawuser[0],away,rawuser[2])
 
-    def kekzCode220(self,data):
-        if data.startswith("!"):
-            background=True
-            data=data[1:]
-        else: background=False
-        self.controller.meJoin(data,background)
-
-    def kekzCode221(self,data):
-        self.controller.mePart(data)
-
-    def kekzCode222(self,data):
-        room=data.split(" ")
-        self.controller.meGo(room[0],room[1])
-
-    def kekzCode225(self,data):
-        foo=data.split(" ")
-        self.controller.newTopic(foo[0],foo[1])
-
-    def kekzCode226(self,data):
-        self.controller.newTopic(data,"")
-
-    def kekzCode229(self,data):
-        self.controller.loggedOut()
-    
-    def kekzCode300(self,data):
-        self.controller.receivedInformation(data)
-    
     def kekzCode901(self,data):
         self.controller.gotException(data)
 
