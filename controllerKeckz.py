@@ -30,7 +30,7 @@ class Kekzcontroller():
                 a=i.split("=")
                 a=a[:2]
                 self.configfile.update({a[0].strip():a[1].strip()})
-        if self.configfile.has_key("ok") and self.configfile["ok"]=="1":
+        if self.configfile.has_key("ok") and self.configfile["ok"]=="1": #TODO: Fix missing attribute 'has_key'
             pass
         else:
             self.configfile={}
