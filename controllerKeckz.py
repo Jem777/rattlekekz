@@ -30,6 +30,10 @@ class Kekzcontroller():
                 a=i.split("=")
                 a=a[:2]
                 self.configfile.update({a[0].strip():a[1].strip()})
+        if self.configfile.has_key("ok") and self.configfile["ok"]=="1":
+            pass
+        else:
+            self.configfile={}
 
 
     """the following methods are required by kekzprotocol"""

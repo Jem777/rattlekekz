@@ -3,7 +3,6 @@
 
 # Modules
 import json, time
-#from hashlib import sha1
 
 # Modules for twisted
 from twisted.internet import reactor, protocol, task, ssl
@@ -69,8 +68,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.sendLine("030 "+self.encoder(Daten))
 
     def changePassword(self,passwd,passwdnew):
-        """Change passwd to passwdnew - Both have to be a hash"""
-        #TODO: the hashing should perhaps be done automatically, by this class.
+        """Change passwd to passwdnew - Both have to be a hash; no hashing in the model"""
         Data={"passwd":passwd,"passwdnew":passwdnew}
         self.sendLine("031 "+self.encoder(Data))
         
@@ -113,6 +111,9 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         """Private Msgs, they call be send with /m or in another window like a room"""
         self.sendLine('102 %s %s' % (nick,msg))
 
+    def sendJoin(self,room):
+        self.sendLine("223 "+room)
+
     def quitConnection(self):
         """ends the connection, usually getRooms is called afterwards"""
         self.sendLine("900")
@@ -137,7 +138,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def kekzCode000(self,data):
         self.pwhash=data
         self.controller.receivedHandshake()
-        #self.startPing() TODO: Fix the send.ping() method
+        self.startPing()
 
     def kekzCode010(self,data):
         """Creats an array of rooms received """
@@ -237,7 +238,34 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         if rawuser[1]=="z": away=True
         else: away=False
         self.controller.changedUserdata(room,rawuser[0],away,rawuser[2])
+ 
+    def kekzCode220(self,data):
+        if data.startswith("!"):
+            background=True
+            data=data[1:]
+        else: background=False
+        self.controller.meJoin(data,background)
 
+    def kekzCode221(self,data):
+        self.controller.mePart(data)
+
+    def kekzCode222(self,data):
+        room=data.split(" ")
+        self.controller.meGo(room[0],room[1])
+
+    def kekzCode225(self,data):
+        foo=data.split(" ")
+        self.controller.newTopic(foo[0],foo[1])
+
+    def kekzCode226(self,data):
+        self.controller.newTopic(data,"")
+
+    def kekzCode229(self,data):
+        self.controller.loggedOut()
+    
+    def kekzCode300(self,data):
+        self.controller.receivedInformation(data)
+    
     def kekzCode901(self,data):
         self.controller.gotException(data)
 
