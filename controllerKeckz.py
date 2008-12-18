@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import kekzprotocol, cli, test
-import os, sys
+import kekzprotocol, os, sys
 
 # Line for tester / test:
 # 020 tester#68358d5d9cbbf39fe571ba41f26524b6#dev
 
 class Kekzcontroller():
-    def __init__(self):
+    def __init__(self, interface):
         self.model = kekzprotocol.KekzClient(self)
-        self.view = cli.View(self)
+        self.view = interface(self)
         #self.view = test.view(self)
 
     def startConnection(self,server,port):
@@ -60,19 +59,18 @@ class Kekzcontroller():
         self.model.getRooms()
 
     def receivedRooms(self,rooms):
-        # at first there has to be some kind of method transfering the rooms to the view
         array=[]
         for a in ["autologin","nick","passwd","room"]:
             try:
                 array.append(self.configfile[a])
             except:
                 array.append("")
-        if array[0]=="":
+        if array[0]=="True" or array[0]=="1":
+            self.model.sendLogin(array[1],array[2],array[3])
+        else:
             pass
             # now the array is: ["","foo","bar",""] for example
-            # here the view has to get the information given (the array) and has to give back an array
-        #self.model.sendLogin(array[1],array[2],array[3])
-        self.model.sendLogin()
+            # here the view has to get the information given (array and rooms) and has to give back an array or has to send model.sendLogin by itself
 
 
     def successLogin(self,nick,status,room):

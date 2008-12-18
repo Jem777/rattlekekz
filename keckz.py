@@ -14,7 +14,7 @@ print opts
 class main():
     def __init__(self):
         self.host = 'kekz.net'
-        self.view = 'default'
+        self.view = 'cli.View'
         for o,p in opts:
             if o in ['-h','--host']:
                 self.host = p
@@ -27,12 +27,17 @@ class main():
                 print '-v, --view: View to use, Default: cli'
                 exit()
 
-    def connect(self, host, view):
-        if view in 'default':
-            controllerKeckz.Kekzcontroller().startConnection(host,23002)
+    def connect(self, host, view="cli"):
+        try:
+            exec("from "+view+" import *")
+        except:
+            print "No View found"
+            sys.exit()
+        if str(type(View))=="""<type 'classobj'>""": #TODO: We'll have to have a check whether foo.View exists
+            controllerKeckz.Kekzcontroller(View).startConnection(host,23002)
         else:
             print 'not implemented yet'
-            exit()
+            sys.exit()
 
 #controllerKeckz.Kekzcontroller().startConnection('kekz.net',23002)
 #controllerKeckz.Kekzcontroller().startConnection('pitix.ath.cx',23002)
