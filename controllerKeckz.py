@@ -68,9 +68,9 @@ class Kekzcontroller():
         if array[0]=="True" or array[0]=="1":
             self.model.sendLogin(array[1],array[2],array[3])
         else:
-            pass
-            # now the array is: ["","foo","bar",""] for example
-            # here the view has to get the information given (array and rooms) and has to give back an array or has to send model.sendLogin by itself
+            self.view.receivedPreLoginData(rooms,array[1:])
+            # now the array is: [nick,passwd,room]
+            # the view has to give back an array or has to send model.sendLogin by itself
 
 
     def successLogin(self,nick,status,room):

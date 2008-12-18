@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Modules
-import json, time
+import json, time, sys
 
 # Modules for twisted
 from twisted.internet import reactor, protocol, task, ssl
@@ -19,8 +19,12 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def __init__(self,controller):
         """Takes one argument: the instance of the controller Class."""
         self.controller=controller
-        self.encoder=lambda x: json.JSONEncoder().encode(x)
-        self.decoder=lambda y: json.JSONDecoder().decode(y)
+        if sys.version.startswith("2.5"):
+            self.encoder=lambda x: json.JsonWriter().write(x)
+            self.decoder=lambda y: json.JsonReader().read(y)
+        else:
+            self.encoder=lambda x: json.JSONEncoder().encode(x)
+            self.decoder=lambda y: json.JSONDecoder().decode(y)
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""

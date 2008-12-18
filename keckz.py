@@ -14,18 +14,18 @@ print opts
 class main():
     def __init__(self):
         self.host = 'kekz.net'
-        self.view = 'cli.View'
+        self.view = 'cli'
         for o,p in opts:
             if o in ['-h','--host']:
                 self.host = p
             #elif o in ['-v','--view']:
-            #    view = p
+            #    self.view = p
             elif o in ['-?','--help']:
                 print 'Usage: keckz [-?][-h <host>][-v <view>]'
                 print '-?, --help: Display this help'
                 print '-h, --host: Host to connect, Default: kekz.net'
                 print '-v, --view: View to use, Default: cli'
-                exit()
+                sys.exit()
 
     def connect(self, host, view="cli"):
         try:
