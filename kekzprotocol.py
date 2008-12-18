@@ -83,7 +83,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def startPing(self):
         """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
-        reactor.callLater(10, lambda: task.LoopingCall(sendPing).start(60))
+        reactor.callLater(10, lambda: task.LoopingCall(self.sendPing).start(60))
 
     def sendPing(self):
         """Sends the ping, this needn't to be called by the controller, just startPing"""
@@ -170,7 +170,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.successNewProfile()
 
     def kekzCode088(self,data):
-        self.controller.receivedPing(self.lastPing-time.time())
+        self.controller.receivedPing(int((time.time()-self.lastPing)*1000))
         self.pingAnswer=False
 
     def kekzCode100(self,data):
