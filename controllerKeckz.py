@@ -91,6 +91,9 @@ class Kekzcontroller():
     def receivedPing(self,deltaPing):
         view.displayMsg(str(deltaPing))
 
+    def pingTimeout(self):
+        self.lostConnection("PingTimeout")
+
     def receivedMsg(self,nick,channel,msg):
         print nick+'@'+channel+':'+msg
 

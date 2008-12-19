@@ -22,16 +22,64 @@ self.protocol.sendPrivMsg(nick,msg)
 
 sollten in den controller implementiert sein:
 
-def gotConnection(self)
-def receivedHandshake(self)
-def receivedRooms(self,rooms)
-def successLogin(self,nick,status,room)
-def successRegister(self)
-def successNewPassword(self)
-def receivedProfile(self,name,ort,homepage,hobbies)
-def successNewProfile(self)
-def receivedPing(self,deltaPing)
-def receivedMsg(self,nick,channel,msg) channel kann auch self.Nickname sein, bei privaten unterhaltungen
-def privMsg(self,nick,msg) eigene nachricht ist angekommen, erst dann darf sie angezeigt werden
-def botMsg(self,nick,msg)
-def Error(message)
+
+gotConnection()
+receivedHandshake()
+receivedRooms(rooms) 				rooms=[{"users":int, "max":int, "name":str},{nextRoom}]
+successLogin(nick,status,room) 			nick=str, status=int, room=str
+successRegister()
+successNewPassword()
+receivedProfile(name,ort,homepage,hobbies,signature)
+successNewProfile()
+receivedPing(deltaPing) 			deltaPing=int in ms
+receivedMsg(nick,channel,msg) 			channel kann auch self.Nickname sein, bei privaten unterhaltungen
+privMsg(nick,msg) 				eigene nachricht ist angekommen, erst dann darf sie angezeigt werden
+botMsg(bot,msg)
+receivedRoomlist(rooms) 			rooms=[[roomname, user, maxuser, roomstate, sysroom],[nextRoom...]]
+receivedUserlist(room,users)			room=str, users=[[username,away=bool,state=str],[nextUser,..]]
+joinUser(room,nick,state,joinmsg)		all str
+quitUser(room,nick,partmsg)			all str
+changedUserdata(room,nick,away,state)		away=bool, everything else str
+meJoin(room,background)				room=str, background=bool
+mePart(room)
+meGo(oldroom,newroom)
+newTopic(room,topic)
+loggedOut()
+receivedInformation(info)
+gotException(msg)
+
+
+
+
+
+Room:
+Roomstatus 	Erklärung
+x 	normal
+o 	OP-Room
+h 	versteckter Raum
+
+Sysroom 	Erklärung
+x 	normaler Systemraum
+t 	temporärer Raum 
+
+User:
+Status	Bedeutung	normale Farbe
+x	normal		schwarz
+s 	special 	grün
+c 	roomop		blau
+o 	chatop		orange
+a 	admin/sysadmin	rot 
+
+Join Msg	Bedeutung
+0 	Betritt den Raum (/join oder /go)
+1 	Betritt den Chat (Login)
+2 	Betritt den Raum durch Invite (/goinvite)
+
+Part Msg 	 Bedeutung
+0 	verlässt den Raum (PART)
+1 	regulärer Logout (900)
+2 	Verbindung verloren
+3 	GHOST-Kick
+4 	Ping Timeout
+5 	Kick
+
