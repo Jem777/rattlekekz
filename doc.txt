@@ -57,6 +57,15 @@ gotException(msg)
 
 
 
+
+Anhang:
+Msgstatus       Erklärung
+0       normale Msg
+1       globale Room-msg
+2       private Msg
+3       eigene private Msg
+4       Msg vom Bot (im aktuellen Raum anzeigen)
+
 Room:
 Roomstatus 	Erklärung
 x 	normal

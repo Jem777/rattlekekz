@@ -94,22 +94,22 @@ class Kekzcontroller():
         self.lostConnection("PingTimeout")
 
     def receivedMsg(self,nick,channel,msg):
-        self.view.printMsg(nick, msg, channel)
+        self.view.printMsg(nick,msg,channel,0)
+
+    def receivedRoomMsg(self,channel,msg):
+        self.view.printMsg("",msg,channel,1)
 
     def privMsg(self,nick,msg):
-        pass
+        self.view.printMsg(nick,msg,"",2)
 
+    def ownprivMsg(self,nick,msg):
+        self.view.printMsg(nick,msg,channel,3)
+        
     def botMsg(self,nick,msg):
-        pass
+        self.view.printMsg(nick,msg,"",4)
 
     def gotException(self, message):
         pass
-
-    def unknownMethod(self,name):
-        pass
-
-    def __getattr__(self, name):
-        return self.unknownMethod(name)
 
     def receivedUserlist(self,room,users):
         pass
@@ -140,3 +140,9 @@ class Kekzcontroller():
 
     def receivedInformation(self,info):
         pass
+
+    def unknownMethod(self,name):
+        pass
+
+    def __getattr__(self, name):
+        return self.unknownMethod(name)

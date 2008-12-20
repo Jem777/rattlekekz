@@ -199,13 +199,13 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         foo=data.split(" ")
         nick=foo[0]
         msg=" ".join(foo[1:])
-        self.controller.receivedMsg(nick,self.Nickname,msg)
+        self.controller.privMsg(nick,msg)
 
     def kekzCode103(self,data):
         foo=data.split(" ")
         nick=foo[0]
         msg=" ".join(foo[1:])
-        self.controller.privMsg(nick,msg)
+        self.controller.ownprivMsg(nick,msg)
 
     def kekzCode109(self,data):
         foo=data.split(" ")
