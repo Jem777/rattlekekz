@@ -19,6 +19,8 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def __init__(self,controller):
         """Takes one argument: the instance of the controller Class."""
         self.controller=controller
+        # this should be checked properly, with a numerical version number comparisation, or something like that.
+        # check how to check and compare version numbers in python.
         if sys.version.startswith("2.5"):
             self.encoder=lambda x: json.JsonWriter().write(x)
             self.decoder=lambda y: json.JsonReader().read(y)
