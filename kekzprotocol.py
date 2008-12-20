@@ -266,7 +266,8 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def kekzCode225(self,data):
         foo=data.split(" ")
-        self.controller.newTopic(foo[0],foo[1])
+        topic=" ".join(foo[1:])
+        self.controller.newTopic(foo[0],topic)
 
     def kekzCode226(self,data):
         self.controller.newTopic(data,"")
@@ -277,6 +278,15 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def kekzCode300(self,data):
         self.controller.receivedInformation(data)
     
+    def kekzCode310(self,data):
+        foo=data.split(" ")
+        cpmsg=" ".join(foo[1:])
+        user=foo[0]
+        self.controller.receivedCPMsg(user,cpmsg)
+
+    def kekzCode311(self,data):
+        pass
+
     def kekzCode901(self,data):
         self.controller.gotException(data)
 
