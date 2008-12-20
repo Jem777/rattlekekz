@@ -185,7 +185,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         channel=foo[0]
         msg=" ".join(foo[1:])
         if not msg: return
-        self.controller.receivedMsg(channel,msg)
+        self.controller.receivedRoomMsg(channel,msg)
 
     def kekzCode102(self,data):
         foo=data.split(" ")
