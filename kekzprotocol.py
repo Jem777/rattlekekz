@@ -118,6 +118,12 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def sendJoin(self,room):
         self.sendLine("223 "+room)
 
+    def sendCPMsg(self,user,msg):
+        self.sendLine("310 "+user+" "+msg)
+
+    def sendCPAnswer(self,user,msg):
+        self.sendLine("311 "+user+" "+msg)
+
     def quitConnection(self):
         """ends the connection, usually getRooms is called afterwards"""
         self.sendLine("900")
@@ -285,7 +291,10 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.receivedCPMsg(user,cpmsg)
 
     def kekzCode311(self,data):
-        pass
+        foo=data.split(" ")
+        cpanswer=" ".join(foo[1:])
+        user=foo[0]
+        self.controller.receivedCPAnswer(user,cpanswer)
 
     def kekzCode901(self,data):
         self.controller.gotException(data)

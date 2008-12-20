@@ -18,7 +18,9 @@ self.protocol.sendPing()
 self.protocol.sendMsg(channel,msg)
 self.protocol.sendSlashCommand(command,channel,msg) wenn eine msg mit / anfängt, wird sie automatisch hiermit bearbeitet
 self.protocol.sendPrivMsg(nick,msg)
-
+sendCPMsg(user,msg)
+sendCPAnswer(user,msg)
+quitConnection()
 
 sollten in den controller implementiert sein:
 
@@ -47,6 +49,8 @@ meGo(oldroom,newroom)
 newTopic(room,topic)
 loggedOut()
 receivedInformation(info)
+receivedCPMsg(user,cpmsg)
+receivedCPAnswer(user,cpanswer)
 gotException(msg)
 
 
