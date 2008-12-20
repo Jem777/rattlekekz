@@ -180,6 +180,13 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         if not msg: return
         self.controller.receivedMsg(nick,channel,msg)
 
+    def kekzCode101(self,data):
+        foo=data.split(" ")
+        channel=foo[0]
+        msg=" ".join(foo[1:])
+        if not msg: return
+        self.controller.receivedMsg(channel,msg)
+
     def kekzCode102(self,data):
         foo=data.split(" ")
         nick=foo[0]

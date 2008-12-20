@@ -33,6 +33,7 @@ receivedProfile(name,ort,homepage,hobbies,signature)
 successNewProfile()
 receivedPing(deltaPing) 			deltaPing=int in ms
 receivedMsg(nick,channel,msg) 			channel kann auch self.Nickname sein, bei privaten unterhaltungen
+receivedRoomMsg(channel,msg)			globale nachrichten im channel zB bei /me
 privMsg(nick,msg) 				eigene nachricht ist angekommen, erst dann darf sie angezeigt werden
 botMsg(bot,msg)
 receivedRoomlist(rooms) 			rooms=[[roomname, user, maxuser, roomstate, sysroom],[nextRoom...]]
