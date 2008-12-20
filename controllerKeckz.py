@@ -11,7 +11,6 @@ class Kekzcontroller():
         self.model = kekzprotocol.KekzClient(self)
         self.view = interface(self)
         self.readConfigfile()
-        #self.view = test.view(self)
 
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
@@ -108,8 +107,8 @@ class Kekzcontroller():
     def gotException(self, message):
         print message
 
-    def unknownMethod(self):
-        print "Shit happens: The Controller wasn't able to respond to a call from the server"
+    def unknownMethod(self,name):
+        print "Shit happens: The Controller wasn't able to respond to a call from the server, name: "+str(name)
 
     def __getattr__(self, name):
-        return self.unknownMethod
+        return self.unknownMethod(name)
