@@ -27,7 +27,7 @@ class Kekzcontroller():
         array=dotkeckz.readlines()
         self.configfile={}
         for i in array:
-            if i.isspace() == False or i.startswith("#")==False or i.find("=")==-1:
+            if not (i.isspace() or i.startswith("#")) or (i.find("=")!=-1):
                 a=i.split("=")
                 a=a[:2]
                 self.configfile.update({a[0].strip():a[1].strip()})
