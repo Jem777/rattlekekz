@@ -33,7 +33,7 @@ class View:
     def receivedPreLoginData(self,rooms,array):
         pass
 
-    def printMsg(nick, msg, channel="current"):
-        channel.addstr(line,0,nick+': '+msg)
-        channel.refresh(line-y-3,0,2,0,y-3,x-19)
-        line=line+1
+    def printMsg(self, nick, msg, channel):
+        self.current.addstr(self.line,0,nick+': '+msg)
+        self.current.refresh(self.line-self.y-3,0,2,0,self.y-3,self.x-19)
+        self.line=self.line+1

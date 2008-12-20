@@ -112,3 +112,33 @@ class Kekzcontroller():
 
     def __getattr__(self, name):
         return self.unknownMethod(name)
+
+    def receivedUserlist(self,room,users):
+        pass
+
+    def joinUser(self,room,nick,state,joinmsg):
+        pass
+
+    def quitUser(self,room,nick,partmsg):
+        pass
+
+    def changedUserdata(self,room,nick,away,state):
+        pass
+
+    def meJoin(self,room,background):
+        pass
+
+    def mePart(self,room):
+        pass
+
+    def meGo(self,oldroom,newroom):
+        pass
+
+    def newTopic(self,room,topic):
+        pass
+
+    def loggedOut(self):
+        pass
+
+    def receivedInformation(self,info):
+        pass
