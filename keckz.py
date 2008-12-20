@@ -45,4 +45,3 @@ class main():
 
 f = main()
 f.connect(f.host, f.view)
-print host

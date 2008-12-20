@@ -21,13 +21,19 @@ class View:
     
     def buildDisplay(self):
         scrn = curses.initscr()
-        y,x = scrn.getmaxyx()[0],scrn.getmaxyx()[1]
+        y,x,line = scrn.getmaxyx()[0],scrn.getmaxyx()[1],0
         scrn.vline(1,x-18,0,y-3)
-        chat = curses.newpad(200,x-16)
+        current = curses.newpad(200,x-16)
         userlist = curses.newpad(50,16)
         textparent = curses.newwin(1,x,y-2,0)
         input = textpad.Textbox(textparent)
         scrn.refresh()
+        textparent.refresh()
 
     def receivedPreLoginData(self,rooms,array):
         pass
+
+    def printMsg(nick, msg, channel="current"):
+        channel.addstr(line,0,nick+': '+msg)
+        channel.refresh(line-y-3,0,2,0,y-3,x-19)
+        line=line+1

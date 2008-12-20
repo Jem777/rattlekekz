@@ -10,13 +10,15 @@ class Kekzcontroller():
     def __init__(self, interface):
         self.model = kekzprotocol.KekzClient(self)
         self.view = interface(self)
+        self.readConfigfile()
         #self.view = test.view(self)
 
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
 
     def readConfigfile(self):
-        filepath=os.environ["HOME"]+os.sep+".kekznet.conf"
+        #filepath=os.environ["HOME"]+os.sep+".kekznet.conf"
+        filepath=os.environ["HOME"]+os.sep+"debug.conf"
         if os.path.exists(filepath) == False:
             dotkeckz=open(filepath, "w")
             dotkeckz.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
@@ -89,7 +91,7 @@ class Kekzcontroller():
         pass
 
     def receivedPing(self,deltaPing):
-        view.displayMsg(str(deltaPing))
+        pass
 
     def pingTimeout(self):
         self.lostConnection("PingTimeout")
