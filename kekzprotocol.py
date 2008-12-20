@@ -145,7 +145,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.startPing()
 
     def kekzCode010(self,data):
-        """Creats an array of rooms received """
+        """Creates an array of rooms received """
         rooms=self.decoder(data)
         self.controller.receivedRooms(rooms)
     
