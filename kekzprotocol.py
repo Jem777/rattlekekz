@@ -210,7 +210,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         rawuser=" ".join(foo[1:])
         rawuser=self.decoder(rawuser)
         users=[]
-        for i in len(rawuser):
+        for i in range(len(rawuser)):
             username=rawuser[i]["name"]
             if rawuser[i].has_key("away") and rawuser[i]["away"]=="z":
                 away=True
