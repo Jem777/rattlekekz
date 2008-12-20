@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import curses
+from curses import textpad
 from hashlib import sha1 #the hash may be moved to controller
 
     #clientident="" #"Ze$8hAbeVe0y" das muss später alles weg
@@ -21,8 +22,12 @@ class View:
     def buildDisplay(self):
         scrn = curses.initscr()
         y,x = scrn.getmaxyx()[0],scrn.getmaxyx()[1]
-        curses.newwin(3,x,0,0).box()
-        curses.newwin(y-6,18,2,y-18).box()
-        curses.newwin(3,x,y-3,0).box()
-        curses.newwin(y-4,x-17,2,0)
+        scrn.vline(1,x-18,0,y-3)
+        chat = curses.newpad(200,x-16)
+        userlist = curses.newpad(50,16)
+        textparent = curses.newwin(1,x,y-2,0)
+        input = textpad.Textbox(textparent)
         scrn.refresh()
+
+    def receivedPreLoginData(self,rooms,array):
+        pass
