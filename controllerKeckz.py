@@ -38,23 +38,21 @@ class Kekzcontroller():
 
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
-        print 'connection ready'
         self.model.sendHandshake(self.view.fubar())
 
     def startedConnection(self):
         """indicates that the model is connecting. Here should be a call to the view later on"""
-        print 'connecting ...'
+        pass
 
     def lostConnection(self, reason):
         """the connection was clean closed down. Here should be a call to the view later on"""
-        print 'Verbindung beendet:'+str(reason)
+        pass
 
     def failConnection(self, reason):
         """the try to connect failed. Here should be a call to the view later on"""
-        print 'Verbindungsversuch fehlgeschlagen:'+str(reason)
+        pass
 
     def receivedHandshake(self):
-        print 'Handshake succeed'
         pythonversion=sys.version.split(" ")
         self.model.sendDebugInfo(self.view.name, self.view.version, sys.platform, "Python "+pythonversion[0])
         self.model.getRooms()
@@ -96,19 +94,19 @@ class Kekzcontroller():
         self.lostConnection("PingTimeout")
 
     def receivedMsg(self,nick,channel,msg):
-        print nick+'@'+channel+':'+msg
+        self.view.printMsg(nick, msg, channel)
 
     def privMsg(self,nick,msg):
-        print nick+'(privat):'+msg
+        pass
 
     def botMsg(self,nick,msg):
-        print nick+':'+msg
+        pass
 
     def gotException(self, message):
-        print message
+        pass
 
     def unknownMethod(self,name):
-        print "Shit happens: The Controller wasn't able to respond to a call from the server, name: "+str(name)
+        pass
 
     def __getattr__(self, name):
         return self.unknownMethod(name)
