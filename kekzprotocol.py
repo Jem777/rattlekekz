@@ -60,7 +60,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def getRooms(self):
         """Request the List of Rooms for Login. You will receive a receivedRooms()"""
-        self.sendLine('010')
+        reactor.callLater(1, lambda: self.sendLine('010'))
 
     def sendLogin(self,nick,passhash,room):
         """Logs on to the Kekz.net server and joins room "room" """
@@ -108,7 +108,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         if msg.isspace(): pass
         if command=="/exit": pass #self.exit()
         elif command=="/sendm": pass
-        elif command=="/msg" or "/p": self.sendPrivMsg(channel,msg)
+        elif command=="/msg" or command=="/p": self.sendPrivMsg(channel,msg)
         else: self.sendLine("101 %s %s %s" % (channel,command,msg))
 
     def sendPrivMsg(self,nick,msg):
