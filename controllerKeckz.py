@@ -112,7 +112,7 @@ class Kekzcontroller():
         pass
 
     def receivedUserlist(self,room,users):
-        pass
+        self.view.listUser(room,users)
 
     def joinUser(self,room,nick,state,joinmsg):
         pass

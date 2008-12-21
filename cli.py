@@ -21,12 +21,13 @@ class View:
     
     def buildDisplay(self):
         self.scrn = curses.initscr()
-        self.y,self.x,self.line = self.scrn.getmaxyx()[0],self.scrn.getmaxyx()[1],0
-        x,y = self.x,self.y
-        self.scrn.vline(1,x-18,0,y-3)
-        self.current = curses.newpad(200,x-16)
+        curses.start_color()
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE)
+        self.y,self.x,self.cline,self.uline = self.scrn.getmaxyx()[0],self.scrn.getmaxyx()[1],0,0
+        self.scrn.vline(1,self.x-18,0,self.y-3)
+        self.current = curses.newpad(200,self.x-18)
         self.userlist = curses.newpad(50,16)
-        self.textparent = curses.newwin(1,x,y-2,0)
+        self.textparent = curses.newwin(1,self.x,self.y-2,0)
         self.textinput = textpad.Textbox(self.textparent)
         self.scrn.refresh()
         self.textparent.refresh()
@@ -34,8 +35,13 @@ class View:
     def receivedPreLoginData(self,rooms,array):
         pass
 
-    def printMsg(self, nick, msg, channel):
-        y,x = self.y,self.x
-        self.current.addstr(self.line,0,nick+': '+msg)
-        self.current.refresh(self.line-y-3,0,2,0,y-3,x-19)
-        self.line=self.line+1
+    def listUser(self,room,users):
+        for i in users:
+            self.userlist.addstr(self.uline,0,i[0],curses.color_pair(1))
+            self.uline = self.uline+1
+        self.userlist.refresh(self.uline-self.y-3,0,1,self.x-17,self.y-3,self.x-1)
+
+    def printMsg(self,nick,msg,channel,status):
+        self.current.addstr(self.cline,0,nick+': '+msg)
+        self.current.refresh(self.cline-self.y-3,0,1,0,self.y-3,self.x-19)
+        self.cline=self.cline+1
