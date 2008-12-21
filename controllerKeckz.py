@@ -36,6 +36,14 @@ class Kekzcontroller():
             self.configfile={}
 
 
+    """following methods transport data from the View to the model"""
+    def sendLogin(self, nick, pwhash, rooms):
+        self.model.sendLogin(nick.encode("utf_8"), pwhash.encode("utf_8"), rooms.encode("utf_8"))
+
+    def sendMsg(self, channel, msg):
+        self.model.sendMsg(channel.encode("utf_8"),msg.encode("utf_8"))
+
+
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
         self.model.sendHandshake(self.view.fubar())
@@ -94,19 +102,19 @@ class Kekzcontroller():
         self.lostConnection("PingTimeout")
 
     def receivedMsg(self,nick,channel,msg):
-        self.view.printMsg(nick,msg,channel,0)
+        self.view.printMsg(nick.decode("utf_8"),msg.decode("utf_8"),channel.decode("utf_8"),0)
 
     def receivedRoomMsg(self,channel,msg):
-        self.view.printMsg("",msg,channel,1)
+        self.view.printMsg("",msg.decode("utf_8"),channel.decode("utf_8"),1)
 
     def privMsg(self,nick,msg):
-        self.view.printMsg(nick,msg,"",2)
+        self.view.printMsg(nick.decode("utf_8"),msg.decode("utf_8"),"",2)
 
     def ownprivMsg(self,nick,msg):
-        self.view.printMsg(nick,msg,channel,3)
+        self.view.printMsg(nick.decode("utf_8"),msg.decode("utf_8"),channel.decode("utf_8"),3)
         
     def botMsg(self,nick,msg):
-        self.view.printMsg(nick,msg,"",4)
+        self.view.printMsg(nick.decode("utf_8"),msg.decode("utf_8"),"",4)
 
     def gotException(self, message):
         pass

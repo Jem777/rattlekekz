@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import controllerKeckz, sys, getopt
+import sys, getopt
 
 letters = 'H:v:?hl'
 keywords = ['host=','view=','help','localhost']
@@ -34,6 +34,7 @@ class main():
             print "No View found"
             sys.exit()
         if str(type(View))=="""<type 'classobj'>""": #TODO: We'll have to have a check whether foo.View exists
+            import controllerKeckz
             controllerKeckz.Kekzcontroller(View).startConnection(host,23002)
         else:
             print 'not implemented yet'
