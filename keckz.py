@@ -3,31 +3,31 @@
 
 import controllerKeckz, sys, getopt
 
-letters = 'h:v:?'
-keywords = ['host=','view=','help']
+letters = 'H:v:?hl'
+keywords = ['host=','view=','help','localhost']
 opts, extraparams = getopt.getopt(sys.argv[1:],letters,keywords)
 
-
-
-print opts
 
 class main():
     def __init__(self):
         self.host = 'kekz.net'
         self.view = 'cli'
         for o,p in opts:
-            if o in ['-h','--host']:
+            if o in ['-H','--host']:
                 self.host = p
-            #elif o in ['-v','--view']:
-            #    self.view = p
-            elif o in ['-?','--help']:
-                print 'Usage: keckz [-?][-h <host>][-v <view>]'
-                print '-?, --help: Display this help'
-                print '-h, --host: Host to connect, Default: kekz.net'
+            elif o in ['-v','--view']:
+                self.view = p
+            elif o in ['-l','--localhost']:
+                self.host = '127.0.0.1'
+            elif o in ['-?','-h','--help']:
+                print 'Usage: keckz [-h, -?, --help][-H, --host <host>][-v, --view <view>]'
+                print '-?, -h, --help: Display this help'
+                print '-H, --host: Host to connect, Default: kekz.net'
+                print '-l, --localhost: Connects to localhost (127.0.0.1)'
                 print '-v, --view: View to use, Default: cli'
                 sys.exit()
 
-    def connect(self, host, view="cli"):
+    def startKeckz(self, host, view="cli"):
         try:
             exec("from "+view+" import *")
         except:
@@ -39,9 +39,5 @@ class main():
             print 'not implemented yet'
             sys.exit()
 
-#controllerKeckz.Kekzcontroller().startConnection('kekz.net',23002)
-#controllerKeckz.Kekzcontroller().startConnection('pitix.ath.cx',23002)
-#controllerKeckz.Kekzcontroller().startConnection('127.0.0.1',23002)
-
 f = main()
-f.connect(f.host, f.view)
+f.startKeckz(f.host, f.view)
