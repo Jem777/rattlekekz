@@ -41,8 +41,12 @@ class Kekzcontroller():
         self.model.sendLogin(nick.encode("utf_8"), pwhash.encode("utf_8"), rooms.encode("utf_8"))
 
     def sendMsg(self, channel, msg):
-        self.model.sendMsg(channel.encode("utf_8"),msg.encode("utf_8"))
-
+        channel=channel.encode("utf_8")
+        msg=msg.encode("utf_8")
+        if channel.startswith("#"):
+            self.model.sendPrivMsg(channel[1:],msg)
+        else: 
+            self.model.sendMsg(channel,msg)
 
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
