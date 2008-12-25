@@ -30,6 +30,7 @@ class View:
         curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE)
         self.y,self.x,self.cline,self.uline = self.scrn.getmaxyx()[0],self.scrn.getmaxyx()[1],0,0
         self.scrn.vline(1,self.x-18,0,self.y-3)
+        self.scrn.hline(self.y-3,0,0,self.x)
         self.current = curses.newpad(200,self.x-18)
         self.userlist = curses.newpad(50,16)
         self.scrn.refresh()
@@ -41,13 +42,13 @@ class View:
         for i in users:
             self.userlist.addstr(self.uline,0,i[0],curses.color_pair(1))
             self.uline = self.uline+1
-        self.userlist.refresh(self.uline-self.y-3,0,1,self.x-17,self.y-3,self.x-1)
+        self.userlist.refresh(self.uline-self.y-4,0,1,self.x-17,self.y-4,self.x-1)
 
     def printMsg(self,nick,msg,channel,status):
         string = nick+': '+msg
         self.current.addstr(self.cline,0,string.encode(self.code))
-        self.current.refresh(self.cline-self.y-3,0,1,0,self.y-3,self.x-19)
-        self.cline=self.cline+1
+        self.current.refresh(self.cline-self.y-4,0,1,0,self.y-4,self.x-19)
+        self.cline=self.cline+1+(len(string)/(self.x-18))
 
 class Input:
     def __init__(self,controller,y,x):
