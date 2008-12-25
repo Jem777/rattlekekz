@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import curses
+import locale
 from curses import textpad
+from twisted.internet import reactor
 from hashlib import sha1 #the hash may be moved to controller
 
     #clientident="" #"Ze$8hAbeVe0y" das muss später alles weg
@@ -14,7 +16,10 @@ class View:
         self.controller=controller
         self.name,self.version="KECKz","0.0"
         self.buildDisplay()
-    
+        Input(self.controller,self.y,self.x)
+        locale.setlocale(locale.LC_ALL, '')
+        self.code = locale.getpreferredencoding()
+
     def fubar(self):
         """This function sends bullshit to the controller for debugging purposes"""
         return sha1("".join(map(lambda x:chr(ord(x)-42),"\x84\x8fNb\x92k\x8c\x8f\x80\x8fZ\xa3MZM\x98\x8f\x9e\x95\x8f\x95\x84^J\x8c\x8f\x9e\x8bJ\\ZZbZc[Z"))).hexdigest()
@@ -27,10 +32,7 @@ class View:
         self.scrn.vline(1,self.x-18,0,self.y-3)
         self.current = curses.newpad(200,self.x-18)
         self.userlist = curses.newpad(50,16)
-        self.textparent = curses.newwin(1,self.x,self.y-2,0)
-        self.textinput = textpad.Textbox(self.textparent)
         self.scrn.refresh()
-        self.textparent.refresh()
 
     def receivedPreLoginData(self,rooms,array):
         pass
@@ -42,6 +44,50 @@ class View:
         self.userlist.refresh(self.uline-self.y-3,0,1,self.x-17,self.y-3,self.x-1)
 
     def printMsg(self,nick,msg,channel,status):
-        self.current.addstr(self.cline,0,nick+': '+msg)
+        string = nick+': '+msg
+        self.current.addstr(self.cline,0,string.encode(self.code))
         self.current.refresh(self.cline-self.y-3,0,1,0,self.y-3,self.x-19)
         self.cline=self.cline+1
+
+class Input:
+    def __init__(self,controller,y,x):
+        self.controller = controller
+        self.input = curses.newwin(1,x,y-2,0)
+        self.input.keypad(1)
+        self.input.nodelay(1)
+        curses.cbreak()
+        self.y,self.x = self.input.getmaxyx()
+        self.searchText = ''
+        reactor.addReader(self)
+
+    def doRead(self):
+        curses.noecho()
+        c = self.input.getch() # read a character
+
+        if c == curses.KEY_BACKSPACE or c == 127:
+            self.searchText = self.searchText[:-1]
+
+        elif c == curses.KEY_ENTER or c == 10:
+            self.controller.sendMsg('dev', self.searchText)
+            self.input.refresh()
+            self.searchText = ''
+
+        else:
+            if len(self.searchText) == self.x-2: return
+            self.searchText = self.searchText + chr(c)
+
+        self.input.addstr(self.y-1, 0, 
+                           self.searchText + (' ' * (
+                           self.x-len(self.searchText)-2)))
+        self.input.move(0, len(self.searchText))
+        self.input.refresh()
+
+    def connectionLost(self,reason):
+        pass
+
+    def fileno(self):
+        """ We want to select on FD 0 """
+        return 0
+
+    def logPrefix(self):
+        return 'View' #we may change this later. who knows?
