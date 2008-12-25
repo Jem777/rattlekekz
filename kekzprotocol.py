@@ -100,11 +100,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         """Send a message to a channel"""
         if msg.isspace(): pass
         else:
-            if msg.startswith("/"):
-                liste=msg.split(" ")
-                self.sendSlashCommand(liste[0],channel," ".join(liste[1:]))
-            else: 
-                self.sendLine("100 %s %s" % (channel,msg))
+            self.sendLine("100 %s %s" % (channel,msg))
 
     def sendSlashCommand(self,command,channel,msg):
         """Msg starting with a Slash / """

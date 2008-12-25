@@ -77,9 +77,10 @@ class Input:
             if len(self.searchText) == self.x-2: return
             self.searchText = self.searchText + chr(c)
 
-        self.input.addstr(self.y-1, 0, 
-                           self.searchText + (' ' * (
-                           self.x-len(self.searchText)-2)))
+        try:
+            self.input.addstr(self.y-1, 0, self.searchText + (' ' * (self.x-len(self.searchText)-2)))
+        except:
+            pass
         self.input.move(0, len(self.searchText))
         self.input.refresh()
 
