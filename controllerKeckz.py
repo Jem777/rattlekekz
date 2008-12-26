@@ -99,16 +99,16 @@ class Kekzcontroller():
         self.view.successLogin(nick,status,room)
 
     def successRegister(self):
-        pass
+        self.view.successRegister()
 
     def successNewPassword(self):
-        pass
+        self.view.successNewPassword()
 
     def receivedProfil(self,name,ort,homepage,hobbies):
-        pass
+        self.view.receivedProfil(name,ort,homepage,hobbies)
 
     def successNewProfile(self):
-        pass
+        self.view.successNewProfile()
 
     def securityCheck(self, infotext):
         self.view.securityCheck(infotext)
@@ -179,13 +179,13 @@ class Kekzcontroller():
         self.view.meGo(oldroom,newroom)
 
     def newTopic(self,room,topic):
-        pass
+        self.view.newTopic(room,topic)
 
     def loggedOut(self):
-        pass
+        self.view.loggedOut()
 
     def receivedInformation(self,info):
-        pass
+        self.view.receivedInformation(info)
 
     def unknownMethod(self,name):
         pass

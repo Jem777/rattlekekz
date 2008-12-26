@@ -79,15 +79,6 @@ class View:
             self.uline = self.uline+1
         self.userlist.refresh(self.uline-self.y-4,0,1,self.x-17,self.y-4,self.x-1)
 
-    def meJoin(self,room,background):
-        pass
-
-    def mePart(self,room):
-        pass
-
-    def meGo(self,oldroom,newroom):
-        pass
-
     def newTopic(self,room,topic):
         pass
 
