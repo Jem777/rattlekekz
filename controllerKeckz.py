@@ -12,6 +12,9 @@ class Kekzcontroller():
         self.model = kekzprotocol.KekzClient(self)
         self.view = interface(self)
         self.readConfigfile()
+        
+        self.joinInfo=["Join","Login","Invite"]
+        self.partInfo=["Part","Logout","Lost Connection","GHOST-Kick","Ping Timeout","Kick"]
 
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
@@ -111,7 +114,7 @@ class Kekzcontroller():
         self.view.securityCheck(infotext)
 
     def receivedPing(self,deltaPing):
-        pass
+        self.view.receivedPing(deltaPing)
 
     def pingTimeout(self):
         self.lostConnection("PingTimeout")
@@ -140,16 +143,21 @@ class Kekzcontroller():
 
     def joinUser(self,room,nick,state,joinmsg):
         self.Userlist[room].append([nick,False,state])
-        self.Userlist[room].sort()
+        self.Userlist[room].sort() #TODO write non case-sensitive sort-algorithm
+        for i in self.Userlist[room]:
+            if i[0].startswith("~"):
+                index=self.Userlist[room].index(i)
+                self.Userlist[room].insert(0,i)
+                del self.Userlist[room][index+1] 
         self.view.listUser(room,self.Userlist[room])
-        self.view.printMsg("",nick+" betritt den Raum ("+joinmsg+")",room,5)
+        self.view.printMsg("",nick+" betritt den Raum ("+self.joinInfo[int(joinmsg)]+")",room,5)
 
     def quitUser(self,room,nick,partmsg):
         for i in self.Userlist[room]:
             if i[0]==nick:
                 self.Userlist[room].remove(i)
         self.view.listUser(room,self.Userlist[room])
-        self.view.printMsg("",nick+" hat den Raum verlassen ("+partmsg+")",room,5)
+        self.view.printMsg("",nick+" hat den Raum verlassen ("+self.partInfo[int(partmsg)]+")",room,5)
 
     def changedUserdata(self,room,nick,away,state):
         for i in self.Userlist[room]:
