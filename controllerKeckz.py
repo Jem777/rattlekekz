@@ -57,7 +57,7 @@ class Kekzcontroller():
 
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
-        self.model.sendHandshake(self.view.fubar())
+        self.model.sendHandshake(sha1(self.view.fubar()).hexdigest())
 
     def startedConnection(self):
         """indicates that the model is connecting. Here should be a call to the view later on"""
@@ -92,7 +92,8 @@ class Kekzcontroller():
 
 
     def successLogin(self,nick,status,room):
-        pass
+        self.Userlist={room:[]}
+        self.view.successLogin(nick,status,room)
 
     def successRegister(self):
         pass
@@ -115,44 +116,59 @@ class Kekzcontroller():
     def pingTimeout(self):
         self.lostConnection("PingTimeout")
 
-    def receivedMsg(self,nick,channel,msg):
-        self.view.printMsg(nick,msg,channel,0)
+    def receivedMsg(self,nick,room,msg):
+        self.view.printMsg(nick,msg,room,0)
 
-    def receivedRoomMsg(self,channel,msg):
-        self.view.printMsg("",msg,channel,1)
+    def receivedRoomMsg(self,room,msg):
+        self.view.printMsg("",msg,room,1)
 
     def privMsg(self,nick,msg):
         self.view.printMsg(nick,msg,"",2)
 
     def ownprivMsg(self,nick,msg):
-        self.view.printMsg(nick,msg,channel,3)
+        self.view.printMsg(nick,msg,"",3)
         
     def botMsg(self,nick,msg):
         self.view.printMsg(nick,msg,"",4)
 
     def gotException(self, message):
-        pass
+        self.view.gotException(message)
 
-    def receivedUserlist(self,room,users): # this will be changed soon
+    def receivedUserlist(self,room,users):
+        self.Userlist[room]=users
         self.view.listUser(room,users)
 
     def joinUser(self,room,nick,state,joinmsg):
-        pass
+        self.Userlist[room].append([nick,False,state])
+        self.Userlist[room].sort()
+        self.view.listUser(room,self.Userlist[room])
+        self.view.printMsg("",nick+" betritt den Raum ("+joinmsg+")",room,5)
 
     def quitUser(self,room,nick,partmsg):
-        pass
+        for i in self.Userlist[room]:
+            if i[0]==nick:
+                self.Userlist[room].remove(i)
+        self.view.listUser(room,self.Userlist[room])
+        self.view.printMsg("",nick+" hat den Raum verlassen ("+partmsg+")",room,5)
 
     def changedUserdata(self,room,nick,away,state):
-        pass
+        for i in self.Userlist[room]:
+            if i[0]==nick:
+                i[1],i[2]=away,state
+        self.view.listUser(room,self.Userlist[room])
 
     def meJoin(self,room,background):
-        pass
+        self.Userlist.update({room:[]})
+        self.view.meJoin(room,background)
 
     def mePart(self,room):
-        pass
+        del self.Userlist[room]
+        self.view.mePart(room)
 
     def meGo(self,oldroom,newroom):
-        pass
+        del self.Userlist[oldroom]
+        self.Userlist.update({newroom:[]})
+        self.view.meGo(oldroom,newroom)
 
     def newTopic(self,room,topic):
         pass

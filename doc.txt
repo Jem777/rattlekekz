@@ -67,6 +67,7 @@ Msgstatus       Erklärung
 2       private Msg
 3       eigene private Msg
 4       Msg vom Bot (im aktuellen Raum anzeigen)
+5       quit,part,etc Msg
 
 Room:
 Roomstatus 	Erklärung
