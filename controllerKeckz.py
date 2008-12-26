@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import kekzprotocol, os, sys
+from hashlib import sha1, md5
 
 # Line for tester / test:
 # 020 tester#68358d5d9cbbf39fe571ba41f26524b6#dev
@@ -37,8 +38,13 @@ class Kekzcontroller():
 
 
     """following methods transport data from the View to the model"""
-    def sendLogin(self, nick, pwhash, rooms):
-        self.model.sendLogin(nick, pwhash, rooms)
+    def sendLogin(self, nick, passwd, rooms):
+        self.model.sendLogin(nick, sha1(passwd).hexdigest(), rooms)
+
+    def sendIdentify(self,passwd):
+        sha1_hash=sha1(passwd).hexdigest()
+        md5_hash= md5.new(sha1_hash).hexdigest()
+        self.model.sendIdentify(md5_hash)
 
     def sendMsg(self, channel, msg):
         if channel.startswith("#"):
@@ -100,6 +106,9 @@ class Kekzcontroller():
     def successNewProfile(self):
         pass
 
+    def securityCheck(self, infotext):
+        self.view.securityCheck(infotext)
+
     def receivedPing(self,deltaPing):
         pass
 
@@ -124,7 +133,7 @@ class Kekzcontroller():
     def gotException(self, message):
         pass
 
-    def receivedUserlist(self,room,users):
+    def receivedUserlist(self,room,users): # this will be changed soon
         self.view.listUser(room,users)
 
     def joinUser(self,room,nick,state,joinmsg):

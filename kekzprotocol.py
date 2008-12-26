@@ -83,6 +83,9 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         Data={"name":name,"ort":ort,"homepage":homepage,"hobbies":hobbies,"freitext":signature,"passwd":passwd}
         self.sendLine("040 "+self.encoder(Data))
 
+    def sendIdentify(self, data):
+        self.sendLine("070 "+data)
+
     def startPing(self):
         """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
         reactor.callLater(10, lambda: task.LoopingCall(self.sendPing).start(60))
@@ -173,6 +176,9 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def kekzCode041(self,data):
         self.controller.successNewProfile()
+
+    def kekzCode070(self,data):
+        self.controller.securityCheck(data)
 
     def kekzCode088(self,data):
         self.controller.receivedPing(int((time.time()-self.lastPing)*1000))

@@ -5,7 +5,6 @@ import curses
 import locale
 from curses import textpad
 from twisted.internet import reactor
-from hashlib import sha1 #the hash may be moved to controller
 
     #clientident="" #"Ze$8hAbeVe0y" das muss später alles weg
     #verInt=""      #"0"
@@ -36,6 +35,9 @@ class View:
         self.scrn.refresh()
 
     def receivedPreLoginData(self,rooms,array):
+        pass
+
+    def securityCheck(self, infotext):
         pass
 
     def listUser(self,room,users):

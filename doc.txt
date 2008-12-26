@@ -5,19 +5,20 @@ für den controller
 
 können gerufen werden (Argumente in klammern)
 
-self.protocol.startConnection(server,port)
-self.protocol.sendHandshake(clientident,verInt,netVer)
-self.protocol.sendDebugInfo(client,ver,os,java)
-self.protocol.getRooms()
-self.protocol.sendLogin(nick,passhash,room)
-self.protocol.registerNick(nick,pwhash,email)
-self.protocol.changePassword(passwd,passwdnew)
-self.protocol.updateProfile(name,ort,homepage,hobbies,passwd)
-self.protocol.startPing()
-self.protocol.sendPing()
-self.protocol.sendMsg(channel,msg)
-self.protocol.sendSlashCommand(command,channel,msg) wenn eine msg mit / anfängt, wird sie automatisch hiermit bearbeitet
-self.protocol.sendPrivMsg(nick,msg)
+startConnection(server,port)
+sendHandshake(clientident,verInt,netVer)
+sendDebugInfo(client,ver,os,java)
+getRooms()
+sendLogin(nick,pwhash,room)
+registerNick(nick,pwhash,email)
+changePassword(pwhash,pwhashnew)
+updateProfile(name,ort,homepage,hobbies,pwhash)
+sendIdentify(pwhash)    			pwhash=md5(sha1(pw))
+startPing()
+sendPing()
+sendMsg(channel,msg)
+sendSlashCommand(command,channel,msg) wenn eine msg mit / anfängt, wird sie automatisch hiermit bearbeitet
+sendPrivMsg(nick,msg)
 sendCPMsg(user,msg)
 sendCPAnswer(user,msg)
 quitConnection()
@@ -33,6 +34,7 @@ successRegister()
 successNewPassword()
 receivedProfile(name,ort,homepage,hobbies,signature)
 successNewProfile()
+securityCheck(infotext) 			
 receivedPing(deltaPing) 			deltaPing=int in ms
 receivedMsg(nick,channel,msg) 			channel kann auch self.Nickname sein, bei privaten unterhaltungen
 receivedRoomMsg(channel,msg)			globale nachrichten im channel zB bei /me
