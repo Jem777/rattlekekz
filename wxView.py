@@ -324,8 +324,8 @@ class View:
         self.lookupRooms[newroom].showPing.Value=self.ping
 
     def newTopic(self,room,topic):
-        self.lookupRooms[room].OutputText.SetValue(self.lookupRooms[room].OutputText.GetValue()+topic+"\n")
-        self.lookupRooms[room].Topic.Value="Topic: "+topic
+        self.lookupRooms[room].OutputText.SetValue(self.lookupRooms[room].OutputText.GetValue()+topic.decode("utf_8")+"\n")
+        self.lookupRooms[room].Topic.Value="Topic: "+topic.decode("utf_8")
 
     def loggedOut(self):
         self.ViewFrame.roomnotebook.DeleteAllPages()
