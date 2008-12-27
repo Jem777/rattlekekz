@@ -61,13 +61,6 @@ gotException(msg)
 
 
 Anhang:
-Msgstatus       Erklärung
-0       normale Msg
-1       globale Room-msg
-2       private Msg
-3       eigene private Msg
-4       Msg vom Bot (im aktuellen Raum anzeigen)
-5       quit,part,etc Msg
 
 Room:
 Roomstatus 	Erklärung
@@ -99,4 +92,152 @@ Part Msg 	 Bedeutung
 3 	GHOST-Kick
 4 	Ping Timeout
 5 	Kick
+
+
+
+
+
+
+------------------
+||    VIEW      ||
+------------------
+
+KECKz ist nach MVC aufgebaut, daher kann man das View relativ einfach durch ein völlig anderes ersetzen.
+Der Controller bearbeitet die vom Model eingehenden Daten soweit, dass sich die Arbeit des Views darauf
+beschränkt, die Daten in das Gui-spezifische Format unzuwandeln und darzustellen. Dies macht es unglaublich
+einfach ein View für KECKz zu schreiben.
+
+Wichtige Voraussetzungen:
+KECKz benutzt twisted als Netzwerkbibliothek, daher ist es erforderlich für Guis, das twisted einen reactor
+für sie bereitstellt, siehe http://twistedmatrix.com/projects/core/documentation/howto/choosing-reactor.html
+bei Textinterfaces ist es unerlässlich, dass der Input nonblocking ist, sonst müsste man ihn in einem thread
+laufen lassen und threads sind moppelkotze. Für die die es trotzdem probieren wollen bietet twisted auch
+threads an, siehe: http://twistedmatrix.com/projects/core/documentation/howto/threading.html
+
+Die Klasse View:
+Wenn man das Programm mit der keckz.py starten will muss die Datei, ich empfehle sie guiView.py (und statt
+gui dann qt, gtk etc einzusetzen) oder so zu nennen, eine Klasse View besitzen. An diese Klasse werden dann
+alle methoden gesendet. Damit man sich am Anfang nicht mit zu vielen fehlenden Methoden herumschlagen muss,
+ist es praktisch so zu beginnen:
+
+
+from twisted.internet import reactor   #jedes View muss sich den reactor selber importieren
+
+class View:
+    def unknownMethod(self,name):
+        print str(name)
+
+    def __getattr__(self, name):       #wird gerufen, wenn eine methode oder attribut nicht gefunden wird
+        return self.unknownMethod(name)
+
+if __name__=="__main__":
+    server="kekz.net"
+    import controllerKeckz
+    controllerKeckz.Kekzcontroller(View).startConnection(server,23002)
+
+das ist natürlich nicht genug, um einen richtiges View zu schreiben, daher kommt jetzt eine Auflistung von
+allen Methoden, die immplementiert werden können und allen Methoden des Controllers, die das View rufen kann:
+
+
+class View:
+    def __init__(self,controller):
+        self.name,self.version="qtKECKz","0.1"
+        self.kekzControl=controller
+
+    def receivedPreLoginData(self,rooms,array):
+        pass
+
+    def successLogin(self,nick,status,room):
+        pass
+
+    def successRegister(self):
+        pass
+
+    def successNewPassword(self):
+        pass
+
+    def receivedProfile(self,name,ort,homepage,hobbies,signature):
+        pass
+
+    def successNewProfile(self):
+        pass
+
+    def securityCheck(self, infotext):
+        pass
+
+    def receivedPing(self,deltaPing):
+        pass
+
+    def printMsg(self,nick,msg,channel,status):
+        pass
+
+    def gotException(self, message):
+        pass
+
+    def listUser(self,room,users):
+        pass
+
+    def meJoin(self,room,background):
+        pass
+
+    def mePart(self,room):
+        pass
+
+    def meGo(self,oldroom,newroom):
+        pass
+
+    def newTopic(self,room,topic):
+        pass
+
+    def loggedOut(self):
+        pass
+
+    def receivedInformation(self,info):
+        pass
+
+    def unknownMethod(self,name):
+        pass
+
+    def __getattr__(self, name):
+        return self.unknownMethod(name)
+
+
+if __name__=="__main__":
+    server="kekz.net"
+    import controllerKeckz
+    controllerKeckz.Kekzcontroller(View).startConnection(server,23002)
+
+
+
+Methoden des Controllers, die vom View aus gerufen werden können:
+!!!das View sendet alle Passwörter im Klartext!!!
+
+sendLogin(nick, passwd, rooms)
+
+registerNick(nick,passwd,email)
+
+changePassword(passwd,passwdnew)
+
+updateProfile(name,ort,homepage,hobbies,signature,passwd)
+#  signature ist der Freitext der im Whois auftaucht
+
+sendIdentify(passwd)
+#  muss als Antwort von securityCheck gesendet werden
+
+sendMsg(channel, msg)
+#  Diese Methode beinhaltet alle Arten von Msg: wenn room mit # anfängt,
+#  ist es eine private Nachricht, mit wenn Msg mit / beginnt ein Slashcommando
+
+sendJoin(room)
+# nur wenn man nicht mit /j joinen will; zB für einen join-Dialog
+
+
+Anhang:
+Msgstatus       Erklärung
+0       normale Msg
+1       globale Room-msg
+2       private Msg
+3       eigene private Msg
+4       Msg vom Bot (im aktuellen Raum anzeigen)
+5       quit,part,etc Msg
 

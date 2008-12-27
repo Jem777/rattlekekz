@@ -127,7 +127,7 @@ class KECKzRegister(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
         else:
-            self.kekzControl.model.registerNick(self.Nickname.Value.encode("utf_8"),self.Password.Value.encode("utf_8"),self.EMailAddress.Value.encode("utf_8"))
+            self.kekzControl.registerNick(self.Nickname.Value.encode("utf_8"),self.Password.Value.encode("utf_8"),self.EMailAddress.Value.encode("utf_8"))
 
     def OnClose(self, event):
         self.GetParent().Show()

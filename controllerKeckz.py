@@ -47,16 +47,9 @@ def decode(string):
             formatlist=formatopts(formatlist,array[i])
         textlist.append("")
 
-    print "Textlist: "+json.write(textlist)
-    print "Formatlist: "+json.write(formatlist)
     if not len(textlist)==len(formatlist):
-        print "Fehler beide Listen sind nicht gleich lang"
-    else:
-        for i in range(len(textlist)):
-            output.update({textlist[i]:formatlist[i]})
-            print "Adding: "+textlist[i]+":"+formatlist[i]
-    print "Output: "+json.write(output)
-    return string
+        raise IndexError
+    return textlist,formatlist
 
 class Kekzcontroller():
     def __init__(self, interface):
@@ -95,6 +88,15 @@ class Kekzcontroller():
     def sendLogin(self, nick, passwd, rooms):
         self.model.sendLogin(nick, sha1(passwd).hexdigest(), rooms)
 
+    def registerNick(self,nick,passwd,email):
+        self.model.registerNick(nick,sha1(passwd).hexdigest(),email)
+
+    def changePassword(self,passwd,passwdnew):
+        self.model.changePassword(sha1(passwd).hexdigest(),sha1(passwdnew).hexdigest())
+        
+    def updateProfile(self,name,ort,homepage,hobbies,signature,passwd):
+        self.model.updateProfile(name,ort,homepage,hobbies,signature,sha1(passwd).hexdigest())
+
     def sendIdentify(self,passwd):
         sha1_hash=sha1(passwd).hexdigest()
         md5_hash= md5.new(sha1_hash).hexdigest()
@@ -108,6 +110,9 @@ class Kekzcontroller():
             self.model.sendSlashCommand(liste[0],channel," ".join(liste[1:]))
         else:     
             self.model.sendMsg(channel,msg)
+
+    def sendJoin(self,room):
+        self.model.sendJoin(room)
 
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
@@ -155,8 +160,8 @@ class Kekzcontroller():
     def successNewPassword(self):
         self.view.successNewPassword()
 
-    def receivedProfil(self,name,ort,homepage,hobbies):
-        self.view.receivedProfil(name,ort,homepage,hobbies)
+    def receivedProfile(self,name,ort,homepage,hobbies,signature):
+        self.view.receivedProfile(name,ort,homepage,hobbies,signature)
 
     def successNewProfile(self):
         self.view.successNewProfile()
@@ -165,7 +170,7 @@ class Kekzcontroller():
         self.view.securityCheck(infotext)
 
     def receivedPing(self,deltaPing):
-        self.view.receivedPing(deltaPing)
+        self.view.receivedPing(str(deltaPing)+" ms")
 
     def pingTimeout(self):
         self.lostConnection("PingTimeout")
