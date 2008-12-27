@@ -194,7 +194,7 @@ class Kekzcontroller():
 
     def joinUser(self,room,nick,state,joinmsg):
         self.Userlist[room].append([nick,False,state])
-        self.Userlist[room].sort() #TODO write non case-sensitive sort-algorithm
+        self.Userlist[room].sort(key=str.lower)
         for i in self.Userlist[room]:
             if i[0].startswith("~"):
                 index=self.Userlist[room].index(i)
