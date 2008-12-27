@@ -189,13 +189,12 @@ class Kekzcontroller():
         self.view.gotException(message)
 
     def receivedUserlist(self,room,users):
-        print users
         self.Userlist[room]=users
         self.view.listUser(room,users)
 
     def joinUser(self,room,nick,state,joinmsg):
         self.Userlist[room].append([nick,False,state])
-        self.Userlist[room].sort()# TODO: find a way to use key-argument to alter the way of sorting. for this the nick have to be a string and no unicode-object
+        self.Userlist[room].sort(key=lambda x: x[0].lower())
         for i in self.Userlist[room]:
             if i[0].startswith("~"):
                 index=self.Userlist[room].index(i)
