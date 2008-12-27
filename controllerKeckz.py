@@ -7,6 +7,57 @@ from hashlib import sha1, md5
 # Line for tester / test:
 # 020 tester#68358d5d9cbbf39fe571ba41f26524b6#dev
 
+def decode(string):
+    array=string.split("%")
+    textlist=[""]
+    formatlist=["normal"]
+    output={}
+    for i in range(len(array)):
+        if i%2==0:
+            print array[i]
+            textlist[-1]=textlist[-1]+array[i]
+            continue
+        elif len(array[i])==0:
+            textlist[-1]=textlist[-1]+"%"
+            continue
+        if array[i].startswith("!"):
+            array[i]="$http://kekz.net/imgstore/"+array[i][1:]
+        if array[i].startswith("$"):
+            textlist.append(array[i][1:])
+            if formatlist[-1]=="normal":
+                formatlist.append("imageurl")
+            else:
+                formatlist.append(formatlist[-1]+",imageurl")
+            formatlist.append(formatlist[-2])
+        if array[i].startswith("i"):
+            continue
+        if array[i].startswith("n"):
+            textlist[-1]=textlist[-1]+"\n"
+            if array[i]=="nu": 
+                textlist[-1]=textlist[-1]+"\t"
+            elif array[i]=="nr":
+                textlist.append("")
+                formatlist.append("hline")
+            continue
+        if array[i].startswith("l"):
+            textlist.append(array[i][1:])
+            formatlist.append("button")
+            formatlist.append(formatlist[-2])
+        if len(array[i])==2:
+            formatlist=formatopts(formatlist,array[i])
+        textlist.append("")
+
+    print "Textlist: "+json.write(textlist)
+    print "Formatlist: "+json.write(formatlist)
+    if not len(textlist)==len(formatlist):
+        print "Fehler beide Listen sind nicht gleich lang"
+    else:
+        for i in range(len(textlist)):
+            output.update({textlist[i]:formatlist[i]})
+            print "Adding: "+textlist[i]+":"+formatlist[i]
+    print "Output: "+json.write(output)
+    return string
+
 class Kekzcontroller():
     def __init__(self, interface):
         self.model = kekzprotocol.KekzClient(self)
