@@ -79,7 +79,7 @@ class View:
 
     def successLogin(self,nick,status,room):
         self.ShownRoom=room
-        self.lookupRooms.update({room:KeckzTabs(room,self)})
+        self.lookupRooms.update({room:KeckzMsgTab(room,self)})
         self.lookupRooms[self.ShownRoom].addLine("Logged successful in as "+nick+"\nJoined room "+room)
 
     def receivedPing(self,deltaPing):
@@ -125,13 +125,28 @@ class View:
         self.lookupRooms[room].listUser(users)
 
     def meJoin(self,room,background):
-        pass
+        self.lookupRooms.update({room:KeckzMsgTab(room, self)})
+        if not background:
+            self.ShownRoom=room
+            self.redisplay()
 
     def mePart(self,room):
-        pass
+        if room==self.ShownRoom:
+            array=self.lookupRooms.keys()
+            index=array.index(self.ShownRoom)
+            if array[index]==array[0]:
+                index=-1
+            else:
+                index=index-1
+            self.ShownRoom=array[index]
+        del self.lookupRooms[room]
+        self.redisplay()
 
     def meGo(self,oldroom,newroom):
-        pass
+        self.lookupRooms.update({newroom:KeckzMsgTab(newroom, self)})
+        self.ShownRoom=newroom
+        del self.lookupRooms[oldroom]
+        self.redisplay()
 
     def newTopic(self,room,topic):
         self.lookupRooms[room].addLine("Neues Topic: "+topic)
@@ -148,22 +163,23 @@ class View:
     def connectionLost(self, failure):
         pass
 
-class KeckzBaseTabs(urwid.Frame):
+class KeckzBaseTab(urwid.Frame):
     def __init__(self, room, parent):
         """This is the base-class of tabs, all the other tabs
         are going to be derived"""
 
-class KeckzTabs(urwid.Frame):
+class KeckzMsgTab(KeckzBaseTab):
     def __init__(self, room, parent):
         self.room=room
         self.parent=parent
-        self.Output = [urwid.Text('starting KECKz...')]
+        self.Output = []
         self.MainView = urwid.ListBox(self.Output)
-        self.Userlistarray = [urwid.Text('Userliste')]
+        self.Userlistarray = [urwid.Text('Userliste: ')]
         self.Userlist = urwid.ListBox(self.Userlistarray)
         self.sizer=urwid.Columns([self.MainView,("fixed",18,self.Userlist)], 1, 0, 16)
         self.Input = urwid.Edit()
-        self.set_header(None)
+        self.header=urwid.Text("KECKz - Raum: "+self.room,"center")
+        self.set_header(self.header)
         self.set_body(self.sizer)
         self.set_footer(self.Input)
         self.set_focus('footer')
@@ -175,10 +191,9 @@ class KeckzTabs(urwid.Frame):
         self.parent.redisplay()
 
     def listUser(self,users): #Doesn't work by now
-        self.Userlistarray = [urwid.Text('Userliste:')]
-        for i in range(len(users)):
+        """for i in range(len(users)):
             self.Userlistarray.append(urwid.Text(users[i][0]))
-            self.Userlist.set_focus(len(self.Userlistarray) - 1)
+            self.Userlist.set_focus(len(self.Userlistarray) - 1)"""
         self.parent.redisplay()
 
     def OnKeyPressed(self, size, key):
@@ -190,6 +205,10 @@ class KeckzTabs(urwid.Frame):
             self.MainView.keypress(size, key)
         else:
             self.keypress(size, key)
+
+class KeckzPrivTab(KeckzBaseTab):
+    def __init__(self, room, parent):
+        pass
 
 if __name__ == '__main__':
 
