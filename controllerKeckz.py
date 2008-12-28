@@ -186,7 +186,7 @@ class Kekzcontroller():
         self.view.securityCheck(infotext)
 
     def receivedPing(self,deltaPing):
-        self.view.receivedPing(str(deltaPing)+" ms")
+        self.view.receivedPing(deltaPing)
 
     def pingTimeout(self):
         self.lostConnection("PingTimeout")
