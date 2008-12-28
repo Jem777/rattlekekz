@@ -161,7 +161,7 @@ class KeckzTabs(urwid.Frame):
         self.MainView = urwid.ListBox(self.Output)
         self.Userlistarray = [urwid.Text('Userliste')]
         self.Userlist = urwid.ListBox(self.Userlistarray)
-        self.sizer=urwid.Columns([self.MainView,self.Userlist], 1, 0, 16)
+        self.sizer=urwid.Columns([self.MainView,("fixed",18,self.Userlist)], 1, 0, 16)
         self.Input = urwid.Edit()
         self.set_header(None)
         self.set_body(self.sizer)
