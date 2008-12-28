@@ -7,6 +7,23 @@ from hashlib import sha1, md5
 # Line for tester / test:
 # 020 tester#68358d5d9cbbf39fe571ba41f26524b6#dev
 
+def formatopts(formlist, opt):
+    kekzformat={"cr":"red", "cb":"blue", "cg":"green", "ca":"gray", "cc":"cyan", "cm":"magenta", "co":"orange", "cp":"pink", "cy":"yellow", "fi":"italic", "fb":"bold"}
+    if opt=="fx":
+        formlist.append("normal")
+    if kekzformat.has_key(opt):
+        if formlist[-1]=="normal":
+            formlist.append(kekzformat[opt])
+        elif formlist[-1]==kekzformat[opt]:
+            formlist.append("normal")
+        elif not formlist[-1].find(kekzformat[opt]+",")==-1:
+            formlist.append(formlist[-1].replace(kekzformat[opt]+",",""))
+        elif not formlist[-1].find(","+kekzformat[opt])==-1:
+            formlist.append(formlist[-1].replace(","+kekzformat[opt],""))
+        else:
+            formlist.append(formlist[-1]+","+kekzformat[opt])
+    return formlist
+
 def decode(string):
     array=string.split("%")
     textlist=[""]
@@ -14,7 +31,6 @@ def decode(string):
     output={}
     for i in range(len(array)):
         if i%2==0:
-            print array[i]
             textlist[-1]=textlist[-1]+array[i]
             continue
         elif len(array[i])==0:

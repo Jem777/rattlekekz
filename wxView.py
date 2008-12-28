@@ -210,6 +210,14 @@ class KECKzPrivTab(wx.Panel):
         else:
             event.Skip()
 
+    def printMsg(self,text,wxStyleTupel):
+        self.OutputText.AppendText(text)
+        #pointSize=self.OutputText.GetStyle().GetFont().GetPointSize()
+        #Font=wxStyleTupel.GetFont()
+        #wxStyleTupel.SetFont(pointSize,Font.GetStyle(),FontGetWeight())
+        self.OutputText.SetStyle(len(self.OutputText.Value)-len(text), len(self.OutputText.Value), wxStyleTupel)
+
+
 class KECKzMsgTab(KECKzPrivTab):
     def update_layout(self):
         self.Userlist = wx.ListBox(self, -1, choices=[], style=wx.LB_HSCROLL)
@@ -283,17 +291,35 @@ class View:
             msg=nick+": "+msg
         elif state==3:
             msg=self.nickname+": "+msg
+            
         if state==2 or state==3:
             room="#"+nick
             if self.lookupRooms.has_key(room)==False:
                 self.lookupRooms.update({room:KECKzPrivTab(room, self.ViewFrame.roomnotebook, -1)})
                 self.ViewFrame.roomnotebook.AddPage(self.lookupRooms[room], room)
-        msg=msg+"\n"
         if state==4:
-            priv=self.ViewFrame.roomnotebook.GetCurrentPage()
-            priv.OutputText.SetValue(priv.OutputText.GetValue()+msg.decode("utf_8"))
+            room=self.ViewFrame.roomnotebook.GetCurrentPage()
         else:
-            self.lookupRooms[room].OutputText.SetValue(self.lookupRooms[room].OutputText.GetValue()+msg.decode("utf_8"))
+            room=self.lookupRooms[room]
+        msg=msg+"\n"
+        text,format=controllerKeckz.decode(msg)
+        for i in range(len(text)):
+            form=format[i].split(",")
+            styleTupel=wx.TextAttr()
+            wxFont=wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL)
+            if "bold" in form:
+                wxFont.SetWeight(wx.BOLD)
+            if "italic" in form:
+                wxFont.SetStyle(wx.ITALIC)
+            for a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow"]:
+                if a in form:
+                    styleTupel.SetTextColour(a.upper())
+                else:
+                    styleTupel.SetTextColour("BLACK")
+            if "imageurl" in form:
+                pass
+            styleTupel.SetFont(wxFont)
+            room.printMsg(text[i],styleTupel)
 
     def gotException(self, msg):
         dlg=wx.MessageDialog(None, message="Fehler: "+msg,caption="Error",style=wx.OK|wx.ICON_ERROR)
@@ -338,10 +364,10 @@ class View:
 
     def receivedWhois(self,nick,array):
         string="\n".join(array)
+        text,format=controllerKeckz.decode(string)
         dlg=wx.MessageDialog(None, message=string,caption="KECKz - Whois "+nick,style=wx.OK)
         dlg.ShowModal()
         dlg.Destroy()
 
 if __name__=="__main__":
-    import controllerKeckz
     controllerKeckz.Kekzcontroller(View).startConnection("kekz.net",23002)
