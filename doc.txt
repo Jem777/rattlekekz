@@ -51,6 +51,7 @@ meGo(oldroom,newroom)
 newTopic(room,topic)
 loggedOut()
 receivedInformation(info)
+receivedWhois(nick,data)
 receivedCPMsg(user,cpmsg)
 receivedCPAnswer(user,cpanswer)
 gotException(msg)
@@ -141,7 +142,7 @@ allen Methoden, die immplementiert werden können und allen Methoden des Control
 
 class View:
     def __init__(self,controller):
-        self.name,self.version="qtKECKz","0.1"
+        self.name,self.version="qtKECKz","0.1"  # Diese Variablen werden vom View abgefragt
         self.kekzControl=controller
 
     def receivedPreLoginData(self,rooms,array):
@@ -193,6 +194,9 @@ class View:
         pass
 
     def receivedInformation(self,info):
+        pass
+
+    def receivedWhois(self,nick,array):
         pass
 
     def unknownMethod(self,name):

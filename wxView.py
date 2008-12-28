@@ -228,7 +228,6 @@ class View:
         self.lookupRooms={}
         self.ping="" #the string, which contains the current ping
         
-        # it's a global variable, because of the easier access for the frames (they don't have to call it with self)
         self.kekzControl=controller
         
         self.KECKz = wx.App(0) #starting the app
@@ -334,6 +333,12 @@ class View:
 
     def receivedInformation(self,info):
         dlg=wx.MessageDialog(None, message=info,caption="KECKz - Info",style=wx.OK)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    def receivedWhois(self,nick,array):
+        string="\n".join(array)
+        dlg=wx.MessageDialog(None, message=string,caption="KECKz - Whois "+nick,style=wx.OK)
         dlg.ShowModal()
         dlg.Destroy()
 

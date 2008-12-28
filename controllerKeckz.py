@@ -243,6 +243,35 @@ class Kekzcontroller():
     def receivedInformation(self,info):
         self.view.receivedInformation(info)
 
+    def receivedWhois(self,data):
+        Output=[]
+        for i in range(0,len(data),2):
+            key,value = data[i],data[i+1]
+            if key=="nick":
+                nick=value
+            if key == "regdata": key="Registriert seit "
+            elif key == "logindate": key="Eingeloggt seit "
+            elif key == "lastseen": key="Ausgeloggt seit "
+            if key == "state":
+                key = "<raw>"
+                if value == "off": value="Der User ist derzeit %fb%%cr%Offline%fx%.%nn%"
+                elif value == "on": value="Der User ist derzeit %fb%%cg%Online%fx%.%nn%"
+                elif value == "mail": value="Der User ist derzeit %fb%%cr%Offline%fx%, empfängt aber %fb%%cb%Mails%fx%.%nn%"
+                else:
+                    value="Der Status ist unbekannt.%nn%"
+            if key == "kekz":
+                key="<raw>"
+                value="%cb%" + nick + " kann noch %fb%" + value + "x%fb% kekzen."
+            if key == "usertext":
+                key="<raw>"
+            if key == "<h1>":
+                key="<raw>"
+                value="%nn%%fb%"+value.capitalize()+"%fb%"
+            if not key == "<raw>":
+                value="%fb%"+key.capitalize()+":%fb% "+value
+            Output.append(value)
+        self.view.receivedWhois(nick, Output)
+
     def unknownMethod(self,name):
         pass
 

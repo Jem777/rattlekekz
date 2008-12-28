@@ -288,6 +288,10 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     
     def kekzCode300(self,data):
         self.controller.receivedInformation(data)
+
+    def kekzCode301(self,data):
+        data=self.decoder(data)
+        self.controller.receivedWhois(data)
     
     def kekzCode310(self,data):
         foo=data.split(" ")
