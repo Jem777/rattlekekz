@@ -60,10 +60,18 @@ class View:
         for key in keys:
             if key == 'window resize':
                 self.size = self.tui.get_cols_rows()
-            elif key == "ctrl n":
+            elif key == "ctrl n" or key=="ctrl p":
                 array=self.lookupRooms.keys()
                 index=array.index(self.ShownRoom)
-                self.ShownRoom=array[index+1]
+                if array[index]==array[-1] and key=="ctrl n":
+                    index=0
+                elif key=="ctrl n":
+                    index=index+1
+                elif array[index]==array[0]:
+                    index=-1
+                else:
+                    index=index-1
+                self.ShownRoom=array[index]
                 self.lookupRooms[self.ShownRoom]
             else:
                 self.lookupRooms[self.ShownRoom].OnKeyPressed(self.size, key)
@@ -77,16 +85,44 @@ class View:
     def receivedPing(self,deltaPing):
         self.lookupRooms[self.ShownRoom].addLine("Ping: "+str(deltaPing)+"ms")
 
-    def printMsg(self,nick,msg,channel,state):
+    def printMsg(self,nick,msg,room,state):
         if state==0 or state==2 or state==4:
             msg=nick+": "+msg
-        self.lookupRooms[self.ShownRoom].addLine(msg)
+        elif state==3:
+            msg=self.nickname+": "+msg
+            
+        if state==2 or state==3:
+            room="#"+nick
+            if self.lookupRooms.has_key(room)==False:
+                self.lookupRooms.update({room:KeckzPrivTab(room, self)})
+        if state==4:
+            room=self.ShownRoom
+        self.lookupRooms[room].addLine(msg)
+        """text,format=controllerKeckz.decode(msg)        #TODO this is just how it work in wxView
+        for i in range(len(text)):
+            form=format[i].split(",")
+            styleTupel=wx.TextAttr()
+            wxFont=wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL)
+            if "bold" in form:
+                wxFont.SetWeight(wx.BOLD)
+            if "italic" in form:
+                wxFont.SetStyle(wx.ITALIC)
+            for a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow"]:
+                if a in form:
+                    styleTupel.SetTextColour(a.upper())
+                else:
+                    styleTupel.SetTextColour("BLACK")
+            if "imageurl" in form:
+                pass
+            styleTupel.SetFont(wxFont)
+            self.lookupRooms[room].addLine(text[i])
+            #room.printMsg(text[i],styleTupel)"""
 
     def gotException(self, message):
         self.lookupRooms[self.ShownRoom].addLine("Fehler: "+message)
 
     def listUser(self,room,users):
-        self.lookupRooms[self.ShownRoom].listUser(users)
+        self.lookupRooms[room].listUser(users)
 
     def meJoin(self,room,background):
         pass
@@ -98,7 +134,7 @@ class View:
         pass
 
     def newTopic(self,room,topic):
-        self.lookupRooms[self.ShownRoom].addLine("Neues Topic: "+topic)
+        self.lookupRooms[room].addLine("Neues Topic: "+topic)
 
     def loggedOut(self):
         pass
@@ -112,8 +148,13 @@ class View:
     def connectionLost(self, failure):
         pass
 
+class KeckzBaseTabs(urwid.Frame):
+    def __init__(self, room, parent):
+        """This is the base-class of tabs, all the other tabs
+        are going to be derived"""
+
 class KeckzTabs(urwid.Frame):
-    def __init__(self, room, parent, *args, **kwds):
+    def __init__(self, room, parent):
         self.room=room
         self.parent=parent
         self.Output = [urwid.Text('starting KECKz...')]
@@ -146,7 +187,7 @@ class KeckzTabs(urwid.Frame):
             self.Input.set_edit_text('')
             self.parent.controller.sendMsg(self.room,text)
         elif key in ('up', 'down', 'page up', 'page down'):
-            self.MainView.keypress(self.size, key)
+            self.MainView.keypress(size, key)
         else:
             self.keypress(size, key)
 
