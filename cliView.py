@@ -202,7 +202,10 @@ class KeckzMsgTab(KeckzBaseTab):
         self.parent.redisplay()
 
     def listUser(self,users): # TODO: implement away-status
+        self.completion=[]
+        self.Userlistarray
         for i in users:
+            self.completion.append(i[0])
             if i[2] in 'x':
                 self.color='user'
             elif i[2] in 's':
@@ -224,6 +227,19 @@ class KeckzMsgTab(KeckzBaseTab):
             text = self.Input.get_edit_text()
             self.Input.set_edit_text('')
             self.parent.controller.sendMsg(self.room,text)
+        elif key == 'tab': # TODO: work something out for inline nick-completion
+            input = self.Input.get_edit_text().split()
+            nick = input.pop().lower()
+            solutions=[]
+            for i in self.completion:
+                if nick in i[:len(nick)].lower():
+                    solutions.append(i)
+            if len(solutions) is not (0 or 1):
+                self.addLine(" ".join(solutions))
+            elif len(solutions) is not 0:
+                input.append(solutions[0])
+                self.Input.set_edit_text(" ".join(input))
+                self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         elif key in ('up', 'down', 'page up', 'page down'):
             self.MainView.keypress(size, key)
         else:
