@@ -257,19 +257,20 @@ class KeckzMsgTab(KeckzBaseIOTab):
 
     def onKeyPressed(self, size, key):
         KeckzBaseIOTab.onKeyPressed(self, size, key)
-        if key == 'tab': # TODO: work something out for inline nick-completion
+        if key == 'tab': # TODO: work something out for inline nick-completion and review ghost-lines-bug
             input = self.Input.get_edit_text().split()
-            nick = input.pop().lower()
-            solutions=[]
-            for i in self.completion:
-                if nick in i[:len(nick)].lower():
-                    solutions.append(i)
-            if len(solutions) is not (0 or 1):
-                self.addLine(" ".join(solutions))
-            elif len(solutions) is not 0:
-                input.append(solutions[0])
-                self.Input.set_edit_text(" ".join(input))
-                self.Input.set_edit_pos(len(self.Input.get_edit_text()))
+            if len(input) is not 0:
+                nick = input.pop().lower()
+                solutions=[]
+                for i in self.completion:
+                    if nick in i[:len(nick)].lower():
+                        solutions.append(i)
+                if len(solutions) is not (0 or 1):
+                    self.addLine(" ".join(solutions))
+                elif len(solutions) is not 0:
+                    input.append(solutions[0])
+                    self.Input.set_edit_text(" ".join(input))
+                    self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         else:
             self.keypress(size, key)
 
