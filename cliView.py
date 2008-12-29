@@ -85,7 +85,7 @@ class View:
                 self.ShownRoom=array[index]
                 self.lookupRooms[self.ShownRoom]
             else:
-                self.lookupRooms[self.ShownRoom].OnKeyPressed(self.size, key)
+                self.lookupRooms[self.ShownRoom].onKeyPressed(self.size, key)
         self.redisplay()
 
     def successLogin(self,nick,status,room):
@@ -176,30 +176,61 @@ class View:
 
 class KeckzBaseTab(urwid.Frame):
     def __init__(self, room, parent):
-        """This is the base-class of tabs, all the other tabs
-        are going to be derived"""
-
-class KeckzMsgTab(KeckzBaseTab):
-    def __init__(self, room, parent):
+        self.hasOutput=True
+        self.hasInput=False
         self.room=room
         self.parent=parent
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
-        self.Userlistarray=[urwid.Text('Userliste: ')]
-        self.Userlist = urwid.ListBox(self.Userlistarray)
-        self.sizer=urwid.Columns([self.MainView,("fixed",18,self.Userlist)], 1, 0, 16)
-        self.Input = urwid.Edit()
-        self.header=urwid.Text("KECKz - Raum: "+self.room,"center")
-        self.set_header(self.header)
-        self.set_body(self.sizer)
-        self.set_footer(self.Input)
-        self.set_focus('footer')
+        self.buildOutputWidgets()
+        self.connectWidgets()
+
+    def buildOutputWidgets(self):
+        """This should be overwritten by derived classes"""
+
+    def connectWidgets(self):
+        """This should be overwritten by derived classes"""
 
     def addLine(self, text):
         """ add a line to the internal list of lines"""
         self.Output.append(urwid.Text(text))
         self.MainView.set_focus(len(self.Output) - 1)
         self.parent.redisplay()
+
+    def onKeyPressed(self, size, key):
+        if key in ('up', 'down', 'page up', 'page down'):
+            self.MainView.keypress(size, key)
+
+
+class KeckzBaseIOTab(KeckzBaseTab):
+    def __init__(self,room, parent):
+        self.Input = urwid.Edit()
+        KeckzBaseTab.__init__(self,room, parent)
+        self.hasOutput=True
+        self.hasInput=True
+ 
+    def onKeyPressed(self, size, key):
+        KeckzBaseTab.onKeyPressed(self, size, key)
+        if key == 'enter': 
+            text = self.Input.get_edit_text()
+            self.Input.set_edit_text('')
+            self.sendStr(str(text))
+
+class KeckzMsgTab(KeckzBaseIOTab):
+    def buildOutputWidgets(self):
+        self.Userlistarray=[urwid.Text('Userliste: ')]
+        self.Userlist = urwid.ListBox(self.Userlistarray)
+        self.sizer=urwid.Columns([self.MainView,("fixed",18,self.Userlist)], 1, 0, 16)
+        self.header=urwid.Text("KECKz - Raum: "+self.room,"center")
+
+    def connectWidgets(self):
+        self.set_header(self.header)
+        self.set_body(self.sizer)
+        self.set_footer(self.Input)
+        self.set_focus('footer')
+
+    def sendStr(self,string):
+        self.parent.controller.sendMsg(str(self.room),str(string))
 
     def listUser(self,users):
         self.completion=[]
@@ -224,12 +255,9 @@ class KeckzMsgTab(KeckzBaseTab):
             self.Userlist.set_focus(len(self.Userlistarray) - 1)
         self.parent.redisplay()
 
-    def OnKeyPressed(self, size, key):
-        if key == 'enter':
-            text = self.Input.get_edit_text()
-            self.Input.set_edit_text('')
-            self.parent.controller.sendMsg(str(self.room),str(text))
-        elif key == 'tab': # TODO: work something out for inline nick-completion
+    def onKeyPressed(self, size, key):
+        KeckzBaseIOTab.onKeyPressed(self, size, key)
+        if key == 'tab': # TODO: work something out for inline nick-completion
             input = self.Input.get_edit_text().split()
             nick = input.pop().lower()
             solutions=[]
@@ -242,14 +270,19 @@ class KeckzMsgTab(KeckzBaseTab):
                 input.append(solutions[0])
                 self.Input.set_edit_text(" ".join(input))
                 self.Input.set_edit_pos(len(self.Input.get_edit_text()))
-        elif key in ('up', 'down', 'page up', 'page down'):
-            self.MainView.keypress(size, key)
         else:
             self.keypress(size, key)
 
-class KeckzPrivTab(KeckzBaseTab):
-    def __init__(self, room, parent):
-        pass
+class KeckzPrivTab(KeckzBaseIOTab):
+    def buildOutputWidgets(self):
+        self.header=urwid.Text("KECKz - Private Unterhaltung "+self.room,"center")
+
+    def connectWidgets(self):
+        self.set_header(self.header)
+        self.set_body(self.MainView)
+        self.set_footer(self.Input)
+        self.set_focus('footer')
+
 
 class painter(urwid.WidgetWrap): # TODO remove unneeded attributes
       def __init__(self, text, color):
