@@ -12,7 +12,7 @@ from urwid import curses_display
 # Twisted imports
 from twisted.internet import reactor, ssl
 
-rev=re.search("s/\D//g",revision)
+rev=re.search("\d+",revision).group()
 
 
 class TextTooLongError(Exception):
