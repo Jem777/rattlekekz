@@ -6,7 +6,7 @@ import controllerKeckz
 
 # Urwid
 import urwid
-import urwid.curses_display
+from urwid import curses_display
 
 # Twisted imports
 
@@ -20,7 +20,7 @@ class View:
     def __init__(self, controller):
         self.controller=controller
         self.name,self.version="KECKz","0.0"
-        tui = urwid.curses_display.Screen()
+        tui = curses_display.Screen()
         colors =[('normal','default','default'), # TODO: More colors
             ('admin','dark red','default'),
             ('chatop','yellow','default'),
