@@ -21,7 +21,13 @@ class View:
         self.controller=controller
         self.name,self.version="KECKz","0.0"
         tui = urwid.curses_display.Screen()
-    
+        colors =[('normal','default','default'), # TODO: More colors
+            ('admin','dark red','default'),
+            ('chatop','yellow','default'),
+            ('chanop','dark blue','default'),
+            ('special','dark green','default'),
+            ('user','normal')]
+        tui.register_palette(colors)
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
         self.tui = tui
@@ -190,10 +196,20 @@ class KeckzMsgTab(KeckzBaseTab):
         self.MainView.set_focus(len(self.Output) - 1)
         self.parent.redisplay()
 
-    def listUser(self,users): #Doesn't work by now
-        """for i in range(len(users)):
-            self.Userlistarray.append(urwid.Text(users[i][0]))
-            self.Userlist.set_focus(len(self.Userlistarray) - 1)"""
+    def listUser(self,users): # TODO: implement away-status
+        for i in users:
+            if i[2] in 'x':
+                self.color='user'
+            elif i[2] in 's':
+                self.color='special'
+            elif i[2] in 'c':
+                self.color='roomop'
+            elif i[2] in 'o':
+                self.color='chatop'
+            elif i[2] in 'a':
+                self.color='admin'
+            self.Userlistarray.append(painter(i[0],self.color))
+            self.Userlist.set_focus(len(self.Userlistarray) - 1)
         self.parent.redisplay()
 
     def OnKeyPressed(self, size, key):
@@ -209,6 +225,14 @@ class KeckzMsgTab(KeckzBaseTab):
 class KeckzPrivTab(KeckzBaseTab):
     def __init__(self, room, parent):
         pass
+
+class painter(urwid.WidgetWrap): # TODO remove unneeded attributes
+      def __init__(self, text, color):
+          w = urwid.Text(text)
+          w = urwid.AttrWrap(w, color, color)
+          urwid.WidgetWrap.__init__(self, w)
+      def selectable(self):
+          return True
 
 if __name__ == '__main__':
 
