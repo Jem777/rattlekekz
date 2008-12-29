@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-revision = "$Revision$"
+revision = "Revision: 166 "
 
 import controllerKeckz, time
 
@@ -281,7 +281,7 @@ class KeckzMsgTab(KeckzBaseIOTab):
         self.Userlist = urwid.ListBox(self.Userlistarray)
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
-        self.header.set_text("KECKz (Alpha: "+revision+") - Raum: "+self.room)
+        self.header.set_text("KECKz ("+revision+") - Raum: "+self.room)
 
     def connectWidgets(self):
         self.set_header(self.header)
