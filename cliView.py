@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-import controllerKeckz
+import controllerKeckz, time
 
 # Urwid
 import urwid
@@ -31,7 +31,10 @@ class View:
             ('roomopaway','dark blue','light gray'),
             ('specialaway','dark green','light gray'),
             ('useraway','white','light gray'),
-            ('divider', 'white', 'dark blue', 'standout')]
+            ('divider', 'white', 'dark blue', 'standout'),
+            ("myMsg","light green","default"),
+            ("userMsg","light blue","default"),
+            ("timestamp","dark green","default")]
         tui.register_palette(colors)
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
@@ -89,6 +92,7 @@ class View:
         self.redisplay()
 
     def successLogin(self,nick,status,room):
+        self.nickname=nick
         self.ShownRoom=room
         self.lookupRooms.update({room:KeckzMsgTab(room,self)})
         self.lookupRooms[self.ShownRoom].addLine("Logged successful in as "+nick+"\nJoined room "+room)
@@ -100,9 +104,12 @@ class View:
 
     def printMsg(self,nick,msg,room,state):
         if state==0 or state==2 or state==4:
-            msg=nick+": "+msg
+            if nick==self.nickname:
+                msg=[("myMsg",nick+": "),msg]
+            else:    
+                msg=[("userMsg",nick+": "),msg]
         elif state==3:
-            msg=self.nickname+": "+msg
+            msg=[("myMsg",self.nickname+": "),msg]
             
         if state==2 or state==3:
             room="#"+nick
@@ -110,7 +117,12 @@ class View:
                 self.lookupRooms.update({room:KeckzPrivTab(room, self)})
         if state==4:
             room=self.ShownRoom
+        if not type(msg) == """<type 'list'>""":
+            msg=[msg]
+        msg.insert(0,("timestamp",time.strftime("[%H:%M] ",time.localtime(time.time()))))
         self.lookupRooms[room].addLine(msg)
+        
+        
         """text,format=controllerKeckz.decode(msg)        #TODO this is just how it work in wxView
         for i in range(len(text)):
             form=format[i].split(",")
@@ -359,13 +371,13 @@ class KeckzMailTab(KeckzBaseIOTab):
         elif stringlist[0]==("/sendm"):
             self.controller.sendMail(self,nick,msg)
         elif stringlist[0]==("/help"):
-            self.AddLine("""Hilfe: \nMails neu abrufen: /refresh \n
+            self.addLine("""Hilfe: \nMails neu abrufen: /refresh \n
                          Mail anzeigen: /show index \n
                          Mail löschen: /del index \n
                          Alle gelesenen Mails löschen: /del all \n
                          Mail versenden: /sendm nick msg""")
         else:
-            self.AddLine("Sie haben keinen gültigen Befehl eingegeben")
+            self.addLine("Sie haben keinen gültigen Befehl eingegeben")
 
 
 class painter(urwid.WidgetWrap): # TODO remove unneeded attributes
