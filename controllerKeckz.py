@@ -4,11 +4,18 @@
 import kekzprotocol, os, sys
 from hashlib import sha1, md5
 
-# Line for tester / test:
-# 020 tester#68358d5d9cbbf39fe571ba41f26524b6#dev
-
 def formatopts(formlist, opt):
-    kekzformat={"cr":"red", "cb":"blue", "cg":"green", "ca":"gray", "cc":"cyan", "cm":"magenta", "co":"orange", "cp":"pink", "cy":"yellow", "fi":"italic", "fb":"bold"}
+    kekzformat={"cr":"red",
+                "cb":"blue",
+                "cg":"green",
+                "ca":"gray",
+                "cc":"cyan",
+                "cm":"magenta",
+                "co":"orange",
+                "cp":"pink",
+                "cy":"yellow",
+                "fi":"italic",
+                "fb":"bold"}
     if opt=="fx":
         formlist.append("normal")
     if kekzformat.has_key(opt):
