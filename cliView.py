@@ -30,7 +30,8 @@ class View:
             ('chatopaway','yellow','light gray'),
             ('roomopaway','dark blue','light gray'),
             ('specialaway','dark green','light gray'),
-            ('useraway','white','light gray')]
+            ('useraway','white','light gray'),
+            ('divider', 'black', 'dark blue', 'standout')]
         tui.register_palette(colors)
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
@@ -93,7 +94,9 @@ class View:
         self.lookupRooms[self.ShownRoom].addLine("Logged successful in as "+nick+"\nJoined room "+room)
 
     def receivedPing(self,deltaPing):
-        self.lookupRooms[self.ShownRoom].addLine("Ping: "+str(deltaPing)+"ms")
+        for i in self.lookupRooms:
+            self.lookupRooms[i].setPing("Ping: "+str(deltaPing)+"ms")
+        #self.lookupRooms[self.ShownRoom].addLine("Ping: "+str(deltaPing)+"ms")
 
     def printMsg(self,nick,msg,room,state):
         if state==0 or state==2 or state==4:
@@ -207,6 +210,8 @@ class KeckzBaseTab(urwid.Frame):
         self.parent=parent
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
+        self.header=urwid.Text("KECKz","center")
+        self.upperDivider=urwid.Text(('divider',""),"right")
         self.buildOutputWidgets()
         self.connectWidgets()
 
@@ -215,6 +220,9 @@ class KeckzBaseTab(urwid.Frame):
 
     def connectWidgets(self):
         """This should be overwritten by derived classes"""
+
+    def setPing(self,string):
+        self.upperDivider.set_text(string)
 
     def addLine(self, text):
         """ add a line to the internal list of lines"""
@@ -240,7 +248,9 @@ class KeckzBaseIOTab(KeckzBaseTab):
         KeckzBaseTab.onKeyPressed(self, size, key)
         if key == 'enter': 
             text = self.Input.get_edit_text()
-            if text=="/quit":
+            if text=="":
+                pass
+            elif text=="/quit":
                 self.parent.quit()
             elif text=="/close":
                 self.OnClose()
@@ -255,12 +265,14 @@ class KeckzMsgTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
         self.Userlistarray=[urwid.Text('Userliste: ')]
         self.Userlist = urwid.ListBox(self.Userlistarray)
-        self.sizer=urwid.Columns([self.MainView,("fixed",18,self.Userlist)], 1, 0, 16)
-        self.header=urwid.Text("KECKz - Raum: "+self.room,"center")
+        self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
+        self.vsizer=urwid.Pile(  [("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
+        #self.vsizer=urwid.Pile([ ("fixed",1,self.upperDivider),self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
+        self.header.set_text("KECKz - Raum: "+self.room)
 
     def connectWidgets(self):
         self.set_header(self.header)
-        self.set_body(self.sizer)
+        self.set_body(self.vsizer)
         self.set_footer(self.Input)
         self.set_focus('footer')
 
@@ -324,7 +336,7 @@ class KeckzPrivTab(KeckzBaseIOTab):
 
 class KeckzMailTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
-        self.header=urwid.Text("KECKz - KekzMail","center")
+        self.header.set_text("KECKz - KekzMail")
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -333,12 +345,24 @@ class KeckzMailTab(KeckzBaseIOTab):
         self.set_focus('footer')
 
     def sendStr(self,string):
-        if string.startswith("/refresh"):
-            pass
-        elif string.startswith("/show"):
-            pass
-        elif string.startswith("del"):
-            pass
+        stringlist=sting.split(" ")
+        if stringlist[0]==("/refresh"):
+            self.parent.controller.refreshMaillist()
+        elif stringlist[0]==("/show"):
+            self.parent.controller.getMail(stringlist[1])
+        elif stringlist[0]==("/del"):
+            if stringlist[1]=="all":
+                self.parent.controller.deleteAllMails()
+            else:
+                self.parent.controller.deleteMail(stringlist[1])
+        elif stringlist[0]==("/sendm"):
+            self.controller.sendMail(self,nick,msg)
+        elif stringlist[0]==("/help"):
+            self.AddLine("""Hilfe: \nMails neu abrufen: /refresh \n
+                         Mail anzeigen: /show index \n
+                         Mail löschen: /del index \n
+                         Alle gelesenen Mails löschen: /del all \n
+                         Mail versenden: /sendm nick msg""")
         else:
             self.AddLine("Sie haben keinen gültigen Befehl eingegeben")
 
