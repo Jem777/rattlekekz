@@ -48,8 +48,8 @@ class View:
     def init(self):
         self.size = self.tui.get_cols_rows()
 
-    def startConnection(self):
-        reactor.connectSSL("kekz.net", 23002, self.controller.model, ssl.ClientContextFactory())
+    def startConnection(self,server,port):
+        reactor.connectSSL(server, port, self.controller.model, ssl.ClientContextFactory())
         self.tui.run_wrapper(reactor.run)
 
     def redisplay(self):
@@ -115,9 +115,9 @@ class View:
                 wxFont.SetStyle(wx.ITALIC)
             for a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow"]:
                 if a in form:
-                    styleTupel.SetTextColour(a.upper())
+                    styleTupel.SetTextColour(a)
                 else:
-                    styleTupel.SetTextColour("BLACK")
+                    styleTupel.SetTextColour("black")
             if "imageurl" in form:
                 pass
             styleTupel.SetFont(wxFont)
@@ -237,4 +237,4 @@ class painter(urwid.WidgetWrap): # TODO remove unneeded attributes
 if __name__ == '__main__':
 
     kekzControl=controllerKeckz.Kekzcontroller(View)
-    kekzControl.view.startConnection()
+    kekzControl.view.startConnection("kekz.net",32002)

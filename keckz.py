@@ -11,7 +11,7 @@ opts, extraparams = getopt.getopt(sys.argv[1:],letters,keywords)
 class main():
     def __init__(self):
         self.host = 'kekz.net'
-        self.view = 'cli'
+        self.view = 'cliView'
         for o,p in opts:
             if o in ['-H','--host']:
                 self.host = p
@@ -35,7 +35,8 @@ class main():
             sys.exit()
         if str(type(View))=="""<type 'classobj'>""": #TODO: We'll have to have a check whether foo.View exists
             import controllerKeckz
-            controllerKeckz.Kekzcontroller(View).startConnection(host,23002)
+            kekzControl=controllerKeckz.Kekzcontroller(View)
+            kekzControl.view.startConnection(host,23002)
         else:
             print 'not implemented yet'
             sys.exit()

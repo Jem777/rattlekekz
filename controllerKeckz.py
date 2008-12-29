@@ -80,8 +80,8 @@ class Kekzcontroller():
         self.view = interface(self)
         self.readConfigfile()
         
-        self.joinInfo=["Join","Login","Invite"]
-        self.partInfo=["Part","Logout","Lost Connection","GHOST-Kick","Ping Timeout","Kick"]
+        self.joinInfo=["Join","Login","Einladung"]
+        self.partInfo=["Part","Logout","Lost Connection","Nick-Kollision","Ping Timeout","Kick"]
 
     def startConnection(self,server,port):
         self.model.startConnection(server,port)

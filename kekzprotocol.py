@@ -34,8 +34,6 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def startConnection(self,server,port):
         """Initiate the connection."""
-        # reactor.listenSSL(23002, f, ssl.ClientContextFactory(), backlog=50)
-        # reactor.connectSSL("kekz.net", 23002, f, ssl.ClientContextFactory())
         reactor.connectSSL(server, port, self, ssl.ClientContextFactory())
         reactor.run()
 
