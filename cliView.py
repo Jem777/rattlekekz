@@ -1,16 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-revision = "Revision: 166 "
+revision = "$Revision$"
 
-import controllerKeckz, time
+import controllerKeckz, time, re 
 
 # Urwid
 import urwid
 from urwid import curses_display
-# Twisted imports
 
+# Twisted imports
 from twisted.internet import reactor, ssl
+
+rev=re.search("s/\D//g",revision)
+
 
 class TextTooLongError(Exception):
     pass
@@ -281,7 +284,7 @@ class KeckzMsgTab(KeckzBaseIOTab):
         self.Userlist = urwid.ListBox(self.Userlistarray)
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
-        self.header.set_text("KECKz ("+revision+") - Raum: "+self.room)
+        self.header.set_text("KECKz (Alpha: "+rev+") - Raum: "+self.room)
 
     def connectWidgets(self):
         self.set_header(self.header)
