@@ -24,9 +24,14 @@ class View:
         colors =[('normal','default','default'), # TODO: More colors
             ('admin','dark red','default'),
             ('chatop','yellow','default'),
-            ('chanop','dark blue','default'),
+            ('roomop','dark blue','default'),
             ('special','dark green','default'),
-            ('user','normal')]
+            ('user','white','default'),
+            ('adminaway','dark red','light gray'),
+            ('chatopaway','yellow','light gray'),
+            ('roomopaway','dark blue','light gray'),
+            ('specialaway','dark green','light gray'),
+            ('useraway','white','light gray')]
         tui.register_palette(colors)
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
@@ -115,9 +120,9 @@ class View:
                 wxFont.SetStyle(wx.ITALIC)
             for a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow"]:
                 if a in form:
-                    styleTupel.SetTextColour(a)
+                    styleTupel.SetTextColour(a.upper())
                 else:
-                    styleTupel.SetTextColour("black")
+                    styleTupel.SetTextColour("BLACK")
             if "imageurl" in form:
                 pass
             styleTupel.SetFont(wxFont)
@@ -208,6 +213,8 @@ class KeckzMsgTab(KeckzBaseTab):
                 self.color='chatop'
             elif i[2] in 'a':
                 self.color='admin'
+            if i[1] == True:
+                self.color=self.color+'away'
             self.Userlistarray.append(painter(i[0],self.color))
             self.Userlist.set_focus(len(self.Userlistarray) - 1)
         self.parent.redisplay()
@@ -237,4 +244,4 @@ class painter(urwid.WidgetWrap): # TODO remove unneeded attributes
 if __name__ == '__main__':
 
     kekzControl=controllerKeckz.Kekzcontroller(View)
-    kekzControl.view.startConnection("kekz.net",32002)
+    kekzControl.view.startConnection("kekz.net",23002)
