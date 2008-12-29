@@ -161,6 +161,9 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.nickname=nick
         self.controller.successLogin(nick,status,room)
 
+    def kekzCode021(self,data):
+        self.controller.successMailLogin()
+
     def kekzCode030(self,data):
         self.controller.successRegister()
 
@@ -302,6 +305,33 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         cpanswer=" ".join(foo[1:])
         user=foo[0]
         self.controller.receivedCPAnswer(user,cpanswer)
+
+    def kekzCode440(self,data):
+        self.controller.sendMailsucceeded(data)
+
+    def kekzCode450(self,data):
+        dic=self.decoder(data)
+        userid=dic["quota"]
+        mailcount=dic["int"]
+        mails=dic["list"]
+        self.controller.receivedMails(userid,mailcount,mails)
+
+    def kekzCode460(self,data):
+        mails=data.split("#")
+        unreadmails,allmails=int(mails[0]),int(mails[1])
+        self.controller.receivedMailcount(unreadmails,allmails)
+
+    def kekzCode461(self,data):
+        mail=self.decoder(data)
+        if mail["type"]=="Error":
+            self.controller.requestMailfailed(mail["Error"])
+        else:
+            self.controller.requestMailsucceeded(mail["from"],mail["date"],mail["body"])
+
+    def kekzCode470(self,data):
+        mails=data.split("#")
+        nick,header=int(mails[0]),int(mails[1])
+        self.controller.receivedNewMail(nick,header)
 
     def kekzCode901(self,data):
         self.controller.gotException(data)

@@ -295,6 +295,23 @@ class Kekzcontroller():
             Output.append(value)
         self.view.receivedWhois(nick, Output)
 
+    def receivedCPMsg(self,user,cpmsg):
+        pass
+    def receivedCPAnswer(self,user,cpanswer):
+        pass
+    def sendMailsucceeded(self,id):
+        pass
+    def receivedMails(self,userid,mailcount,mails):
+        pass
+    def receivedMailcount(self,unreadmails,allmails):
+        pass
+    def requestMailfailed(self,error):
+        pass
+    def requestMailsucceeded(self,user,date,mail):
+        pass
+    def receivedNewMail(self,nick,header):
+        pass
+
     def unknownMethod(self,name):
         pass
 

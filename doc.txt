@@ -30,6 +30,7 @@ gotConnection()
 receivedHandshake()
 receivedRooms(rooms) 				rooms=[{"users":int, "max":int, "name":str},{nextRoom}]
 successLogin(nick,status,room) 			nick=str, status=int, room=str
+successMailLogin()
 successRegister()
 successNewPassword()
 receivedProfile(name,ort,homepage,hobbies,signature)
@@ -54,6 +55,12 @@ receivedInformation(info)
 receivedWhois(nick,data)
 receivedCPMsg(user,cpmsg)
 receivedCPAnswer(user,cpanswer)
+sendMailsucceeded(id)
+receivedMails(userid,mailcount,mails)
+receivedMailcount(unreadmails,allmails)
+requestMailfailed(error)
+requestMailsucceeded(user,date,mail)
+receivedNewMail(nick,header)
 gotException(msg)
 
 
