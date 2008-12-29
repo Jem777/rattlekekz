@@ -31,7 +31,7 @@ class View:
             ('roomopaway','dark blue','light gray'),
             ('specialaway','dark green','light gray'),
             ('useraway','white','light gray'),
-            ('divider', 'black', 'dark blue', 'standout')]
+            ('divider', 'white', 'dark blue', 'standout')]
         tui.register_palette(colors)
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
@@ -96,7 +96,7 @@ class View:
     def receivedPing(self,deltaPing):
         for i in self.lookupRooms:
             self.lookupRooms[i].setPing("Ping: "+str(deltaPing)+"ms")
-        #self.lookupRooms[self.ShownRoom].addLine("Ping: "+str(deltaPing)+"ms")
+        self.redisplay()
 
     def printMsg(self,nick,msg,room,state):
         if state==0 or state==2 or state==4:
@@ -210,8 +210,9 @@ class KeckzBaseTab(urwid.Frame):
         self.parent=parent
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
+        self.upperDivider=urwid.Text(("divider","Ping: 0ms"), "right")
         self.header=urwid.Text("KECKz","center")
-        self.upperDivider=urwid.Text(('divider',""),"right")
+        
         self.buildOutputWidgets()
         self.connectWidgets()
 
@@ -263,11 +264,11 @@ class KeckzBaseIOTab(KeckzBaseTab):
 
 class KeckzMsgTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
+
         self.Userlistarray=[urwid.Text('Userliste: ')]
         self.Userlist = urwid.ListBox(self.Userlistarray)
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
-        self.vsizer=urwid.Pile(  [("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
-        #self.vsizer=urwid.Pile([ ("fixed",1,self.upperDivider),self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
         self.header.set_text("KECKz - Raum: "+self.room)
 
     def connectWidgets(self):
