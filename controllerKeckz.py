@@ -156,6 +156,9 @@ class Kekzcontroller():
     def deleteAllMails(self):
         self.model.deleteAllMails()
 
+    def quitConnection(self):
+        self.model.quitConnection()
+
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
         self.model.sendHandshake(sha1(self.view.fubar()).hexdigest())

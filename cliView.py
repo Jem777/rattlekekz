@@ -7,7 +7,6 @@ import controllerKeckz
 # Urwid
 import urwid
 from urwid import curses_display
-
 # Twisted imports
 
 from twisted.internet import reactor, ssl
@@ -180,6 +179,23 @@ class View:
     def printMail(self,user,date,mail):
         pass
 
+    def quit(self):
+        self.controller.quitConnection()  #TODO: afterwarts either the login screen must be shown or the application exit
+
+    def closeActiveWindow(self,window):
+        array=self.lookupRooms.keys()
+        if len(array)==1:
+            self.quit()
+        else:
+            index=array.index(window)
+            if array[index]==array[0]:
+                index=-1
+            else:
+                index=index-1
+            del self.lookupRooms[window]
+            self.ShownRoom=array[index]
+            self.redisplay()
+
     def connectionLost(self, failure):
         pass
 
@@ -210,6 +226,8 @@ class KeckzBaseTab(urwid.Frame):
         if key in ('up', 'down', 'page up', 'page down'):
             self.MainView.keypress(size, key)
 
+    def OnClose(self):
+        self.parent.closeWindow(self.room)
 
 class KeckzBaseIOTab(KeckzBaseTab):
     def __init__(self,room, parent):
@@ -222,8 +240,16 @@ class KeckzBaseIOTab(KeckzBaseTab):
         KeckzBaseTab.onKeyPressed(self, size, key)
         if key == 'enter': 
             text = self.Input.get_edit_text()
+            if text=="/quit":
+                self.parent.quit()
+            elif text=="/close":
+                self.OnClose()
+            else:
+                self.sendStr(str(text))
             self.Input.set_edit_text('')
-            self.sendStr(str(text))
+
+    def sendStr(self,string):
+        pass
 
 class KeckzMsgTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
@@ -283,6 +309,9 @@ class KeckzMsgTab(KeckzBaseIOTab):
         else:
             self.keypress(size, key)
 
+    def OnClose(self):
+        self.sendStr("/part")
+
 class KeckzPrivTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
         self.header=urwid.Text("KECKz - Private Unterhaltung "+self.room,"center")
@@ -292,6 +321,26 @@ class KeckzPrivTab(KeckzBaseIOTab):
         self.set_body(self.MainView)
         self.set_footer(self.Input)
         self.set_focus('footer')
+
+class KeckzMailTab(KeckzBaseIOTab):
+    def buildOutputWidgets(self):
+        self.header=urwid.Text("KECKz - KekzMail","center")
+
+    def connectWidgets(self):
+        self.set_header(self.header)
+        self.set_body(self.MainView)
+        self.set_footer(self.Input)
+        self.set_focus('footer')
+
+    def sendStr(self,string):
+        if string.startswith("/refresh"):
+            pass
+        elif string.startswith("/show"):
+            pass
+        elif string.startswith("del"):
+            pass
+        else:
+            self.AddLine("Sie haben keinen gültigen Befehl eingegeben")
 
 
 class painter(urwid.WidgetWrap): # TODO remove unneeded attributes
