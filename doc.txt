@@ -61,11 +61,12 @@ receivedInformation(info)
 receivedWhois(nick,data)
 receivedCPMsg(user,cpmsg)
 receivedCPAnswer(user,cpanswer)
-sendMailsucceeded(id)
+sendMailsuccessful(id)
+sendMailfailed(id,msg)
 receivedMails(userid,mailcount,mails)
 receivedMailcount(unreadmails,allmails)
 requestMailfailed(error)
-requestMailsucceeded(user,date,mail)
+requestMailsuccessful(user,date,mail)
 receivedNewMail(nick,header)
 gotException(msg)
 
@@ -210,6 +211,15 @@ class View:
         pass
 
     def receivedWhois(self,nick,array):
+        pass
+
+    def MailInfo(self,info):
+        pass
+
+    def receivedMails(self,userid,mailcount,mails):
+        pass
+
+    def printMail(self,user,date,mail):
         pass
 
     def unknownMethod(self,name):

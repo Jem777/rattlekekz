@@ -66,6 +66,10 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         """Logs on to the Kekz.net server and joins room "room" """
         self.sendLine('020 %s#%s#%s' % (nick,passhash,room))
 
+    def sendMailLogin(self,nick,passhash):
+        """Logs on to the Kekz.net mailsystem"""
+        self.sendLine('021 %s#%s#%s' % (nick,passhash))
+
     def registerNick(self,nick,pwhash,email):
         """Register a new Nick"""
         Daten={"nick":nick,"passwd":pwhash,"email":email}
@@ -326,7 +330,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.receivedCPAnswer(user,cpanswer)
 
     def kekzCode440(self,data):
-        self.controller.sendMailsucceeded(data)
+        self.controller.sendMailsuccessful(data)
 
     def kekzCode450(self,data):
         dic=self.decoder(data)
@@ -345,7 +349,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         if mail["type"]=="Error":
             self.controller.requestMailfailed(mail["Error"])
         else:
-            self.controller.requestMailsucceeded(mail["from"],mail["date"],mail["body"])
+            self.controller.requestMailsuccessful(mail["from"],mail["date"],mail["body"])
 
     def kekzCode470(self,data):
         mails=data.split("#")
@@ -370,7 +374,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def kekzCode941(self,data):
         dic=self.decoder(data)
         id,msg=dic["id"],dic["msg"]
-        self.controller.gotException(id+" "+msg)
+        self.controller.sendMailfailed(id,msg)
 
     def kekzCode988(self,data):
         self.controller.gotException(data)

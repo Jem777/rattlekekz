@@ -171,6 +171,15 @@ class View:
     def receivedWhois(self,nick,array):
         pass
 
+    def MailInfo(self,info):
+        pass
+
+    def receivedMails(self,userid,mailcount,mails):
+        pass
+
+    def printMail(self,user,date,mail):
+        pass
+
     def connectionLost(self, failure):
         pass
 

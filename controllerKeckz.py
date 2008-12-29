@@ -137,6 +137,25 @@ class Kekzcontroller():
     def sendJoin(self,room):
         self.model.sendJoin(room)
 
+    def sendMail(self,nick,msg):
+        self.sendMailCount=self.sendMailCount+1
+        id="Mail_"+str(self.sendMailCount)
+        self.lookupSendlId.update({id:nick})
+        self.model.sendMail(nick,msg,id)
+
+    def refreshMaillist(self):
+        self.model.getMailCount()
+        self.model.getMaillist()
+
+    def getMail(self,index):
+        self.model.getMail(id)
+
+    def deleteMail(self,index):
+        self.model.deleteMail(id)
+
+    def deleteAllMails(self):
+        self.model.deleteAllMails()
+
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
         self.model.sendHandshake(sha1(self.view.fubar()).hexdigest())
@@ -176,6 +195,12 @@ class Kekzcontroller():
     def successLogin(self,nick,status,room):
         self.Userlist={room:[]}
         self.view.successLogin(nick,status,room)
+
+    def successMailLogin(self):
+        self.sendMailCount=0
+        self.lookupSendId={}
+        self.lookupMailId=[]
+        self.getMaillist()
 
     def successRegister(self):
         self.view.successRegister()
@@ -299,18 +324,35 @@ class Kekzcontroller():
         pass
     def receivedCPAnswer(self,user,cpanswer):
         pass
-    def sendMailsucceeded(self,id):
-        pass
+
+    def sendMailsuccessful(self,id):
+        self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" wurde erfolgreich verschickt")
+        del self.lookupSendId[id]
+
+    def sendMailfailed(self,id,msg):
+        self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" konnte nicht verschickt werden: "+msg)
+        del self.lookupSendId[id]
+
     def receivedMails(self,userid,mailcount,mails):
-        pass
+        self.lookupMailId=[]
+        for i in range(len(mails)):
+            self.lookupMailId.append(mails[i]["mid"])
+            del mails[i]["mid"]
+            mails[i].update({"index":i})
+        self.view.receivedMails(userid,mailcount,mails)
+
     def receivedMailcount(self,unreadmails,allmails):
-        pass
+        self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" konnte nicht verschickt werden: "+msg)
+
     def requestMailfailed(self,error):
-        pass
-    def requestMailsucceeded(self,user,date,mail):
-        pass
+        self.view.MailInfo("Die Mail konnte nicht gefunden werden: "+error)
+
+    def requestMailsuccessful(self,user,date,mail):
+        self.view.printMail(user,date,mail)
+
     def receivedNewMail(self,nick,header):
-        pass
+        self.view.receivedInformation("Sie haben eine eine Nachricht von "+nick+" bekommen: "+header)
+        self.refreshMaillist()
 
     def unknownMethod(self,name):
         pass
