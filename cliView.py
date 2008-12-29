@@ -185,7 +185,7 @@ class KeckzMsgTab(KeckzBaseTab):
         self.parent=parent
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
-        self.Userlistarray = [urwid.Text('Userliste: ')]
+        self.Userlistarray=[urwid.Text('Userliste: ')]
         self.Userlist = urwid.ListBox(self.Userlistarray)
         self.sizer=urwid.Columns([self.MainView,("fixed",18,self.Userlist)], 1, 0, 16)
         self.Input = urwid.Edit()
@@ -201,9 +201,11 @@ class KeckzMsgTab(KeckzBaseTab):
         self.MainView.set_focus(len(self.Output) - 1)
         self.parent.redisplay()
 
-    def listUser(self,users): # TODO: implement away-status
+    def listUser(self,users):
         self.completion=[]
-        self.Userlistarray
+        for i in range(0,len(self.Userlistarray)):
+            del(self.Userlistarray[0])
+        self.Userlistarray.append(urwid.Text('Userliste: '))
         for i in users:
             self.completion.append(i[0])
             if i[2] in 'x':
@@ -226,7 +228,7 @@ class KeckzMsgTab(KeckzBaseTab):
         if key == 'enter':
             text = self.Input.get_edit_text()
             self.Input.set_edit_text('')
-            self.parent.controller.sendMsg(self.room,text)
+            self.parent.controller.sendMsg(str(self.room),str(text))
         elif key == 'tab': # TODO: work something out for inline nick-completion
             input = self.Input.get_edit_text().split()
             nick = input.pop().lower()
