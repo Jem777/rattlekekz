@@ -124,6 +124,25 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def sendCPAnswer(self,user,msg):
         self.sendLine("311 "+user+" "+msg)
 
+    def sendMail(self,nick,msg,id):
+        mail={"id":id,"tonick":nick,"msg":msg}
+        self.sendLine("440 "+self.encoder(mail))
+
+    def getMaillist(self):
+        self.sendLine("450")
+
+    def getMailCount(self):
+        self.sendLine("460")
+
+    def getMail(self,id):
+        self.sendLine("461 "+id)
+
+    def deleteMail(self,id):
+        self.sendLine("462 "+id)
+
+    def deleteAllMails(self):
+        self.sendLine("463")
+
     def quitConnection(self):
         """ends the connection, usually getRooms is called afterwards"""
         self.sendLine("900")

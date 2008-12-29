@@ -21,6 +21,12 @@ sendSlashCommand(command,channel,msg) wenn eine msg mit / anfängt, wird sie aut
 sendPrivMsg(nick,msg)
 sendCPMsg(user,msg)
 sendCPAnswer(user,msg)
+sendMail(nick,msg,id)
+getMaillist()
+getMailCount()
+getMail(id)
+deleteMail(id)
+deleteAllMails()
 quitConnection()
 
 sollten in den controller implementiert sein:
