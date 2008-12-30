@@ -464,14 +464,6 @@ class KeckzInfoTab(KeckzBaseTab):
         self.set_footer(None)
         self.set_focus('body')
 
-class painter(urwid.WidgetWrap): # TODO remove unneeded attributes
-      def __init__(self, text, color):
-          w = urwid.Text(text)
-          w = urwid.AttrWrap(w, color, color)
-          urwid.WidgetWrap.__init__(self, w)
-      def selectable(self):
-          return True
-
 if __name__ == '__main__':
     kekzControl=controllerKeckz.Kekzcontroller(View,{'usercolors':True})
     kekzControl.view.startConnection("kekz.net",23002)
