@@ -24,17 +24,17 @@ class View:
         self.vargs = args # List of Arguments e.g. if Userlist got colors.
         self.name,self.version="KECKz","0.0"
         tui = curses_display.Screen()
-        colors =[('normal','default','default'), # TODO: More colors
-            ('admin','dark red','default'),
+        colors =[('normal','default','default'),
+            ('admin','light red','default'),
             ('chatop','yellow','default'),
-            ('roomop','dark blue','default'),
-            ('special','dark green','default'),
-            ('user','white','default'),
-            ('adminaway','dark red','light gray'), # TODO: review away colors
+            ('roomop','light blue','default'),
+            ('special','light green','default'),
+            ('user','default','default'),
+            ('adminaway','dark red','default'),
             ('chatopaway','yellow','light gray'),
-            ('roomopaway','dark blue','light gray'),
-            ('specialaway','dark green','light gray'),
-            ('useraway','dark gray','default'),
+            ('roomopaway','dark blue','default'),
+            ('specialaway','dark green','default'),
+            ('useraway','light gray','default'),
             ('divider', 'white', 'dark blue', 'standout'),
             ("myMsg","light green","default"),
             ("userMsg","light blue","default"),
