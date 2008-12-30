@@ -190,8 +190,9 @@ class View:
     def receivedInformation(self,info):
         if not self.lookupRooms.has_key("$infos"):
             self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
+            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
         self.ShownRoom="$infos"
-        self.lookupRooms[self.ShownRoom].addLine("Infos: "+info)
+        self.lookupRooms[self.ShownRoom].addLine(info)
 
     def receivedWhois(self,nick,array):
         pass
@@ -321,42 +322,16 @@ class KeckzLoginTab(KeckzBaseTab): # TODO: Make this fuck working
     def OnClose(self):
         self.parent.closeActiveWindow(self.room)
 
-class KeckzMsgTab(KeckzBaseIOTab):
+class KeckzPrivTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
-        self.Userlistarray=[urwid.Text('Userliste: ')]
-        self.Userlist = urwid.ListBox(self.Userlistarray)
-        self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
-        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
-        self.header.set_text("KECKz (Alpha: "+rev+") - Raum: "+self.room)
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
+        self.header.set_text("KECKz (Alpha: "+rev+") - Private Unterhaltung "+self.room)
 
     def connectWidgets(self):
         self.set_header(self.header)
         self.set_body(self.vsizer)
         self.set_footer(self.Input)
         self.set_focus('footer')
-
-    def listUser(self,users):
-        self.completion=[]
-        for i in range(0,len(self.Userlistarray)):
-            del(self.Userlistarray[0])
-        self.Userlistarray.append(urwid.Text('Userliste: '))
-        for i in users:
-            self.completion.append(i[0])
-            if i[2] in 'x':
-                self.color='user'
-            elif i[2] in 's':
-                self.color='special'
-            elif i[2] in 'c':
-                self.color='roomop'
-            elif i[2] in 'o':
-                self.color='chatop'
-            elif i[2] in 'a':
-                self.color='admin'
-            if i[1] == True:
-                self.color=self.color+'away'
-            self.Userlistarray.append(painter(i[0],self.color))
-            self.Userlist.set_focus(len(self.Userlistarray) - 1)
-        self.parent.redisplay()
 
     def onKeyPressed(self, size, key):
         KeckzBaseIOTab.onKeyPressed(self, size, key)
@@ -381,21 +356,44 @@ class KeckzMsgTab(KeckzBaseIOTab):
             self.keypress(size, key)
 
     def sendStr(self,string):
+        self.parent.controller.sendPrivMsg(str(self.room[1:]),str(string))
+
+class KeckzMsgTab(KeckzPrivTab):
+    def buildOutputWidgets(self):
+        self.Userlistarray=[urwid.Text('Userliste: ')]
+        self.Userlist = urwid.ListBox(self.Userlistarray)
+        self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
+        self.header.set_text("KECKz (Alpha: "+rev+") - Raum: "+self.room)
+
+    def listUser(self,users):
+        self.completion=[]
+        for i in range(0,len(self.Userlistarray)):
+            del(self.Userlistarray[0])
+        self.Userlistarray.append(urwid.Text('Userliste: '))
+        for i in users:
+            self.completion.append(i[0])
+            if i[2] in 'x':
+                self.color='user'
+            elif i[2] in 's':
+                self.color='special'
+            elif i[2] in 'c':
+                self.color='roomop'
+            elif i[2] in 'o':
+                self.color='chatop'
+            elif i[2] in 'a':
+                self.color='admin'
+            if i[1] == True:
+                self.color=self.color+'away'
+            self.Userlistarray.append(painter(i[0],self.color))
+            self.Userlist.set_focus(len(self.Userlistarray) - 1)
+        self.parent.redisplay()
+
+    def sendStr(self,string):
         self.parent.controller.sendMsg(str(self.room),str(string))
 
     def OnClose(self):
         self.sendStr("/part")
-
-class KeckzPrivTab(KeckzMsgTab):
-    def buildOutputWidgets(self):
-        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
-        self.header.set_text("KECKz (Alpha: "+rev+") - Private Unterhaltung "+self.room)
-
-    def sendStr(self,string):
-        self.parent.controller.sendPrivMsg(str(self.room[1:]),str(string))
-
-    def OnClose(self):
-        self.parent.closeActiveWindow(self.room)
 
 class KeckzMailTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
