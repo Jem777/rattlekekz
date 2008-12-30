@@ -110,9 +110,14 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def sendSlashCommand(self,command,channel,msg):
         """Msg starting with a Slash / """
         if msg.isspace(): pass
-        if command=="/exit": pass #self.exit()
+        elif command=="/exit": pass #self.exit()
         elif command=="/sendm": pass
-        elif command=="/msg" or command=="/p": self.sendPrivMsg(channel,msg)
+        elif command=="/msg" or command=="/p":
+            msg=msg.split(" ")
+            if not len(msg)<2:
+                user=msg[0]
+                msg=" ".join(msg[1:])
+                self.sendPrivMsg(user,msg)
         else: self.sendLine("101 %s %s %s" % (channel,command,msg))
 
     def sendPrivMsg(self,nick,msg):

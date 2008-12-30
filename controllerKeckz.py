@@ -134,6 +134,9 @@ class Kekzcontroller():
         else:     
             self.model.sendMsg(channel,msg)
 
+    def sendPrivMsg(self,nick,msg):
+        self.model.sendPrivMsg(nick,msg)
+
     def sendJoin(self,room):
         self.model.sendJoin(room)
 

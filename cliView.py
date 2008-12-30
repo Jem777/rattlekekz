@@ -95,14 +95,16 @@ class View:
         self.redisplay()
 
     def successLogin(self,nick,status,room):
+        self.Ping="Ping: 0ms"
         self.nickname=nick
         self.ShownRoom=room
         self.lookupRooms.update({room:KeckzMsgTab(room,self)})
         self.lookupRooms[self.ShownRoom].addLine("Logged successful in as "+nick+"\nJoined room "+room)
 
     def receivedPing(self,deltaPing):
+        self.Ping="Ping: "+str(deltaPing)+"ms"
         for i in self.lookupRooms:
-            self.lookupRooms[i].setPing("Ping: "+str(deltaPing)+"ms")
+            self.lookupRooms[i].setPing(self.Ping)
         self.redisplay()
 
     def printMsg(self,nick,msg,room,state):
@@ -118,6 +120,7 @@ class View:
             room="#"+nick
             if self.lookupRooms.has_key(room)==False:
                 self.lookupRooms.update({room:KeckzPrivTab(room, self)})
+                self.lookupRooms[room].setPing(self.Ping)
         if state==4:
             room=self.ShownRoom
         if not type(msg) == """<type 'list'>""":
@@ -154,6 +157,7 @@ class View:
 
     def meJoin(self,room,background):
         self.lookupRooms.update({room:KeckzMsgTab(room, self)})
+        self.lookupRooms[room].setPing(self.Ping)
         if not background:
             self.ShownRoom=room
             self.redisplay()
@@ -172,6 +176,7 @@ class View:
 
     def meGo(self,oldroom,newroom):
         self.lookupRooms.update({newroom:KeckzMsgTab(newroom, self)})
+        self.lookupRooms[newroom].setPing(self.Ping)
         self.ShownRoom=newroom
         del self.lookupRooms[oldroom]
         self.redisplay()
@@ -251,7 +256,7 @@ class KeckzBaseTab(urwid.Frame):
             self.MainView.keypress(size, key)
 
     def OnClose(self):
-        self.parent.closeWindow(self.room)
+        self.parent.closeActiveWindow(self.room)
 
 class KeckzBaseIOTab(KeckzBaseTab):
     def __init__(self,room, parent):
@@ -279,7 +284,6 @@ class KeckzBaseIOTab(KeckzBaseTab):
 
 class KeckzMsgTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
-
         self.Userlistarray=[urwid.Text('Userliste: ')]
         self.Userlist = urwid.ListBox(self.Userlistarray)
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
@@ -291,9 +295,6 @@ class KeckzMsgTab(KeckzBaseIOTab):
         self.set_body(self.vsizer)
         self.set_footer(self.Input)
         self.set_focus('footer')
-
-    def sendStr(self,string):
-        self.parent.controller.sendMsg(str(self.room),str(string))
 
     def listUser(self,users):
         self.completion=[]
@@ -337,18 +338,22 @@ class KeckzMsgTab(KeckzBaseIOTab):
         else:
             self.keypress(size, key)
 
+    def sendStr(self,string):
+        self.parent.controller.sendMsg(str(self.room),str(string))
+
     def OnClose(self):
         self.sendStr("/part")
 
-class KeckzPrivTab(KeckzBaseIOTab):
+class KeckzPrivTab(KeckzMsgTab):
     def buildOutputWidgets(self):
-        self.header=urwid.Text("KECKz - Private Unterhaltung "+self.room,"center")
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
+        self.header.set_text("KECKz (Alpha: "+rev+") - Private Unterhaltung "+self.room)
 
-    def connectWidgets(self):
-        self.set_header(self.header)
-        self.set_body(self.MainView)
-        self.set_footer(self.Input)
-        self.set_focus('footer')
+    def sendStr(self,string):
+        self.parent.controller.sendPrivMsg(str(self.room[1:]),str(string))
+
+    def OnClose(self):
+        self.parent.closeActiveWindow(self.room)
 
 class KeckzMailTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
