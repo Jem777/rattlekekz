@@ -116,7 +116,7 @@ class View:
                 msg=[("userMsg",nick+": "),msg]
         elif state==3:
             msg=[("myMsg",self.nickname+": "),msg]
-            
+
         if state==2 or state==3:
             room="#"+nick
             if self.lookupRooms.has_key(room)==False:
@@ -257,7 +257,7 @@ class KeckzBaseTab(urwid.Frame):
         self.parent.redisplay()
 
     def onKeyPressed(self, size, key):
-        if key in ('up', 'down', 'page up', 'page down'):
+        if key in ('page up', 'page down'):
             self.MainView.keypress(size, key)
 
     def OnClose(self):
@@ -304,7 +304,7 @@ class KeckzLoginTab(KeckzBaseTab): # TODO: Make this fuck working
         self.MainView = urwid.ListBox(self.Output)
         self.upperDivider=urwid.Text(("divider","Ping: 0ms"), "right")
         self.header=urwid.Text("KECKz","center")
-        
+
         self.buildOutputWidgets()
         self.connectWidgets()
 
@@ -364,9 +364,9 @@ class KeckzPrivTab(KeckzBaseIOTab):
                 nick = input.pop().lower()
                 solutions=[]
                 for i in self.completion:
-                    if nick in i[:len(nick)].lower():
+                    if nick in str(i[:len(nick)]).lower():
                         solutions.append(i)
-                if len(solutions) is not (0 or 1):
+                if len(solutions) != 0 and len(solutions) != 1:
                     self.addLine(" ".join(solutions))
                 elif len(solutions) is not 0:
                     input.append(solutions[0])
