@@ -193,10 +193,18 @@ class View:
             self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
             self.lookupRooms[self.ShownRoom].setPing(self.Ping)
         self.ShownRoom="$infos"
+        self.lookupRooms[self.ShownRoom].addLine(("divider","Infos: "))
         self.lookupRooms[self.ShownRoom].addLine(info)
 
     def receivedWhois(self,nick,array):
-        pass
+        if not self.lookupRooms.has_key("$infos"):
+            self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
+            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+        self.ShownRoom="$infos"
+        self.lookupRooms[self.ShownRoom].addLine(("divider","Whois von "+nick))
+        for i in array:
+            self.lookupRooms[self.ShownRoom].addLine(i)
+        self.lookupRooms[self.ShownRoom].addLine(("divider","Ende des Whois"))
 
     def MailInfo(self,info):
         pass
@@ -484,6 +492,12 @@ class KeckzInfoTab(KeckzBaseTab):
         self.set_body(self.vsizer)
         self.set_footer(None)
         self.set_focus('body')
+
+    def onKeyPressed(self, size, key):
+        if key in ('page up', 'page down'):
+            self.MainView.keypress(size, key)
+        elif key=="q":
+            self.OnClose()
 
 if __name__ == '__main__':
     kekzControl=controllerKeckz.Kekzcontroller(View,{'usercolors':True})
