@@ -164,7 +164,7 @@ class Kekzcontroller():
 
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
-        self.model.sendHandshake(sha1(self.view.fubar()).hexdigest())
+        self.view.fubar()
 
     def startedConnection(self):
         """indicates that the model is connecting. Here should be a call to the view later on"""
@@ -334,6 +334,9 @@ class Kekzcontroller():
     def sendMailsuccessful(self,id):
         self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" wurde erfolgreich verschickt")
         del self.lookupSendId[id]
+
+    def sendBullshit(self,bullshit):
+        self.model.sendHandshake(sha1(bullshit).hexdigest())
 
     def sendMailfailed(self,id,msg):
         self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" konnte nicht verschickt werden: "+msg)
