@@ -284,7 +284,10 @@ class KeckzBaseIOTab(KeckzBaseTab):
                 self.OnClose()
             else:
                 self.sendStr(str(text))
-                self.history.insert(0,text)
+                if self.count is not -1:
+                    self.history.insert(0,self.history.pop(self.count))
+                else:
+                    self.history.insert(0,text)
                 self.count = -1
             self.Input.set_edit_text('')
 
