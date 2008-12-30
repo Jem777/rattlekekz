@@ -26,26 +26,35 @@ class View:
         self.name,self.version="KECKz","0.0"
         tui = curses_display.Screen()
         tui.set_input_timeouts(0.1)
-        colors =[('normal','default','default'),
-            ('admin','light red','default'),
-            ('chatop','yellow','default'),
-            ('roomop','light blue','default'),
-            ('special','light green','default'),
-            ('user','default','default'),
-            ('adminaway','dark red','default'),
-            ('chatopaway','brown','default'),
-            ('roomopaway','dark blue','default'),
-            ('specialaway','dark green','default'),
-            ('useraway','light gray','default'),
+        colors =[('normal','default','default','standout'),
             ('divider', 'white', 'dark blue', 'standout'),
-            ("myMsg","light green","default"),
-            ("userMsg","light blue","default"),
-            ("timestamp","dark green","default"),
+
+            ('red','light red','default'),  #admin
+            ('yellow','yellow','default'),  #chatop
+            ('blue','light blue','default'), #roomop
+            ('green','light green','default'), #special
+            ('redaway','dark red','default'),
+            ('yellowaway','brown','default'),
+            ('blueaway','dark blue','default'),
+            ('greenaway','dark green','default'),
+            ('normalaway','light gray','default'),
+            ("timestamp","dark green","default"), #time
             ("magenta","light magenta","default"),
             ("cyan","light cyan","default"),
             ("orange","brown","default"),
             ("pink","light magenta","default"),
-            ("white","white","default")]
+            ("white","white","default"),
+
+            ('normalbold','default','default','bold'),
+            ('redbold','light red','default','bold'),  #admin
+            ('yellowbold','yellow','default','bold'),  #chatop
+            ('bluebold','light blue','default','bold'), #roomop
+            ('greenbold','light green','default','bold'), #special
+            ("magentabold","light magenta","default",'bold'),
+            ("cyanbold","light cyan","default",'bold'),
+            ("orangebold","brown","default",'bold'),
+            ("pinkbold","light magenta","default",'bold'),
+            ("whitebold","white","default",'bold')]
         tui.register_palette(colors)
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
@@ -85,6 +94,7 @@ class View:
         for key in keys:
             if key == 'window resize':
                 self.size = self.tui.get_cols_rows()
+                self.redisplay()
             elif key == "ctrl n" or key=="ctrl p":
                 array=self.lookupRooms.keys()
                 index=array.index(self.ShownRoom)
@@ -116,7 +126,6 @@ class View:
         self.redisplay()
 
     def deparse(self,msg):
-        lookupColours={"red":"admin","blue":"roomop","green":"special","gray":"useraway","yellow":"chatop"}
         text,format=controllerKeckz.decode(msg)
         msg=[]
         for i in range(len(text)):
@@ -124,13 +133,13 @@ class View:
                 continue
             form=format[i].split(",")
             color="normal"
+            font=""
             for a in form:
                 if a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow","white"]:
-                    if lookupColours.has_key(a):
-                        color=lookupColours[a]
-                    else:
-                        color=a
-            msg.append((color,text[i]))
+                    color=a
+                if a == "bold":
+                    font="bold"
+            msg.append((color+font,text[i]))
             #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
             #self.lookupRooms[room].addLine(text[i])
         return msg
@@ -139,11 +148,11 @@ class View:
         msg=[("timestamp",time.strftime("[%H:%M] ",time.localtime(time.time())))]
         if state==0 or state==2 or state==4:
             if nick==self.nickname:
-                msg.append(("myMsg",nick+": "))
+                msg.append(("green",nick+": "))
             else:    
-                msg.append(("userMsg",nick+": "))
+                msg.append(("blue",nick+": "))
         elif state==3:
-            msg.append(("myMsg",self.nickname+": "))
+            msg.append(("green",self.nickname+": "))
         if state==2 or state==3:
             room="#"+nick
             if self.lookupRooms.has_key(room)==False:
@@ -426,15 +435,15 @@ class KeckzMsgTab(KeckzPrivTab):
             for i in users:
                 self.completion.append(i[0])
                 if i[2] in 'x':
-                    self.color='user'
+                    self.color='normal'
                 elif i[2] in 's':
-                    self.color='special'
+                    self.color='green'
                 elif i[2] in 'c':
-                    self.color='roomop'
+                    self.color='blue'
                 elif i[2] in 'o':
-                    self.color='chatop'
+                    self.color='yellow'
                 elif i[2] in 'a':
-                    self.color='admin'
+                    self.color='red'
                 if i[1] == True:
                     self.color=self.color+'away'
                 self.Userlistarray.append(urwid.Text((self.color,i[0]))) # may we use ● in front of nicks
