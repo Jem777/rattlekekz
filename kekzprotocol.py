@@ -21,12 +21,17 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller=controller
         # this should be checked properly, with a numerical version number comparisation, or something like that.
         # check how to check and compare version numbers in python.
-        if sys.version.startswith("2.5"):
-            self.encoder=lambda x: json.JsonWriter().write(x)
-            self.decoder=lambda y: json.JsonReader().read(y)
-        else:
-            self.encoder=lambda x: json.JSONEncoder().encode(x)
-            self.decoder=lambda y: json.JSONDecoder().decode(y)
+        try:
+            import cjson
+            self.encoder=lambda x: cjson.encode(x)
+            self.decoder=lambda y: cjson.decode(y)
+        except:
+            if sys.version.startswith("2.5"):
+                self.encoder=lambda x: json.JsonWriter().write(x)
+                self.decoder=lambda y: json.JsonReader().read(y)
+            else:
+                self.encoder=lambda x: json.JSONEncoder().encode(x)
+                self.decoder=lambda y: json.JSONDecoder().decode(y)
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
@@ -358,7 +363,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def kekzCode470(self,data):
         mails=data.split("#")
-        nick,header=int(mails[0]),int(mails[1])
+        nick,header=str(mails[0]),str("#".join(mails[1:]))
         self.controller.receivedNewMail(nick,header)
 
     def kekzCode901(self,data):
