@@ -405,7 +405,9 @@ class KeckzMsgTab(KeckzPrivTab):
                     self.color='%'
                 if i[1] == True:
                     self.away=' A'
-                self.Userlistarray.append(urwid.Text(self.color+i[0]+self.A))
+                else:
+                    self.away=''
+                self.Userlistarray.append(urwid.Text(self.color+i[0]+self.away))
         self.Userlist.set_focus(len(self.Userlistarray) - 1)
         self.parent.redisplay()
 
@@ -471,5 +473,5 @@ class painter(urwid.WidgetWrap): # TODO remove unneeded attributes
           return True
 
 if __name__ == '__main__':
-    kekzControl=controllerKeckz.Kekzcontroller(View)
+    kekzControl=controllerKeckz.Kekzcontroller(View,{'usercolors':True})
     kekzControl.view.startConnection("kekz.net",23002)
