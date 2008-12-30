@@ -32,7 +32,7 @@ class main():
                 print '-n, --nousercolors: This Option disables colors of the Userlist in cliView'
                 sys.exit()
 
-    def startKeckz(self, host, view="cli", vargs={'usercolors':True}):
+    def startKeckz(self, host, view="cli", *args, **kwds):
         try:
             exec("from "+view+" import *")
         except:
@@ -40,11 +40,11 @@ class main():
             sys.exit()
         if str(type(View))=="""<type 'classobj'>""": #TODO: We'll have to have a check whether foo.View exists
             import controllerKeckz
-            kekzControl=controllerKeckz.Kekzcontroller(View,vargs)
+            kekzControl=controllerKeckz.Kekzcontroller(View, *args, **kwds)
             kekzControl.view.startConnection(host,23002)
         else:
             print 'not implemented yet'
             sys.exit()
 
 f = main()
-f.startKeckz(f.host, f.view, f.vargs)
+f.startKeckz(f.host, f.view, usercolors=f.vargs[usercolors])

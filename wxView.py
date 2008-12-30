@@ -231,7 +231,7 @@ class KECKzMsgTab(KECKzPrivTab):
 
 
 class View:
-    def __init__(self,controller):
+    def __init__(self,controller, *args, **kwds):
         self.name,self.version="wxKECKz","0.0"
         self.lookupRooms={}
         self.ping="" #the string, which contains the current ping

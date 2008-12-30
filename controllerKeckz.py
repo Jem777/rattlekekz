@@ -75,9 +75,9 @@ def decode(string):
     return textlist,formatlist
 
 class Kekzcontroller():
-    def __init__(self, interface, interfaceargs):
+    def __init__(self, interface, *args, **kwds):
         self.model = kekzprotocol.KekzClient(self)
-        self.view = interface(self, interfaceargs)
+        self.view = interface(self, *args, **kwds)
         self.readConfigfile()
         
         self.joinInfo=["Join","Login","Einladung"]

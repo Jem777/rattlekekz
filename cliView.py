@@ -19,9 +19,10 @@ class TextTooLongError(Exception):
     pass
 
 class View:
-    def __init__(self, controller, args):
+    def __init__(self, controller, *args, **kwds):
         self.controller=controller
-        self.vargs = args # List of Arguments e.g. if Userlist got colors.
+        self.vargs = args
+        self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
         self.name,self.version="KECKz","0.0"
         tui = curses_display.Screen()
         colors =[('normal','default','default'),
@@ -154,7 +155,7 @@ class View:
         self.lookupRooms[self.ShownRoom].addLine("Fehler: "+message)
 
     def listUser(self,room,users):
-        self.lookupRooms[room].listUser(users,self.vargs['usercolors'])
+        self.lookupRooms[room].listUser(users,self.kwds['usercolors'])
 
     def meJoin(self,room,background):
         self.lookupRooms.update({room:KeckzMsgTab(room, self)})
@@ -206,14 +207,22 @@ class View:
             self.lookupRooms[self.ShownRoom].addLine(i)
         self.lookupRooms[self.ShownRoom].addLine(("divider","Ende des Whois"))
 
+    def openMailTab(self):
+        if not self.lookupRooms.has_key("$mail"):
+            self.lookupRooms.update({"$mail":KeckzMailTab("$mail", self)})
+            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+        self.ShownRoom="$mail"
+
     def MailInfo(self,info):
-        pass
+        self.openMailTab()
+        self.lookupRooms[self.ShownRoom].addLine(("divider","Infos: "))
+        self.lookupRooms[self.ShownRoom].addLine(info)
 
     def receivedMails(self,userid,mailcount,mails):
-        pass
+        self.openMailTab()
 
     def printMail(self,user,date,mail):
-        pass
+        self.openMailTab()
 
     def quit(self):
         self.controller.quitConnection()  #TODO: afterwarts either the login screen must be shown or the application exit
@@ -286,6 +295,8 @@ class KeckzBaseIOTab(KeckzBaseTab):
             text = self.Input.get_edit_text()
             if text=="":
                pass
+            elif text=="/m":
+                self.parent.openMailTab()
             elif text=="/quit":
                 self.parent.quit()
             elif text=="/close":
@@ -448,16 +459,18 @@ class KeckzMsgTab(KeckzPrivTab):
 
 class KeckzMailTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
-        self.header.set_text("KECKz - KekzMail")
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
+        self.header.set_text("KECKz  (Alpha: "+rev+") - KekzMail")
 
     def connectWidgets(self):
         self.set_header(self.header)
-        self.set_body(self.MainView)
+        self.set_body(self.vsizer)
         self.set_footer(self.Input)
         self.set_focus('footer')
 
+
     def sendStr(self,string):
-        stringlist=sting.split(" ")
+        stringlist=string.split(" ")
         if stringlist[0]==("/refresh"):
             self.parent.controller.refreshMaillist()
         elif stringlist[0]==("/show"):
@@ -474,13 +487,19 @@ class KeckzMailTab(KeckzBaseIOTab):
                 msg=" ".join(stringlist[2:])
                 self.sendMail(user,msg)
         elif stringlist[0]==("/help"):
-            self.addLine("""Hilfe: \nMails neu abrufen: /refresh \n
-                         Mail anzeigen: /show index \n
-                         Mail löschen: /del index \n
-                         Alle gelesenen Mails löschen: /del all \n
-                         Mail versenden: /sendm nick msg""")
+            self.addLine("""Hilfe:
+        Mails neu abrufen: /refresh
+        Mail anzeigen: /show index
+        Mail löschen: /del index 
+        Alle gelesenen Mails löschen: /del all 
+        Mail versenden: /sendm nick msg""")
         else:
             self.addLine("Sie haben keinen gültigen Befehl eingegeben")
+
+    def onKeyPressed(self, size, key):
+        KeckzBaseIOTab.onKeyPressed(self, size, key)
+        if not key in ('page up', 'page down', 'enter'): 
+            self.keypress(size, key)
 
 class KeckzInfoTab(KeckzBaseTab):
     def buildOutputWidgets(self):
@@ -500,5 +519,5 @@ class KeckzInfoTab(KeckzBaseTab):
             self.OnClose()
 
 if __name__ == '__main__':
-    kekzControl=controllerKeckz.Kekzcontroller(View,{'usercolors':True})
+    kekzControl=controllerKeckz.Kekzcontroller(View,usercolors=True)
     kekzControl.view.startConnection("kekz.net",23002)
