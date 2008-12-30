@@ -47,4 +47,4 @@ class main():
             sys.exit()
 
 f = main()
-f.startKeckz(f.host, f.view, usercolors=f.vargs[usercolors])
+f.startKeckz(f.host, f.view, usercolors=f.vargs['usercolors'])
