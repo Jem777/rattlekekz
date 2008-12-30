@@ -30,11 +30,11 @@ class View:
             ('roomop','dark blue','default'),
             ('special','dark green','default'),
             ('user','white','default'),
-            ('adminaway','dark red','light gray'),
+            ('adminaway','dark red','light gray'), # TODO: review away colors
             ('chatopaway','yellow','light gray'),
             ('roomopaway','dark blue','light gray'),
             ('specialaway','dark green','light gray'),
-            ('useraway','white','light gray'),
+            ('useraway','dark gray','default'),
             ('divider', 'white', 'dark blue', 'standout'),
             ("myMsg","light green","default"),
             ("userMsg","light blue","default"),
@@ -388,7 +388,7 @@ class KeckzMsgTab(KeckzPrivTab):
                     self.color='admin'
                 if i[1] == True:
                     self.color=self.color+'away'
-                self.Userlistarray.append(painter(i[0],self.color))
+                self.Userlistarray.append(urwid.Text((self.color,i[0]))) # may we use ● in front of nicks
         else:
             self.away=''
             for i in users:
