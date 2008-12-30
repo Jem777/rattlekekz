@@ -188,6 +188,9 @@ class View:
         pass
 
     def receivedInformation(self,info):
+        if not self.lookupRooms.has_key("$infos"):
+            self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
+        self.ShownRoom="$infos"
         self.lookupRooms[self.ShownRoom].addLine("Infos: "+info)
 
     def receivedWhois(self,nick,array):
@@ -376,8 +379,12 @@ class KeckzMailTab(KeckzBaseIOTab):
                 self.parent.controller.deleteAllMails()
             else:
                 self.parent.controller.deleteMail(stringlist[1])
+            self.parent.controller.refreshMaillist()
         elif stringlist[0]==("/sendm"):
-            self.controller.sendMail(self,nick,msg)
+            if not len(stringlist)<3:
+                user=stringlist[1]
+                msg=" ".join(stringlist[2:])
+                self.sendMail(user,msg)
         elif stringlist[0]==("/help"):
             self.addLine("""Hilfe: \nMails neu abrufen: /refresh \n
                          Mail anzeigen: /show index \n
@@ -387,6 +394,16 @@ class KeckzMailTab(KeckzBaseIOTab):
         else:
             self.addLine("Sie haben keinen gültigen Befehl eingegeben")
 
+class KeckzInfoTab(KeckzBaseTab):
+    def buildOutputWidgets(self):
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView])
+        self.header.set_text("KECKz (Alpha: "+rev+") - Nachrichtenanzeige")
+
+    def connectWidgets(self):
+        self.set_header(self.header)
+        self.set_body(self.vsizer)
+        self.set_footer(None)
+        self.set_focus('body')
 
 class painter(urwid.WidgetWrap): # TODO remove unneeded attributes
       def __init__(self, text, color):
