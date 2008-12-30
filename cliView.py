@@ -269,19 +269,23 @@ class KeckzBaseIOTab(KeckzBaseTab):
         KeckzBaseTab.__init__(self,room, parent)
         self.hasOutput=True
         self.hasInput=True
- 
+        self.history=[]
+        self.count = -1
+
     def onKeyPressed(self, size, key):
         KeckzBaseTab.onKeyPressed(self, size, key)
         if key == 'enter': 
             text = self.Input.get_edit_text()
             if text=="":
-                pass
+               pass
             elif text=="/quit":
                 self.parent.quit()
             elif text=="/close":
                 self.OnClose()
             else:
                 self.sendStr(str(text))
+                self.history.insert(0,text)
+                self.count = -1
             self.Input.set_edit_text('')
 
     def sendStr(self,string):
@@ -317,7 +321,7 @@ class KeckzLoginTab(KeckzBaseTab): # TODO: Make this fuck working
         self.parent.redisplay()
 
     def onKeyPressed(self, size, key):
-        if key in ('up', 'down', 'page up', 'page down'):
+        if key in ('page up', 'page down'):
             self.MainView.keypress(size, key)
 
     def OnClose(self):
@@ -337,7 +341,21 @@ class KeckzPrivTab(KeckzBaseIOTab):
 
     def onKeyPressed(self, size, key):
         KeckzBaseIOTab.onKeyPressed(self, size, key)
-        if key == 'tab': # TODO: work something out for inline nick-completion and review ghost-lines-bug
+        if key in ('up', 'down'):
+            if key in 'up' and len(self.history) is not (0 or self.count+1):
+                self.count+=1
+                if self.count is 0:
+                    self.current = self.Input.get_edit_text()
+                    self.Input.set_edit_text(self.history[self.count])
+                else:
+                    self.Input.set_edit_text(self.history[self.count])
+            elif key in 'down' and self.count is not -1:
+                self.count-=1
+                if self.count is -1:
+                    self.Input.set_edit_text(self.current)
+                else:
+                    self.Input.set_edit_text(self.history[self.count])
+        elif key == 'tab': # TODO: work something out for inline nick-completion and review ghost-lines-bug
             input = self.Input.get_edit_text().split()
             if len(input) is not 0:
                 nick = input.pop().lower()
