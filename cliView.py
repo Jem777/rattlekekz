@@ -31,7 +31,7 @@ class View:
             ('special','light green','default'),
             ('user','default','default'),
             ('adminaway','dark red','default'),
-            ('chatopaway','yellow','light gray'),
+            ('chatopaway','brown','default'),
             ('roomopaway','dark blue','default'),
             ('specialaway','dark green','default'),
             ('useraway','light gray','default'),
