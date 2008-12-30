@@ -19,8 +19,9 @@ class TextTooLongError(Exception):
     pass
 
 class View:
-    def __init__(self, controller):
+    def __init__(self, controller, args):
         self.controller=controller
+        self.vargs = args # List of Arguments e.g. if Userlist got colors.
         self.name,self.version="KECKz","0.0"
         tui = curses_display.Screen()
         colors =[('normal','default','default'), # TODO: More colors
@@ -153,7 +154,7 @@ class View:
         self.lookupRooms[self.ShownRoom].addLine("Fehler: "+message)
 
     def listUser(self,room,users):
-        self.lookupRooms[room].listUser(users)
+        self.lookupRooms[room].listUser(users,self.vargs['usercolors'])
 
     def meJoin(self,room,background):
         self.lookupRooms.update({room:KeckzMsgTab(room, self)})
@@ -326,6 +327,7 @@ class KeckzPrivTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
         self.header.set_text("KECKz (Alpha: "+rev+") - Private Unterhaltung "+self.room)
+        self.completion=[self.room[1:]]
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -366,27 +368,45 @@ class KeckzMsgTab(KeckzPrivTab):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
         self.header.set_text("KECKz (Alpha: "+rev+") - Raum: "+self.room)
 
-    def listUser(self,users):
+    def listUser(self,users,color=True):
         self.completion=[]
         for i in range(0,len(self.Userlistarray)):
             del(self.Userlistarray[0])
         self.Userlistarray.append(urwid.Text('Userliste: '))
-        for i in users:
-            self.completion.append(i[0])
-            if i[2] in 'x':
-                self.color='user'
-            elif i[2] in 's':
-                self.color='special'
-            elif i[2] in 'c':
-                self.color='roomop'
-            elif i[2] in 'o':
-                self.color='chatop'
-            elif i[2] in 'a':
-                self.color='admin'
-            if i[1] == True:
-                self.color=self.color+'away'
-            self.Userlistarray.append(painter(i[0],self.color))
-            self.Userlist.set_focus(len(self.Userlistarray) - 1)
+        if color is True:
+            for i in users:
+                self.completion.append(i[0])
+                if i[2] in 'x':
+                    self.color='user'
+                elif i[2] in 's':
+                    self.color='special'
+                elif i[2] in 'c':
+                    self.color='roomop'
+                elif i[2] in 'o':
+                    self.color='chatop'
+                elif i[2] in 'a':
+                    self.color='admin'
+                if i[1] == True:
+                    self.color=self.color+'away'
+                self.Userlistarray.append(painter(i[0],self.color))
+        else:
+            self.away=''
+            for i in users:
+                self.completion.append(i[0])
+                if i[2] in 'x':
+                    self.color=' '
+                elif i[2] in 's':
+                    self.color='~'
+                elif i[2] in 'c':
+                    self.color='$'
+                elif i[2] in 'o':
+                    self.color='@'
+                elif i[2] in 'a':
+                    self.color='%'
+                if i[1] == True:
+                    self.away=' A'
+                self.Userlistarray.append(urwid.Text(self.color+i[0]+self.A))
+        self.Userlist.set_focus(len(self.Userlistarray) - 1)
         self.parent.redisplay()
 
     def sendStr(self,string):
