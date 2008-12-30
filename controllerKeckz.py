@@ -351,7 +351,7 @@ class Kekzcontroller():
         self.view.receivedMails(userid,mailcount,mails)
 
     def receivedMailcount(self,unreadmails,allmails):
-        self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" konnte nicht verschickt werden: "+msg)
+        self.view.MailInfo(str(unreadmails)+" ungelesene Mails, insgesamt "+str(allmails)+" Mails")
 
     def requestMailfailed(self,error):
         self.view.MailInfo("Die Mail konnte nicht gefunden werden: "+error)

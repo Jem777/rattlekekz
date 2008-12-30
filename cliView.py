@@ -211,6 +211,7 @@ class View:
         if not self.lookupRooms.has_key("$mail"):
             self.lookupRooms.update({"$mail":KeckzMailTab("$mail", self)})
             self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+            self.controller.refreshMaillist()
         self.ShownRoom="$mail"
 
     def MailInfo(self,info):
