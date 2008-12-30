@@ -40,7 +40,12 @@ class View:
             ('divider', 'white', 'dark blue', 'standout'),
             ("myMsg","light green","default"),
             ("userMsg","light blue","default"),
-            ("timestamp","dark green","default")]
+            ("timestamp","dark green","default"),
+            ("magenta","light magenta","default"),
+            ("cyan","light cyan","default"),
+            ("orange","brown","default"),
+            ("pink","light magenta","default"),
+            ("white","white","default")]
         tui.register_palette(colors)
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
@@ -110,15 +115,35 @@ class View:
             self.lookupRooms[i].setPing(self.Ping)
         self.redisplay()
 
-    def printMsg(self,nick,msg,room,state):
+    def deparse(self,msg):
+        lookupColours={"red":"admin","blue":"roomop","green":"special","gray":"useraway","yellow":"chatop"}
+        text,format=controllerKeckz.decode(msg)
+        msg=[]
+        for i in range(len(text)):
+            if text[i].isspace() or text[i]=="":
+                continue
+            form=format[i].split(",")
+            color="normal"
+            for a in form:
+                if a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow","white"]:
+                    if lookupColours.has_key(a):
+                        color=lookupColours[a]
+                    else:
+                        color=a
+            msg.append((color,text[i]))
+            #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
+            #self.lookupRooms[room].addLine(text[i])
+        return msg
+
+    def printMsg(self,nick,message,room,state):
+        msg=[("timestamp",time.strftime("[%H:%M] ",time.localtime(time.time())))]
         if state==0 or state==2 or state==4:
             if nick==self.nickname:
-                msg=[("myMsg",nick+": "),msg]
+                msg.append(("myMsg",nick+": "))
             else:    
-                msg=[("userMsg",nick+": "),msg]
+                msg.append(("userMsg",nick+": "))
         elif state==3:
-            msg=[("myMsg",self.nickname+": "),msg]
-
+            msg.append(("myMsg",self.nickname+": "))
         if state==2 or state==3:
             room="#"+nick
             if self.lookupRooms.has_key(room)==False:
@@ -126,31 +151,9 @@ class View:
                 self.lookupRooms[room].setPing(self.Ping)
         if state==4:
             room=self.ShownRoom
-        if not type(msg) == """<type 'list'>""":
-            msg=[msg]
-        msg.insert(0,("timestamp",time.strftime("[%H:%M] ",time.localtime(time.time()))))
+        msg.extend(self.deparse(message))
         self.lookupRooms[room].addLine(msg)
-        
-        
-        """text,format=controllerKeckz.decode(msg)        #TODO this is just how it work in wxView
-        for i in range(len(text)):
-            form=format[i].split(",")
-            styleTupel=wx.TextAttr()
-            wxFont=wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL)
-            if "bold" in form:
-                wxFont.SetWeight(wx.BOLD)
-            if "italic" in form:
-                wxFont.SetStyle(wx.ITALIC)
-            for a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow"]:
-                if a in form:
-                    styleTupel.SetTextColour(a.upper())
-                else:
-                    styleTupel.SetTextColour("BLACK")
-            if "imageurl" in form:
-                pass
-            styleTupel.SetFont(wxFont)
-            self.lookupRooms[room].addLine(text[i])
-            #room.printMsg(text[i],styleTupel)"""
+
 
     def gotException(self, message):
         self.lookupRooms[self.ShownRoom].addLine("Fehler: "+message)
@@ -195,8 +198,9 @@ class View:
             self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
             self.lookupRooms[self.ShownRoom].setPing(self.Ping)
         self.ShownRoom="$infos"
+        msg=self.deparse(info)
         self.lookupRooms[self.ShownRoom].addLine(("divider","Infos: "))
-        self.lookupRooms[self.ShownRoom].addLine(info)
+        self.lookupRooms[self.ShownRoom].addLine(msg)
 
     def receivedWhois(self,nick,array):
         if not self.lookupRooms.has_key("$infos"):
@@ -205,7 +209,7 @@ class View:
         self.ShownRoom="$infos"
         self.lookupRooms[self.ShownRoom].addLine(("divider","Whois von "+nick))
         for i in array:
-            self.lookupRooms[self.ShownRoom].addLine(i)
+            self.lookupRooms[self.ShownRoom].addLine(self.deparse(i))
         self.lookupRooms[self.ShownRoom].addLine(("divider","Ende des Whois"))
 
     def openMailTab(self):
@@ -225,6 +229,9 @@ class View:
 
     def printMail(self,user,date,mail):
         self.openMailTab()
+        msg=[]
+        msg.extend(self.deparse(mail))
+        self.lookupRooms[self.ShownRoom].addLine(msg)
 
     def quit(self):
         self.controller.quitConnection()  #TODO: afterwarts either the login screen must be shown or the application exit

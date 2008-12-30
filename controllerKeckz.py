@@ -14,6 +14,7 @@ def formatopts(formlist, opt):
                 "co":"orange",
                 "cp":"pink",
                 "cy":"yellow",
+                "cw":"white",
                 "fi":"italic",
                 "fb":"bold"}
     if opt=="fx":
@@ -57,7 +58,7 @@ def decode(string):
         if array[i].startswith("n"):
             textlist[-1]=textlist[-1]+"\n"
             if array[i]=="nu": 
-                textlist[-1]=textlist[-1]+"\t"
+                textlist[-1]=textlist[-1]+" > > >"
             elif array[i]=="nr":
                 textlist.append("")
                 formatlist.append("hline")
@@ -320,7 +321,7 @@ class Kekzcontroller():
                 key="<raw>"
             if key == "<h1>":
                 key="<raw>"
-                value="%nn%%fb%"+value.capitalize()+"%fb%"
+                value="%nn%%nn%%cb%%fb%"+value.capitalize()+"%fb%%cb%"
             if not key == "<raw>":
                 value="%fb%"+key.capitalize()+":%fb% "+value
             Output.append(value)
