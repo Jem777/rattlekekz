@@ -25,6 +25,7 @@ class View:
         self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
         self.name,self.version="KECKz","0.0"
         tui = curses_display.Screen()
+        tui.set_input_timeouts(0.1)
         colors =[('normal','default','default'),
             ('admin','light red','default'),
             ('chatop','yellow','default'),

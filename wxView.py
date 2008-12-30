@@ -234,6 +234,7 @@ class View:
     def __init__(self,controller, *args, **kwds):
         self.name,self.version="wxKECKz","0.0"
         self.lookupRooms={}
+        self.args,self.kwds=args,kwds
         self.ping="" #the string, which contains the current ping
         
         self.kekzControl=controller
@@ -242,15 +243,15 @@ class View:
         wx.InitAllImageHandlers()
         
         self.LoginFrame = KECKzLogin(self.kekzControl, None, -1, "KECKz - Login") # starting the LoginFrame, but not displaying it
-        self.KECKz.SetTopWindow(self.LoginFrame)
-        reactor.registerWxApp(self.KECKz) # starting the twisted reactor
+        self.KECKz.SetTopWindow(self.LoginFrame) # starting the twisted reactor
 
     def startConnection(self,server,port):
-        self.controller.startConnection(server,port)
+        reactor.registerWxApp(self.KECKz)
+        self.kekzControl.startConnection(server,port)
 
     def fubar(self):
         """This function sends bullshit to the controller for debugging purposes"""
-        return "".join(map(lambda x:chr(ord(x)-42),"\x84\x8fNb\x92k\x8c\x8f\x80\x8fZ\xa3MZM\x98\x8f\x9e\x95\x8f\x95\x84^J\x8c\x8f\x9e\x8bJ\\ZZbZc[Z"))
+        self.kekzControl.sendBullshit("".join(map(lambda x:chr(ord(x)-42),"\x84\x8fNb\x92k\x8c\x8f\x80\x8fZ\xa3MZM\x98\x8f\x9e\x95\x8f\x95\x84^J\x8c\x8f\x9e\x8bJ\\ZZbZc[Z")))
 
     def receivedPreLoginData(self,rooms,array):
         for i in range(len(rooms)):
@@ -372,5 +373,7 @@ class View:
         dlg.ShowModal()
         dlg.Destroy()
 
-if __name__=="__main__":
-    controllerKeckz.Kekzcontroller(View).startConnection("kekz.net",23002)
+if __name__ == '__main__':
+    kekzControl=controllerKeckz.Kekzcontroller(View,usercolors=True)
+    kekzControl.view.startConnection("kekz.net",23002)
+
