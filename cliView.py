@@ -397,6 +397,5 @@ class painter(urwid.WidgetWrap): # TODO remove unneeded attributes
           return True
 
 if __name__ == '__main__':
-
     kekzControl=controllerKeckz.Kekzcontroller(View)
     kekzControl.view.startConnection("kekz.net",23002)
