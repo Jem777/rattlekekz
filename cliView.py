@@ -44,6 +44,7 @@ class View:
             ("orange","brown","default"),
             ("pink","light magenta","default"),
             ("white","white","default"),
+            ('gray','light gray','default'),
 
             ('normalbold','default','default','bold'),
             ('redbold','light red','default','bold'),  #admin
@@ -54,7 +55,8 @@ class View:
             ("cyanbold","light cyan","default",'bold'),
             ("orangebold","brown","default",'bold'),
             ("pinkbold","light magenta","default",'bold'),
-            ("whitebold","white","default",'bold')]
+            ("whitebold","white","default",'bold'),
+            ('graybold','light gray','default',"bold")]
         tui.register_palette(colors)
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)

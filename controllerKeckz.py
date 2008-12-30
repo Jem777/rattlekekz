@@ -58,7 +58,7 @@ def decode(string):
         if array[i].startswith("n"):
             textlist[-1]=textlist[-1]+"\n"
             if array[i]=="nu": 
-                textlist[-1]=textlist[-1]+" > > >"
+                textlist[-1]=textlist[-1]+" > > > "
             elif array[i]=="nr":
                 textlist.append("")
                 formatlist.append("hline")
