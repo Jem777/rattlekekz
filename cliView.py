@@ -285,6 +285,42 @@ class KeckzBaseIOTab(KeckzBaseTab):
     def sendStr(self,string):
         pass
 
+class KeckzLoginTab(KeckzBaseTab): # TODO: Make this fuck working
+    def __init__(self,rooms,logindata,parent):
+        self.hasOutput=False
+        self.hasInput=True
+        self.room='login'
+        self.parent=parent
+        self.Output = []
+        self.MainView = urwid.ListBox(self.Output)
+        self.upperDivider=urwid.Text(("divider","Ping: 0ms"), "right")
+        self.header=urwid.Text("KECKz","center")
+        
+        self.buildOutputWidgets()
+        self.connectWidgets()
+
+    def buildOutputWidgets(self):
+        """This should be overwritten by derived classes"""
+
+    def connectWidgets(self):
+        """This should be overwritten by derived classes"""
+
+    def setPing(self,string):
+        self.upperDivider.set_text(string)
+
+    def addLine(self, text):
+        """ add a line to the internal list of lines"""
+        self.Output.append(urwid.Text(text))
+        self.MainView.set_focus(len(self.Output) - 1)
+        self.parent.redisplay()
+
+    def onKeyPressed(self, size, key):
+        if key in ('up', 'down', 'page up', 'page down'):
+            self.MainView.keypress(size, key)
+
+    def OnClose(self):
+        self.parent.closeActiveWindow(self.room)
+
 class KeckzMsgTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
         self.Userlistarray=[urwid.Text('Userliste: ')]
@@ -336,7 +372,10 @@ class KeckzMsgTab(KeckzBaseIOTab):
                     self.addLine(" ".join(solutions))
                 elif len(solutions) is not 0:
                     input.append(solutions[0])
-                    self.Input.set_edit_text(" ".join(input))
+                    if len(input) is not 1:
+                        self.Input.set_edit_text(" ".join(input)+" ")
+                    else:
+                        self.Input.set_edit_text(" ".join(input)+", ")
                     self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         else:
             self.keypress(size, key)
