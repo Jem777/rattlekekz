@@ -125,6 +125,11 @@ class View:
                 self.lookupRooms[self.ShownRoom].onKeyPressed(self.size, key)
         self.redisplay()
 
+    def receivedPreLoginData(self,rooms,array):
+        self.lookupRooms.update({"$login":KeckzLoginTab("$login",self)})
+        self.ShownRoom="$login"
+        self.lookupRooms[self.ShownRoom].receivedPreLoginData(rooms,array)
+
     def successLogin(self,nick,status,room):
         self.Ping="Ping: 0ms"
         self.nickname=nick
@@ -189,6 +194,10 @@ class View:
 
 
     def gotException(self, message):
+        if len(self.lookupRooms)==0:
+            self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
+            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+            self.ShownRoom="$infos"
         self.lookupRooms[self.ShownRoom].addLine("Fehler: "+message)
 
     def listUser(self,room,users):
@@ -306,7 +315,9 @@ class View:
             self.redisplay()
 
     def connectionLost(self, failure):
-        pass
+        self.tui.stop()
+        reactor.stop()
+        print "Verbindung verloren: "+str(failure)
 
 class KeckzBaseTab(urwid.Frame):
     def __init__(self, room, parent):
@@ -387,25 +398,18 @@ class KeckzBaseIOTab(KeckzBaseTab):
     def sendCPMsg(self,user,cpmsg):
         pass
 
-class KeckzLoginTab(KeckzBaseTab): # TODO: Make this fuck working
-    def __init__(self,rooms,logindata,parent):
+class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
+    def buildOutputWidgets(self):
+        self.Input = urwid.Edit()
         self.hasOutput=False
         self.hasInput=True
-        self.room='login'
-        self.parent=parent
-        self.Output = []
-        self.MainView = urwid.ListBox(self.Output)
-        self.upperDivider=urwid.Text(("divider","Ping: 0ms"), "right")
-        self.header=urwid.Text("KECKz","center")
-
-        self.buildOutputWidgets()
-        self.connectWidgets()
-
-    def buildOutputWidgets(self):
-        """This should be overwritten by derived classes"""
+        self.header.set_text("KECKz (Alpha: "+rev+") - Private Unterhaltung "+self.room)
 
     def connectWidgets(self):
         """This should be overwritten by derived classes"""
+
+    def receivedPreLoginData(self,rooms,array):
+        pass
 
     def setPing(self,string):
         self.upperDivider.set_text(string)
