@@ -357,7 +357,7 @@ class KeckzBaseIOTab(KeckzBaseTab):
         pass
     
     def sendCPMsg(self,user,cpmsg):
-        self.parent.controller.sendCPMsg(str(user),str(cpmsg))
+        pass
 
 class KeckzLoginTab(KeckzBaseTab): # TODO: Make this fuck working
     def __init__(self,rooms,logindata,parent):
@@ -442,6 +442,9 @@ class KeckzPrivTab(KeckzBaseIOTab):
                     self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         else:
             self.keypress(size, key)
+
+    def sendCPMsg(self,user,cpmsg):
+        self.parent.controller.sendCPMsg(str(user),str(cpmsg))
 
     def sendStr(self,string):
         self.parent.controller.sendPrivMsg(str(self.room[1:]),str(string))
@@ -541,9 +544,6 @@ class KeckzMailTab(KeckzBaseIOTab):
         Mail versenden: /sendm nick msg""")
         else:
             self.addLine("Sie haben keinen gültigen Befehl eingegeben")
-
-    def sendCPMsg(self,user,cpmsg):
-        pass
 
     def onKeyPressed(self, size, key):
         KeckzBaseIOTab.onKeyPressed(self, size, key)
