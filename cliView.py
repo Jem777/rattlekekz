@@ -349,8 +349,11 @@ class KeckzBaseTab(urwid.Frame):
         self.parent.redisplay()
 
     def onKeyPressed(self, size, key):
-        if key in ('page up', 'page down'):
-            self.MainView.keypress(size, key)
+        if key in ('ctrl up', 'ctrl down', 'page up', 'page down'):
+            if key in ('ctrl up', 'ctrl down'):
+                self.MainView.keypress(size, key.split()[1])
+            else:
+                self.MainView.keypress(size, key)
 
     def OnClose(self):
         self.parent.closeActiveWindow(self.room)
@@ -533,6 +536,11 @@ class KeckzMsgTab(KeckzPrivTab):
                 self.Userlistarray.append(urwid.Text(self.color+i[0]+self.away))
         self.Userlist.set_focus(len(self.Userlistarray) - 1)
         self.parent.redisplay()
+
+    def onKeyPressed(self, size, key):
+        KeckzPrivTab.onKeyPressed(self, size, key)
+        if key in ('meta up', 'meta down'):
+            self.Userlist.keypress(size, key.split()[1])
 
     def sendStr(self,string):
         self.parent.controller.sendMsg(str(self.room),str(string))
