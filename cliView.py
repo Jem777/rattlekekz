@@ -203,6 +203,14 @@ class View:
             self.ShownRoom="$infos"
         self.lookupRooms[self.ShownRoom].addLine("Fehler: "+message)
 
+    def gotLoginException(self, message):
+        if len(self.lookupRooms)==0:
+            self.lookupRooms.update({"$login":KeckzInfoTab("$login", self)})
+            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+            self.ShownRoom="$login"
+        self.lookupRooms[self.ShownRoom].addLine("Fehler: "+message)
+        self.lookupRooms[self.ShownRoom].reLogin()
+
     def listUser(self,room,users):
         self.lookupRooms[room].listUser(users,self.kwds['usercolors'])
 
@@ -415,6 +423,12 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
         self.set_body(self.vsizer)
         self.set_footer(self.Input)
         self.set_focus('footer')
+
+    def reLogin(self):
+        self.nick,self.passwd,self.room=["","",""]
+        self.integer=-1
+        self.addLine("\nGeben sie ihren Nicknamen ein: ")
+        self.Input.set_edit_text(self.nick)
 
     def receivedPreLoginData(self,rooms,array):
         self.nick,self.passwd,self.room=array

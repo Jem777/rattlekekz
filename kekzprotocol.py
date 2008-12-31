@@ -370,7 +370,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.gotException(data)
 
     def kekzCode920(self,data):
-        self.controller.gotException(data)
+        self.controller.gotLoginException(data)
 
     def kekzCode921(self,data):
         self.controller.gotException(data)

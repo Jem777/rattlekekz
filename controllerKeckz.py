@@ -262,6 +262,9 @@ class Kekzcontroller():
     def botMsg(self,nick,msg):
         self.view.printMsg(nick,msg,"",4)
 
+    def gotLoginException(self, message):
+        self.view.gotLoginException(message)
+
     def gotException(self, message):
         self.view.gotException(message)
 
