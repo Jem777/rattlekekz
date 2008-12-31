@@ -340,9 +340,16 @@ class Kekzcontroller():
         self.view.receivedWhois(nick, Output)
 
     def receivedCPMsg(self,user,cpmsg):
-        pass
+        self.view.receivedCPMsg(user,cpmsg)
+
+    def sendCPAnswer(self,user,cpmsg):
+        self.model.sendCPAnswer(user,cpmsg)
+
+    def sendCPMsg(self,user,cpmsg):
+        self.model.sendCPMsg(user,cpmsg)
+
     def receivedCPAnswer(self,user,cpanswer):
-        pass
+        self.view.receivedCPAnswer(user,cpanswer)
 
     def sendMailsuccessful(self,id):
         self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" wurde erfolgreich verschickt")

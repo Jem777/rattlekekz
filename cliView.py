@@ -209,6 +209,19 @@ class View:
         self.lookupRooms[self.ShownRoom].addLine(("divider","Infos: "))
         self.lookupRooms[self.ShownRoom].addLine(msg)
 
+    def receivedCPMsg(self,user,cpmsg):
+        if cpmsg.upper() not in ('VERSION','PING'):
+            self.controller.sendCPAnswer(user,cpmsg+' unknown')
+        else:
+            self.printMsg(user+' [CTCP]',cpmsg,self.ShownRoom,0)
+            if cpmsg.upper() in 'VERSION':
+                self.controller.sendCPAnswer(user,cpmsg+' '+self.name+' '+self.version)
+            elif cpmsg.upper() in 'PING':
+                self.controller.sendCPAnswer(user,cpmsg+' ping')
+
+    def receivedCPAnswer(self,user,cpanswer):
+        self.printMsg(user+' [CTCPAnswer]',cpanswer,self.ShownRoom,0)
+
     def receivedWhois(self,nick,array):
         if not self.lookupRooms.has_key("$infos"):
             self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
@@ -321,21 +334,30 @@ class KeckzBaseIOTab(KeckzBaseTab):
                pass
             elif text=="/m":
                 self.parent.openMailTab()
+            elif text[:5]=="/ctcp":
+                cpmsg=text.split(' ')
+                del(cpmsg[0])
+                user=cpmsg.pop(0)
+                cpmsg=" ".join(cpmsg)
+                self.sendCPMsg(user,cpmsg)
             elif text=="/quit":
                 self.parent.quit()
             elif text=="/close":
                 self.OnClose()
             else:
                 self.sendStr(str(text))
-                if self.count is not -1:
-                    self.history.insert(0,self.history.pop(self.count))
-                else:
-                    self.history.insert(0,text)
-                self.count = -1
+            if self.count is not -1:
+                self.history.insert(0,self.history.pop(self.count))
+            else:
+                self.history.insert(0,text)
+            self.count = -1
             self.Input.set_edit_text('')
 
     def sendStr(self,string):
         pass
+    
+    def sendCPMsg(self,user,cpmsg):
+        self.parent.controller.sendCPMsg(str(user),str(cpmsg))
 
 class KeckzLoginTab(KeckzBaseTab): # TODO: Make this fuck working
     def __init__(self,rooms,logindata,parent):
@@ -519,6 +541,9 @@ class KeckzMailTab(KeckzBaseIOTab):
         Mail versenden: /sendm nick msg""")
         else:
             self.addLine("Sie haben keinen gültigen Befehl eingegeben")
+
+    def sendCPMsg(self,user,cpmsg):
+        pass
 
     def onKeyPressed(self, size, key):
         KeckzBaseIOTab.onKeyPressed(self, size, key)
