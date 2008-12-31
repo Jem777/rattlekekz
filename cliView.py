@@ -20,6 +20,7 @@ class TextTooLongError(Exception):
 
 class View:
     def __init__(self, controller, *args, **kwds):
+        self.Ping="divider","Ping: inf. ms"
         self.nickname=""
         self.controller=controller
         self.vargs = args
