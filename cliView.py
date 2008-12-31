@@ -57,8 +57,23 @@ class View:
             ("orangebold","brown","default",'bold'),
             ("pinkbold","light magenta","default",'bold'),
             ("whitebold","white","default",'bold'),
-            ('graybold','light gray','default',"bold")]
+            ('graybold','light gray','default',"bold"),
+            ('smilie','black','brown')]
         tui.register_palette(colors)
+        self.smilies={"s6":":-)",
+                 "s4":":-(",
+                 "s1":":-/",
+                 "s8":"X-O",
+                 "s7":"(-:",
+                 "s9":"?-|",
+                 "s10":"X-|",
+                 "s11":"8-)",
+                 "s2":":-D",
+                 "s3":":-P",
+                 "s5":";-)",
+                 "sxmas":"o:)",
+                 "s12":":-E",
+                 "s13":":-G"}
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
         self.tui = tui
@@ -137,6 +152,12 @@ class View:
                     color=a
                 if a == "bold":
                     font="bold"
+                if a in "sb":
+                    if self.smilies.has_key(text[i]):
+                        text[i]=self.smilies[text[i]]
+                        color="smilie"
+                    else:
+                        text[i]=""
             msg.append((color+font,text[i]))
             #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
             #self.lookupRooms[room].addLine(text[i])

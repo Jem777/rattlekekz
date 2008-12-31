@@ -54,7 +54,12 @@ def decode(string):
                 formatlist.append(formatlist[-1]+",imageurl")
             formatlist.append(formatlist[-2])
         if array[i].startswith("i"):
-            continue
+            textlist.append(array[i][1:])
+            if formatlist[-1]=="normal":
+                formatlist.append("sb")
+            else:
+                formatlist.append(formatlist[-1]+",sb")
+            formatlist.append(formatlist[-2])
         if array[i].startswith("n"):
             textlist[-1]=textlist[-1]+"\n"
             if array[i]=="nu": 
