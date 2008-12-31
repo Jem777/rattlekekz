@@ -439,13 +439,16 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
             if self.Input.edit_pos != len(self.passwd):
                 self.passwd = self.passwd[:self.Input.edit_pos]+self.passwd[self.Input.edit_pos+1:]
                 self.Input.set_edit_text('*'*len(self.passwd))
-                self.addLine(self.passwd)
         elif key == 'left':
             if self.Input.edit_pos != 0:
                 self.Input.set_edit_pos(self.Input.edit_pos-1)
         elif key == 'right':
             if self.Input.edit_pos != len(self.Input.get_edit_text()):
                 self.Input.set_edit_pos(self.Input.edit_pos+1)
+        elif key == 'end':
+            self.Input.set_edit_pos(len(self.parent))
+        elif key == 'home':
+            self.Input.set_edit_pist(0)
         elif key == 'enter':
             if self.integer==-1:
                 self.nick = self.Input.get_edit_text()
@@ -453,7 +456,7 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
                 self.Input.set_edit_text('*'*len(self.passwd))
                 self.integer+=1
             elif self.integer==0:
-                self.addLine("*"*len(self.passwd)+"\nGeben sie den Raum ein in den sie joinen wollen: ")
+                self.addLine('*'*len(self.passwd)+"\nGeben sie den Raum ein in den sie joinen wollen: ")
                 self.Input.set_edit_text(self.room)
                 self.integer+=1
             elif self.integer==1:
@@ -465,10 +468,16 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
                 self.parent.controller.sendLogin(self.nick,self.passwd,self.room)
                 self.Input.set_edit_text("")
         else:
-            if self.integer == 0 and key not in ('up','down','page up','page down','tab','esc','ctrl','meta'): # TODO: Filter more keys
-                self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
-                self.Input.set_edit_text('*'*len(self.passwd))
-                self.Input.set_edit_pos(self.Input.edit_pos+1)
+            if self.integer == 0 and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'): # TODO: Filter more keys
+                if len(key) is 2:
+                    if key[0].lower() != 'f':
+                        self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
+                        self.Input.set_edit_text('*'*len(self.passwd))
+                        self.Input.set_edit_pos(self.Input.edit_pos+1)
+                else:
+                    self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
+                    self.Input.set_edit_text('*'*len(self.passwd))
+                    self.Input.set_edit_pos(self.Input.edit_pos+1)
             else:
                 self.keypress(size, key)
 
