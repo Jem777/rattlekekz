@@ -463,7 +463,7 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
         elif key == 'end':
             self.Input.set_edit_pos(len(self.parent))
         elif key == 'home':
-            self.Input.set_edit_pist(0)
+            self.Input.set_edit_pos(0)
         elif key == 'enter':
             if self.integer==-1:
                 self.nick = self.Input.get_edit_text()
