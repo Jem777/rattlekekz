@@ -417,7 +417,7 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
 
     def receivedPreLoginData(self,rooms,array):
         self.nick,self.passwd,self.room=array
-        self.integer=0
+        self.integer=-1
         self.addLine("connected sucessful")
         for i in rooms:
             if i["users"]==i["max"]:
@@ -429,28 +429,48 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
 
     def onKeyPressed(self, size, key):
         KeckzBaseTab.onKeyPressed(self, size, key)
-        if key == 'enter': 
-            text = self.Input.get_edit_text()
-            if self.integer==0:
-                self.nick=text
-                self.addLine(text+"\nGeben sie ihr Passwort ein: ")
-                self.Input.set_edit_text(self.passwd)
-                self.integer=self.integer+1
-            elif self.integer==1:
-                self.passwd=text
-                self.addLine("\nGeben sie den Raum ein in den sie joinen wollen: ")
+        if key == 'backspace' and self.integer == 0:
+            if self.Input.edit_pos != 0:
+                self.passwd = self.passwd[:self.Input.edit_pos-1]+self.passwd[self.Input.edit_pos:]
+                self.Input.set_edit_text('*'*len(self.passwd))
+                if self.Input.edit_pos != len(self.passwd):
+                    self.Input.set_edit_pos(self.Input.edit_pos-1)
+        elif key == 'delete' and self.integer == 0:
+            if self.Input.edit_pos != len(self.passwd):
+                self.passwd = self.passwd[:self.Input.edit_pos]+self.passwd[self.Input.edit_pos+1:]
+                self.Input.set_edit_text('*'*len(self.passwd))
+                self.addLine(self.passwd)
+        elif key == 'left':
+            if self.Input.edit_pos != 0:
+                self.Input.set_edit_pos(self.Input.edit_pos-1)
+        elif key == 'right':
+            if self.Input.edit_pos != len(self.Input.get_edit_text()):
+                self.Input.set_edit_pos(self.Input.edit_pos+1)
+        elif key == 'enter':
+            if self.integer==-1:
+                self.nick = self.Input.get_edit_text()
+                self.addLine(self.nick+"\nGeben sie ihr Passwort ein: ")
+                self.Input.set_edit_text('*'*len(self.passwd))
+                self.integer+=1
+            elif self.integer==0:
+                self.addLine("*"*len(self.passwd)+"\nGeben sie den Raum ein in den sie joinen wollen: ")
                 self.Input.set_edit_text(self.room)
-                self.integer=self.integer+1
-            elif self.integer==2:
-                self.room=text
-                self.addLine(text+"\nLogging in")
+                self.integer+=1
+            elif self.integer==1:
+                self.room = self.Input.get_edit_text()
+                self.addLine(self.room+"\nLogging in")
                 self.room.strip()
                 re.sub("\s","",self.room)
                 self.nick.strip()
                 self.parent.controller.sendLogin(self.nick,self.passwd,self.room)
                 self.Input.set_edit_text("")
         else:
-            self.keypress(size, key)
+            if self.integer == 0 and key not in ('up','down','page up','page down','tab','esc','ctrl','meta'): # TODO: Filter more keys
+                self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
+                self.Input.set_edit_text('*'*len(self.passwd))
+                self.Input.set_edit_pos(self.Input.edit_pos+1)
+            else:
+                self.keypress(size, key)
 
 class KeckzPrivTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
