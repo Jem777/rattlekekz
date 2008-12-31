@@ -126,16 +126,18 @@ class View:
         self.redisplay()
 
     def receivedPreLoginData(self,rooms,array):
+        self.Ping="Ping: 0ms"
         self.lookupRooms.update({"$login":KeckzLoginTab("$login",self)})
         self.ShownRoom="$login"
         self.lookupRooms[self.ShownRoom].receivedPreLoginData(rooms,array)
 
     def successLogin(self,nick,status,room):
-        self.Ping="Ping: 0ms"
         self.nickname=nick
         self.ShownRoom=room
         self.lookupRooms.update({room:KeckzMsgTab(room,self)})
         self.lookupRooms[self.ShownRoom].addLine("Logged successful in as "+nick+"\nJoined room "+room)
+        if self.lookupRooms.has_key("$login"):
+            del self.lookupRooms["$login"]
 
     def receivedPing(self,deltaPing):
         self.Ping="Ping: "+str(deltaPing)+"ms"
@@ -403,32 +405,26 @@ class KeckzBaseIOTab(KeckzBaseTab):
 
 class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
     def buildOutputWidgets(self):
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
         self.Input = urwid.Edit()
         self.hasOutput=False
         self.hasInput=True
         self.header.set_text("KECKz (Alpha: "+rev+") - Private Unterhaltung "+self.room)
 
     def connectWidgets(self):
-        """This should be overwritten by derived classes"""
+        self.set_header(self.header)
+        self.set_body(self.vsizer)
+        self.set_footer(self.Input)
+        self.set_focus('footer')
 
     def receivedPreLoginData(self,rooms,array):
-        pass
+        self.addLine("connected sucessful")
+        for i in rooms:
+            if i["users"]==i["max"]:
+                self.addLine(("red",i["name"]+"("+str(i["users"])+")"))
+            else:
+                self.addLine(i["name"]+"("+str(i["users"])+")")
 
-    def setPing(self,string):
-        self.upperDivider.set_text(string)
-
-    def addLine(self, text):
-        """ add a line to the internal list of lines"""
-        self.Output.append(urwid.Text(text))
-        self.MainView.set_focus(len(self.Output) - 1)
-        self.parent.redisplay()
-
-    def onKeyPressed(self, size, key):
-        if key in ('page up', 'page down'):
-            self.MainView.keypress(size, key)
-
-    def OnClose(self):
-        self.parent.closeActiveWindow(self.room)
 
 class KeckzPrivTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
