@@ -152,10 +152,20 @@ class Kekzcontroller():
         self.model.getMaillist()
 
     def getMail(self,index):
-        self.model.getMail(id)
+        try:
+            id=self.lookupMailId[int(index)]
+        except:
+            self.view.MailInfo("Mail Nr."+str(index)+" existiert nicht")
+        else:
+            self.model.getMail(str(id))
 
     def deleteMail(self,index):
-        self.model.deleteMail(id)
+        try:
+            id=self.lookupMailId[int(index)]
+        except:
+            self.view.MailInfo("Mail Nr."+str(index)+" existiert nicht")
+        else:
+            self.model.deleteMail(str(id))
 
     def deleteAllMails(self):
         self.model.deleteAllMails()

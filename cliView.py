@@ -64,11 +64,6 @@ class View:
         self.lookupRooms={}
 
 
-    def fubar(self):
-        """This function sends bullshit to the controller for debugging purposes"""
-        self.controller.sendBullshit("".join(map(lambda x:chr(ord(x)-42),"\x84\x8fNb\x92k\x8c\x8f\x80\x8fZ\xa3MZM\x98\x8f\x9e\x95\x8f\x95\x84^J\x8c\x8f\x9e\x8bJ\\ZZbZc[Z")))
-
-
     def fileno(self):
         """ We want to select on FD 0 """
         return 0
@@ -237,15 +232,24 @@ class View:
 
     def receivedMails(self,userid,mailcount,mails):
         self.openMailTab()
+        if not len(mails)==0:
+            self.lookupRooms[self.ShownRoom].addLine(("green","\nMails: "))
+            for i in mails:
+                self.lookupRooms[self.ShownRoom].addLine(str(i["index"])+".: von "+i["from"]+", um "+i["date"]+": \n"+i["stub"])
 
     def printMail(self,user,date,mail):
         self.openMailTab()
-        msg=[]
+        msg=["\nMail von ",("red",user)," vom ",("gray",date+": \n"),"---Anfang der Mail---\n"]
         msg.extend(self.deparse(mail))
+        msg.append("\n---Ende der Mail---")
         self.lookupRooms[self.ShownRoom].addLine(msg)
 
     def quit(self):
         self.controller.quitConnection()  #TODO: afterwarts either the login screen must be shown or the application exit
+
+    def fubar(self):
+        """This function sends bullshit to the controller for debugging purposes"""
+        self.controller.sendBullshit("".join(map(lambda x:chr(ord(x)-42),"\x84\x8fNb\x92k\x8c\x8f\x80\x8fZ\xa3MZM\x98\x8f\x9e\x95\x8f\x95\x84^J\x8c\x8f\x9e\x8bJ\\ZZbZc[Z")))
 
     def closeActiveWindow(self,window):
         array=self.lookupRooms.keys()
