@@ -144,7 +144,7 @@ class Kekzcontroller():
     def sendMail(self,nick,msg):
         self.sendMailCount=self.sendMailCount+1
         id="Mail_"+str(self.sendMailCount)
-        self.lookupSendlId.update({id:nick})
+        self.lookupSendId.update({id:nick})
         self.model.sendMail(nick,msg,id)
 
     def refreshMaillist(self):
@@ -210,6 +210,8 @@ class Kekzcontroller():
 
 
     def successLogin(self,nick,status,room):
+        self.lookupSendId={}
+        self.sendMailCount=0
         self.Userlist={room:[]}
         self.view.successLogin(nick,status,room)
 
@@ -371,8 +373,8 @@ class Kekzcontroller():
         self.view.printMail(user,date,mail)
 
     def receivedNewMail(self,nick,header):
-        self.view.receivedInformation("Sie haben eine eine Nachricht von "+nick+" bekommen: "+header)
-        self.refreshMaillist()
+        self.view.MailInfo("Sie haben eine eine Nachricht von "+nick+" bekommen: "+header)
+        #self.refreshMaillist()
 
     def unknownMethod(self,name):
         pass
