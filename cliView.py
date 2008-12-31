@@ -126,7 +126,6 @@ class View:
         self.redisplay()
 
     def receivedPreLoginData(self,rooms,array):
-        self.Ping="Ping: inf. ms"
         self.lookupRooms.update({"$login":KeckzLoginTab("$login",self)})
         self.ShownRoom="$login"
         self.lookupRooms[self.ShownRoom].receivedPreLoginData(rooms,array)
@@ -136,6 +135,7 @@ class View:
         self.ShownRoom=room
         self.lookupRooms.update({room:KeckzMsgTab(room,self)})
         self.lookupRooms[self.ShownRoom].addLine("Logged successful in as "+nick+"\nJoined room "+room)
+        self.lookupRooms[self.ShownRoom].setPing(self.Ping)
         if self.lookupRooms.has_key("$login"):
             del self.lookupRooms["$login"]
 
