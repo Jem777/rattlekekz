@@ -317,8 +317,7 @@ class View:
             self.redisplay()
 
     def connectionLost(self, failure):
-        self.tui.stop()
-        reactor.stop()
+        #self.tui.stop()
         print "Verbindung verloren: "+str(failure)
 
 class KeckzBaseTab(urwid.Frame):
@@ -406,7 +405,6 @@ class KeckzBaseIOTab(KeckzBaseTab):
 class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
-        self.Input = urwid.Edit()
         self.hasOutput=False
         self.hasInput=True
         self.header.set_text("KECKz (Alpha: "+rev+") - Private Unterhaltung "+self.room)
@@ -418,13 +416,41 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
         self.set_focus('footer')
 
     def receivedPreLoginData(self,rooms,array):
+        self.nick,self.passwd,self.room=array
+        self.integer=0
         self.addLine("connected sucessful")
         for i in rooms:
             if i["users"]==i["max"]:
                 self.addLine(("red",i["name"]+"("+str(i["users"])+")"))
             else:
                 self.addLine(i["name"]+"("+str(i["users"])+")")
+        self.addLine("\nGeben sie ihren Nicknamen ein: ")
+        self.Input.set_edit_text(self.nick)
 
+    def onKeyPressed(self, size, key):
+        KeckzBaseTab.onKeyPressed(self, size, key)
+        if key == 'enter': 
+            text = self.Input.get_edit_text()
+            if self.integer==0:
+                self.nick=text
+                self.addLine(text+"\nGeben sie ihr Passwort ein: ")
+                self.Input.set_edit_text(self.passwd)
+                self.integer=self.integer+1
+            elif self.integer==1:
+                self.passwd=text
+                self.addLine("\nGeben sie den Raum ein in den sie joinen wollen: ")
+                self.Input.set_edit_text(self.room)
+                self.integer=self.integer+1
+            elif self.integer==2:
+                self.room=text
+                self.addLine(text+"\nLogging in")
+                self.room.strip()
+                re.sub("\s","",self.room)
+                self.nick.strip()
+                self.parent.controller.sendLogin(self.nick,self.passwd,self.room)
+                self.Input.set_edit_text("")
+        else:
+            self.keypress(size, key)
 
 class KeckzPrivTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
