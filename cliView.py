@@ -3,7 +3,7 @@
 
 revision = "$Revision$"
 
-import controllerKeckz, time, re 
+import controllerKeckz, time, re
 
 # Urwid
 import urwid
@@ -197,7 +197,8 @@ class View:
         self.lookupRooms[room].addLine("Neues Topic: "+topic)
 
     def loggedOut(self):
-        pass
+        self.tui.stop()
+        reactor.stop()
 
     def receivedInformation(self,info):
         if not self.lookupRooms.has_key("$infos"):
