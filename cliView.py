@@ -401,7 +401,7 @@ class KeckzPrivTab(KeckzBaseIOTab):
                     self.Input.set_edit_text(self.current)
                 else:
                     self.Input.set_edit_text(self.history[self.count])
-        elif key == 'tab': # TODO: work something out for inline nick-completion and review ghost-lines-bug
+        elif key == 'tab': # TODO: work something out for inline nick-completion
             input = self.Input.get_edit_text().split()
             if len(input) is not 0:
                 nick = input.pop().lower()
