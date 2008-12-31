@@ -27,12 +27,16 @@ class main():
                 if self.view in 'cliView':
                     self.vargs['timestamp'] = int(p) # TODO: implement this into wxView
             elif o in ['-?','-h','--help']:
-                print 'Usage: keckz [-h, -?, --help][-H, --host <host>][-v, --view <view>]'
+                print 'Usage: keckz [-h, -?, --help][-H, --host <host>][-v, --view <view>][-n, --nocolors][-t, --timestamp <integer>]'
                 print '-?, -h, --help: Display this help'
                 print '-H, --host: Host to connect, Default: kekz.net'
                 print '-l, --localhost: Connects to localhost (127.0.0.1)'
                 print '-v, --view: View to use, Default: cliView'
                 print '-n, --nousercolors: This Option disables colors of the Userlist in cliView'
+                print '-t, --timestamp: Determines the timestampformat to be used:'
+                print '1 ... [HH:MM] (default)'
+                print '2 ... [HH:MM:SS]'
+                print '3 ... [HHMM]'
                 sys.exit()
 
     def startKeckz(self, host, view="cli", *args, **kwds):
