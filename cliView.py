@@ -126,7 +126,7 @@ class View:
         self.redisplay()
 
     def receivedPreLoginData(self,rooms,array):
-        self.Ping="Ping: 0ms"
+        self.Ping="Ping: inf. ms"
         self.lookupRooms.update({"$login":KeckzLoginTab("$login",self)})
         self.ShownRoom="$login"
         self.lookupRooms[self.ShownRoom].receivedPreLoginData(rooms,array)
@@ -329,7 +329,7 @@ class KeckzBaseTab(urwid.Frame):
         self.parent=parent
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
-        self.upperDivider=urwid.Text(("divider","Ping: 0ms"), "right")
+        self.upperDivider=urwid.Text(("divider","Ping: inf. ms"), "right")
         self.header=urwid.Text("KECKz","center")
         
         self.buildOutputWidgets()
