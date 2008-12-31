@@ -20,6 +20,7 @@ class TextTooLongError(Exception):
 
 class View:
     def __init__(self, controller, *args, **kwds):
+        self.nickname=""
         self.controller=controller
         self.vargs = args
         self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
@@ -323,7 +324,7 @@ class KeckzBaseIOTab(KeckzBaseTab):
         KeckzBaseTab.__init__(self,room, parent)
         self.hasOutput=True
         self.hasInput=True
-        self.history=[]
+        self.history=["/kekz Jem raubkopierer"]
         self.count = -1
 
     def onKeyPressed(self, size, key):
