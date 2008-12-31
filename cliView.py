@@ -23,7 +23,7 @@ class View:
         self.controller=controller
         self.vargs = args
         self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
-        self.name,self.version="KECKz","0.0"
+        self.name,self.version="KECKz","rev. "+rev
         tui = curses_display.Screen()
         tui.set_input_timeouts(0.1)
         colors =[('normal','default','default','standout'),
@@ -214,9 +214,9 @@ class View:
             self.controller.sendCPAnswer(user,cpmsg+' unknown')
         else:
             self.printMsg(user+' [CTCP]',cpmsg,self.ShownRoom,0)
-            if cpmsg.upper() in 'VERSION':
-                self.controller.sendCPAnswer(user,cpmsg+' '+self.name+' '+self.version)
-            elif cpmsg.upper() in 'PING':
+            if cpmsg.lower() in 'version':
+                self.controller.sendCPAnswer(user,cpmsg+' '+self.name+' ('+self.version+')')
+            elif cpmsg.lower() in 'ping':
                 self.controller.sendCPAnswer(user,cpmsg+' ping')
 
     def receivedCPAnswer(self,user,cpanswer):
