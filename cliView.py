@@ -321,12 +321,6 @@ class View:
         #self.tui.stop()
         print "Verbindung verloren: "+str(failure)
 
-    def unknownMethod(self,name):
-        self.lookupRooms[self.ShownRoom].addLine(name+' | stub: implement me!')
-
-    def __getattr__(self, name):
-        return self.unknownMethod(name)
-
 class KeckzBaseTab(urwid.Frame):
     def __init__(self, room, parent):
         self.hasOutput=True
@@ -396,7 +390,7 @@ class KeckzBaseIOTab(KeckzBaseTab):
                 self.OnClose()
             else:
                 self.sendStr(str(text))
-            if self.count is not -1:
+            if self.count is not -1 and self.Input.get_edit_text() == self.history[self.count]:
                 self.history.insert(0,self.history.pop(self.count))
             else:
                 self.history.insert(0,text)
