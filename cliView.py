@@ -249,10 +249,10 @@ class View:
         self.lookupRooms[self.ShownRoom].addLine(msg)
 
     def receivedCPMsg(self,user,cpmsg):
+        self.printMsg(user+' [CTCP]',cpmsg,self.ShownRoom,0)
         if cpmsg.upper() not in ('VERSION','PING'):
             self.controller.sendCPAnswer(user,cpmsg+' unknown')
         else:
-            self.printMsg(user+' [CTCP]',cpmsg,self.ShownRoom,0)
             if cpmsg.lower() in 'version':
                 self.controller.sendCPAnswer(user,cpmsg+' '+self.name+' ('+self.version+')')
             elif cpmsg.lower() in 'ping':
