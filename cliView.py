@@ -429,9 +429,10 @@ class KeckzPrivTab(KeckzBaseIOTab):
                     self.Input.set_edit_text(self.current)
                 else:
                     self.Input.set_edit_text(self.history[self.count])
-        elif key == 'tab': # TODO: work something out for inline nick-completion
-            input = self.Input.get_edit_text().split()
+        elif key == 'tab':
+            input = self.Input.get_edit_text()
             if len(input) is not 0:
+                input,crap=input[:self.Input.edit_pos].split(),input[self.Input.edit_pos:]
                 nick = input.pop().lower()
                 solutions=[]
                 for i in self.completion:
@@ -442,10 +443,10 @@ class KeckzPrivTab(KeckzBaseIOTab):
                 elif len(solutions) is not 0:
                     input.append(solutions[0])
                     if len(input) is not 1:
-                        self.Input.set_edit_text(" ".join(input)+" ")
+                        self.Input.set_edit_text(" ".join(input)+" "+crap)
                     else:
-                        self.Input.set_edit_text(" ".join(input)+", ")
-                    self.Input.set_edit_pos(len(self.Input.get_edit_text()))
+                        self.Input.set_edit_text(" ".join(input)+", "+crap)
+                    self.Input.set_edit_pos(len(self.Input.get_edit_text())-len(crap))
         else:
             self.keypress(size, key)
 
