@@ -340,12 +340,13 @@ class KeckzBaseIOTab(KeckzBaseTab):
                pass
             elif text=="/m":
                 self.parent.openMailTab()
-            elif text[:5]=="/ctcp":
+            elif text.startswith("/ctcp"):
                 cpmsg=text.split(' ')
                 del(cpmsg[0])
-                user=cpmsg.pop(0)
-                cpmsg=" ".join(cpmsg)
-                self.sendCPMsg(user,cpmsg)
+                if len(cpmsg) is not (0 or 1):
+                    user=cpmsg.pop(0)
+                    cpmsg=" ".join(cpmsg)
+                    self.sendCPMsg(user,cpmsg)
             elif text=="/quit":
                 self.parent.quit()
             elif text=="/close":
