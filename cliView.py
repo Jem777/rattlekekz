@@ -407,7 +407,7 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
         self.hasOutput=False
         self.hasInput=True
-        self.header.set_text("KECKz (Alpha: "+rev+") - Private Unterhaltung "+self.room)
+        self.header.set_text("KECKz (Beta: "+rev+") - Private Unterhaltung "+self.room)
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -455,7 +455,7 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
 class KeckzPrivTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
-        self.header.set_text("KECKz (Alpha: "+rev+") - Private Unterhaltung "+self.room)
+        self.header.set_text("KECKz (Beta: "+rev+") - Private Unterhaltung "+self.room)
         self.completion=[self.room[1:]]
 
     def connectWidgets(self):
@@ -514,7 +514,7 @@ class KeckzMsgTab(KeckzPrivTab):
         self.Userlist = urwid.ListBox(self.Userlistarray)
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
-        self.header.set_text("KECKz (Alpha: "+rev+") - Raum: "+self.room)
+        self.header.set_text("KECKz (Beta: "+rev+") - Raum: "+self.room)
 
     def listUser(self,users,color=True):
         self.completion=[]
@@ -573,7 +573,7 @@ class KeckzMsgTab(KeckzPrivTab):
 class KeckzMailTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
-        self.header.set_text("KECKz  (Alpha: "+rev+") - KekzMail")
+        self.header.set_text("KECKz  (Beta: "+rev+") - KekzMail")
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -617,7 +617,7 @@ class KeckzMailTab(KeckzBaseIOTab):
 class KeckzInfoTab(KeckzBaseTab):
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView])
-        self.header.set_text("KECKz (Alpha: "+rev+") - Nachrichtenanzeige")
+        self.header.set_text("KECKz (Beta: "+rev+") - Nachrichtenanzeige")
 
     def connectWidgets(self):
         self.set_header(self.header)
