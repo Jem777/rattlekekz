@@ -416,10 +416,6 @@ class KeckzPrivTab(KeckzBaseIOTab):
     def onKeyPressed(self, size, key):
         KeckzBaseIOTab.onKeyPressed(self, size, key)
         if key in ('up', 'down'):
-            if self.Input.edit_pos == len(self.Input.get_edit_text()):
-                end = True
-            else:
-                end = False
             if key in 'up' and len(self.history) is not (0 or self.count+1):
                 self.count+=1
                 if self.count is 0:
@@ -433,8 +429,7 @@ class KeckzPrivTab(KeckzBaseIOTab):
                     self.Input.set_edit_text(self.current)
                 else:
                     self.Input.set_edit_text(self.history[self.count])
-            if end == True:
-                self.Input.set_edit_pos(len(self.Input.get_edit_text()))
+            self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         elif key == 'tab':
             input = self.Input.get_edit_text()
             if len(input) is not 0:
