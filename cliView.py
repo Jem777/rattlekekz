@@ -228,7 +228,7 @@ class View:
 
     def MailInfo(self,info):
         self.openMailTab()
-        self.lookupRooms[self.ShownRoom].addLine(("divider","Info:"),info)
+        self.lookupRooms[self.ShownRoom].addLine([("divider","Info:\n"),info])
 
     def receivedMails(self,userid,mailcount,mails):
         self.openMailTab()
@@ -509,7 +509,7 @@ class KeckzMailTab(KeckzBaseIOTab):
             if not len(stringlist)<3:
                 user=stringlist[1]
                 msg=" ".join(stringlist[2:])
-                self.parent.controller.sendMail(user,msg)
+                self.parent.controller.sendMail(user,str(msg))
         elif stringlist[0]==("/help"):
             self.addLine("""Hilfe:
         Mails neu abrufen: /refresh
