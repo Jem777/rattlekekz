@@ -143,7 +143,12 @@ class View:
         return msg
 
     def printMsg(self,nick,message,room,state):
-        msg=[("timestamp",time.strftime("[%H:%M] ",time.localtime(time.time())))]
+        if self.kwds['timestamp'] == 1:
+            msg=[("timestamp",time.strftime("[%H:%M] ",time.localtime(time.time())))]
+        elif self.kwds['timestamp'] == 2:
+            msg=[("timestamp",time.strftime("[%H:%M:%S] ",time.localtime(time.time())))]
+        elif self.kwds['timestamp'] == 3:
+            msg=[("timestamp",time.strftime("[%H%M] ",time.localtime(time.time())))]
         if state==0 or state==2 or state==4:
             if nick==self.nickname:
                 msg.append(("green",nick+": "))
@@ -569,5 +574,5 @@ class KeckzInfoTab(KeckzBaseTab):
             self.OnClose()
 
 if __name__ == '__main__':
-    kekzControl=controllerKeckz.Kekzcontroller(View,usercolors=True)
+    kekzControl=controllerKeckz.Kekzcontroller(View,usercolors=True,timestamp=1)
     kekzControl.view.startConnection("kekz.net",23002)

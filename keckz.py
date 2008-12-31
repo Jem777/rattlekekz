@@ -3,8 +3,8 @@
 
 import sys, getopt
 
-letters = 'H:v:?hln'
-keywords = ['host=','view=','help','localhost','nousercolors']
+letters = 'H:v:?hlnt:'
+keywords = ['host=','view=','help','localhost','nousercolors','timestamp=']
 opts, extraparams = getopt.getopt(sys.argv[1:],letters,keywords)
 
 
@@ -12,7 +12,7 @@ class main():
     def __init__(self):
         self.host = 'kekz.net'
         self.view = 'cliView'
-        self.vargs = {'usercolors':True}
+        self.vargs = {'usercolors':True, 'timestamp':1}
         for o,p in opts:
             if o in ['-H','--host']:
                 self.host = p
@@ -23,6 +23,9 @@ class main():
             elif o in ['-n','--nousercolors']:
                 if self.view in 'cliView':
                     self.vargs['usercolors'] = False
+            elif o in ['-t','--timestamp']:
+                if self.view in 'cliView':
+                    self.vargs['timestamp'] = int(p) # TODO: implement this into wxView
             elif o in ['-?','-h','--help']:
                 print 'Usage: keckz [-h, -?, --help][-H, --host <host>][-v, --view <view>]'
                 print '-?, -h, --help: Display this help'
@@ -47,4 +50,4 @@ class main():
             sys.exit()
 
 f = main()
-f.startKeckz(f.host, f.view, usercolors=f.vargs['usercolors'])
+f.startKeckz(f.host, f.view, usercolors=f.vargs['usercolors'], timestamp=f.vargs['timestamp'])
