@@ -288,6 +288,9 @@ class View:
             self.lookupRooms[self.ShownRoom].addLine(self.deparse(i))
         self.lookupRooms[self.ShownRoom].addLine(("divider","Ende des Whois"))
 
+    def receivedProfile(self,name,ort,homepage,hobbies,signature):
+        self.lookupRooms[self.ShownRoom].addLine('receivedProfile | stub: implement me!')
+
     def openMailTab(self):
         if not self.lookupRooms.has_key("$mail"):
             self.lookupRooms.update({"$mail":KeckzMailTab("$mail", self)})
@@ -420,7 +423,7 @@ class KeckzBaseIOTab(KeckzBaseTab):
     def sendCPMsg(self,user,cpmsg):
         pass
 
-class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
+class KeckzLoginTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
         self.hasOutput=False
