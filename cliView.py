@@ -215,8 +215,8 @@ class View:
             style=""
             if message.find(self.nickname) or state==2:
                 style="dividerme"
-            elif state == 5:
-                style="dividerstate"
+            elif state==5:
+                style="dividerstate" #TODO: it still doesn't work
             else:
                 style="divider"
             if not style=="":
@@ -406,7 +406,6 @@ class KeckzBaseTab(urwid.Frame):
         if len(self.statelist)==2:
             self.statelist.extend([("dividerstate"," (Act:"),("dividerstate"," )")])
         ranking=["dividerme","divider","dividerstate"]
-        #ranking=["dividerstate","divider","dividerme"]
         for i in ranking:
             try:
                 self.statelist.index((i, number))
@@ -414,7 +413,7 @@ class KeckzBaseTab(urwid.Frame):
                 if i == "dividerstate":
                     self.statelist.insert(-1,(style, number))
             else:
-                if ranking.index(style) < i:
+                if ranking.index(style) > ranking.index(i):
                     self.statelist[self.statelist.index((i, number))]=(style, number)
                 break
         numbers=self.statelist[3:-1]
