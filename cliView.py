@@ -3,7 +3,7 @@
 
 revision = "$Revision$"
 
-import controllerKeckz, time, re
+import controllerKeckz, time, re, sys
 
 # Urwid
 import urwid
@@ -345,8 +345,8 @@ class View:
             self.redisplay()
 
     def connectionLost(self, failure): # TODO: Better handling for closed Connections
-        #self.tui.stop()
-        print "Verbindung verloren: "+str(failure)
+        self.lookupRooms[self.ShownRoom].addLine("Verbindung verloren; das Fenster wird sich jetzt schließen")
+        reactor.callLater(3, lambda: self.tui.stop())
 
 class KeckzBaseTab(urwid.Frame):
     def __init__(self, room, parent):
@@ -378,11 +378,19 @@ class KeckzBaseTab(urwid.Frame):
         self.parent.redisplay()
 
     def onKeyPressed(self, size, key):
+        altkeys=["alt", "meta 1", "meta 2", "meta 3", "meta 4", "meta 5", "meta 6", "meta 7", "meta 8", "meta 9", "meta 0"]
         if key in ('ctrl up', 'ctrl down', 'page up', 'page down'):
             if key in ('ctrl up', 'ctrl down'):
                 self.MainView.keypress(size, key.split()[1])
             else:
                 self.MainView.keypress(size, key)
+        elif key in altkeys:
+            roomkeys=self.parent.lookupRooms.keys()
+            try:
+                self.parent.ShownRoom=roomkeys[altkeys.index(key)-1]
+                self.parent.redisplay()
+            except:
+                pass
 
     def OnClose(self):
         self.parent.closeActiveWindow(self.room)
