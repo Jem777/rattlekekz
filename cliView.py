@@ -85,7 +85,8 @@ class View:
         """ We want to select on FD 0 """
         return 0
 
-    def logPrefix(self): return 'CursesClient'
+    def logPrefix(self):
+        return 'Keckz'
 
     def init(self):
         self.size = self.tui.get_cols_rows()
