@@ -389,7 +389,7 @@ class KeckzBaseTab(urwid.Frame):
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
         self.upperDivider=urwid.Text(("divider","Ping: inf. ms"), "right")
-        self.statelist=[("dividerstate",self.time),("dividerstate",self.nickname),("dividerstate"," (Act:"),("dividerstate"," )")]
+        self.statelist=[("dividerstate",self.time),("dividerstate",self.nickname)]
         self.lowerDivider=urwid.Text(self.statelist, "left")
         self.header=urwid.Text("KECKz","center")
         
@@ -402,8 +402,11 @@ class KeckzBaseTab(urwid.Frame):
     def connectWidgets(self):
         """This should be overwritten by derived classes"""
 
-    def insertActiveTab(self, style, number): #TODO sort the entrys by number 
+    def insertActiveTab(self, style, number): #TODO sort the entrys by number
+        if len(self.statelist)==2:
+            self.statelist.extend([("dividerstate"," (Act:"),("dividerstate"," )")])
         ranking=["dividerme","divider","dividerstate"]
+        #ranking=["dividerstate","divider","dividerme"]
         for i in ranking:
             try:
                 self.statelist.index((i, number))
@@ -423,6 +426,8 @@ class KeckzBaseTab(urwid.Frame):
                 self.statelist.remove((i, number))
             except ValueError:
                 pass
+        if len(self.statelist)==4:
+            del self.statelist[2:]
         self.lowerDivider.set_text(self.statelist)
 
     def setPing(self,string):
@@ -808,7 +813,7 @@ class KeckzInfoTab(KeckzBaseTab):
         elif key=="q":
             self.OnClose()
 
-class KeckzSecureTab(KeckzIOTab):
+class KeckzSecureTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView, ("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
         self.header.set_text("KECKz (Beta: "+rev+") - Nachrichtenanzeige")
