@@ -131,6 +131,14 @@ class View:
         self.ShownRoom="$login"
         self.lookupRooms[self.ShownRoom].receivedPreLoginData(rooms,array)
 
+    def successRegister(self):
+        if len(self.lookupRooms)==0:
+            self.lookupRooms.update({"$login":KeckzInfoTab("$login", self)})
+            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+            self.ShownRoom="$login"
+        self.lookupRooms[self.ShownRoom].addLine("Nick erfolgreich registriert!")
+        self.lookupRooms[self.ShownRoom].reLogin(True)
+
     def successLogin(self,nick,status,room):
         self.nickname=nick
         self.ShownRoom=room
@@ -416,7 +424,7 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
         self.hasOutput=False
         self.hasInput=True
-        self.header.set_text("KECKz (Beta: "+rev+") - Private Unterhaltung "+self.room)
+        self.header.set_text("KECKz (Beta: "+rev+") - Willkommen im Kekznet :) | "+self.room)
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -424,22 +432,33 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
         self.set_footer(self.Input)
         self.set_focus('footer')
 
-    def reLogin(self):
+    def reLogin(self,registered=False):
         self.nick,self.passwd,self.room=["","",""]
         self.integer=-1
-        self.addLine("\nGeben sie ihren Nicknamen ein: ")
+        self.register=False
+        for i in self.rooms:
+            if i["users"]==i["max"]:
+                self.addLine(("red",i["name"]+"("+str(i["users"])+")"))
+            else:
+                self.addLine(i["name"]+"("+str(i["users"])+")")
+        if registered is False:
+            self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
+        else:
+            self.addLine("\nGeben sie ihren Nicknamen ein:")
         self.Input.set_edit_text(self.nick)
 
     def receivedPreLoginData(self,rooms,array):
         self.nick,self.passwd,self.room=array
         self.integer=-1
+        self.register=False
         self.addLine("connected sucessful")
-        for i in rooms:
+        self.rooms=rooms
+        for i in self.rooms:
             if i["users"]==i["max"]:
                 self.addLine(("red",i["name"]+"("+str(i["users"])+")"))
             else:
                 self.addLine(i["name"]+"("+str(i["users"])+")")
-        self.addLine("\nGeben sie ihren Nicknamen ein: ")
+        self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
         self.Input.set_edit_text(self.nick)
 
     def onKeyPressed(self, size, key):
@@ -467,23 +486,45 @@ class KeckzLoginTab(KeckzBaseIOTab): # TODO: Make this fuck working
         elif key == 'enter':
             if self.integer==-1:
                 self.nick = self.Input.get_edit_text()
-                self.addLine(self.nick+"\nGeben sie ihr Passwort ein: ")
+                if self.register is False:
+                    self.addLine(self.nick+"\nGeben Sie Ihr Passwort ein: ")
+                else:
+                    self.addLine(self.nick+"\nGeben Sie Ihr gewünschtes Passwort ein: ")
                 self.Input.set_edit_text('*'*len(self.passwd))
                 self.integer+=1
             elif self.integer==0:
-                self.addLine('*'*len(self.passwd)+"\nGeben sie den Raum ein in den sie joinen wollen: ")
-                self.Input.set_edit_text(self.room)
+                if self.register is False:
+                    self.addLine('*'*len(self.passwd)+"\nGeben Sie den Raum ein in den Sie joinen wollen: ")
+                    self.Input.set_edit_text(self.room)
+                else:
+                    self.addLine('*'*len(self.passwd)+"\nGeben Sie bitte ihre E-Mail-Adresse an: ")
+                    self.Input.set_edit_text(self.mail)
                 self.integer+=1
             elif self.integer==1:
-                self.room = self.Input.get_edit_text()
-                self.addLine(self.room+"\nLogging in")
-                self.room.strip()
-                re.sub("\s","",self.room)
-                self.nick.strip()
-                self.parent.controller.sendLogin(self.nick,self.passwd,self.room)
+                if self.register is False:
+                    self.room = self.Input.get_edit_text()
+                    self.addLine(self.room+"\nLogging in")
+                    self.room.strip()
+                    re.sub("\s","",self.room)
+                    self.nick.strip()
+                    self.parent.controller.sendLogin(self.nick,self.passwd,self.room)
+                else:
+                    self.mail = self.Input.get_edit_text()
+                    self.addLine("\nregister nick "+self.nick)
+                    self.parent.controller.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
                 self.Input.set_edit_text("")
         else:
-            if self.integer == 0 and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'): # TODO: Filter more keys
+            if key == 'ctrl r':
+                if self.register is False:
+                    self.integer,self.register=-1,True
+                    self.nick,self.passwd,self.mail='','',''
+                    self.addLine("\nGeben Sie den gewünschen Nicknamen ein: (Drücen Sie Strg + L um sich einzuloggen)")
+            elif key == 'ctrl l':
+                if self.register is True:
+                    self.integer,self.register=-1,False
+                    self.nick,self.passwd,self.room='','',''
+                    self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
+            elif self.integer == 0 and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'): # TODO: Filter more keys
                 if len(key) is 2:
                     if key[0].lower() != 'f':
                         self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
