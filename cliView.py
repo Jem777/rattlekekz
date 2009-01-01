@@ -337,7 +337,7 @@ class View:
             self.ShownRoom=array[index]
             self.redisplay()
 
-    def connectionLost(self, failure):
+    def connectionLost(self, failure): # TODO: Better handling for closed Connections
         #self.tui.stop()
         print "Verbindung verloren: "+str(failure)
 

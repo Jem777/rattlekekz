@@ -187,8 +187,7 @@ class Kekzcontroller():
         pass
 
     def lostConnection(self, reason):
-        """the connection was clean closed down. Here should be a call to the view later on"""
-        pass
+        self.view.connectionLost(reason)
 
     def failConnection(self, reason):
         """the try to connect failed. Here should be a call to the view later on"""
