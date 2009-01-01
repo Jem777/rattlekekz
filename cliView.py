@@ -417,9 +417,14 @@ class KeckzBaseTab(urwid.Frame):
                 if ranking.index(style) < i:
                     self.statelist[self.statelist.index((i, number))]=(style, number)
                 break
+        numbers=self.statelist[3:-1]
+        del self.statelist[3:-1]
+        numbers.sort()
+        numbers.append(self.statelist.pop())
+        self.statelist.extend(numbers)
         self.lowerDivider.set_text(self.statelist)
 
-    def delActiveTab(self, number): #TODO delete (Act: and ) if no number is displayed
+    def delActiveTab(self, number): 
         ranking=["dividerme","divider","dividerstate"]
         for i in ranking:
             try:
