@@ -150,6 +150,15 @@ class View:
         if self.lookupRooms.has_key("$login"):
             del self.lookupRooms["$login"]
 
+    def securityCheck(self,infotext):
+        if not self.lookupRooms.has_key("$secure"):
+            self.lookupRooms.update({"$secure":KeckzSecureTab("$secure", self)})
+            self.lookupRooms["$secure"].setPing(self.Ping)
+        self.changeTab("$secure")
+        msg=self.deparse(infotext)
+        self.lookupRooms[self.ShownRoom].addLine(("divider","Info: "))
+        self.lookupRooms[self.ShownRoom].addLine(msg)
+
     def receivedPing(self,deltaPing):
         self.Ping="Ping: "+str(deltaPing)+"ms"
         for i in self.lookupRooms:
@@ -393,7 +402,7 @@ class KeckzBaseTab(urwid.Frame):
     def connectWidgets(self):
         """This should be overwritten by derived classes"""
 
-    def insertActiveTab(self, style, number): #TODO sort the entrys by number
+    def insertActiveTab(self, style, number): #TODO sort the entrys by number 
         ranking=["dividerme","divider","dividerstate"]
         for i in ranking:
             try:
@@ -407,7 +416,7 @@ class KeckzBaseTab(urwid.Frame):
                 break
         self.lowerDivider.set_text(self.statelist)
 
-    def delActiveTab(self, number):
+    def delActiveTab(self, number): #TODO delete (Act: and ) if no number is displayed
         ranking=["dividerme","divider","dividerstate"]
         for i in ranking:
             try:
@@ -798,6 +807,56 @@ class KeckzInfoTab(KeckzBaseTab):
             self.MainView.keypress(size, key)
         elif key=="q":
             self.OnClose()
+
+class KeckzSecureTab(KeckzIOTab):
+    def buildOutputWidgets(self):
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView, ("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
+        self.header.set_text("KECKz (Beta: "+rev+") - Nachrichtenanzeige")
+        self.passwd=""
+
+    def connectWidgets(self):
+        self.set_header(self.header)
+        self.set_body(self.vsizer)
+        self.set_footer(self.Input)
+        self.set_focus('footer')
+
+    def onKeyPressed(self, size, key):
+        KeckzBaseTab.onKeyPressed(self, size, key)
+        if key == 'backspace':
+            if self.Input.edit_pos != 0:
+                self.passwd = self.passwd[:self.Input.edit_pos-1]+self.passwd[self.Input.edit_pos:]
+                self.Input.set_edit_text('*'*len(self.passwd))
+                if self.Input.edit_pos != len(self.passwd):
+                    self.Input.set_edit_pos(self.Input.edit_pos-1)
+        elif key == 'delete':
+            if self.Input.edit_pos != len(self.passwd):
+                self.passwd = self.passwd[:self.Input.edit_pos]+self.passwd[self.Input.edit_pos+1:]
+                self.Input.set_edit_text('*'*len(self.passwd))
+        elif key == 'left':
+            if self.Input.edit_pos != 0:
+                self.Input.set_edit_pos(self.Input.edit_pos-1)
+        elif key == 'right':
+            if self.Input.edit_pos != len(self.Input.get_edit_text()):
+                self.Input.set_edit_pos(self.Input.edit_pos+1)
+        elif key == 'end':
+            self.Input.set_edit_pos(len(self.parent))
+        elif key == 'home':
+            self.Input.set_edit_pos(0)
+        elif key == 'enter':
+            self.parent.controller.sendIdentify(self.passwd)
+        else:
+            if key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'): # TODO: Filter more keys
+                if len(key) is 2:
+                    if key[0].lower() != 'f':
+                        self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
+                        self.Input.set_edit_text('*'*len(self.passwd))
+                        self.Input.set_edit_pos(self.Input.edit_pos+1)
+                else:
+                    self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
+                    self.Input.set_edit_text('*'*len(self.passwd))
+                    self.Input.set_edit_pos(self.Input.edit_pos+1)
+            else:
+                self.keypress(size, key)
 
 if __name__ == '__main__':
     kekzControl=controllerKeckz.Kekzcontroller(View,usercolors=True,timestamp=1)
