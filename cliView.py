@@ -203,14 +203,23 @@ class View:
                 self.lookupRooms[room].setPing(self.Ping)
         if state==4:
             room=self.ShownRoom
-        if (message.find(self.nickname) or state==2 ) and not room == self.ShownRoom:
-            pass
-        elif state == 5 and not room == self.ShownRoom:
-            pass
-        elif not room == self.ShownRoom:
-            pass
+        if not (self.ShownRoom == "$login" or room == self.ShownRoom):
+            style=""
+            if message.find(self.nickname) or state==2:
+                style="dividerme"
+            elif state == 5:
+                style="dividerstate"
+            else:
+                style="divider"
+            if not style=="":
+                roomkeys=self.lookupRooms.keys()
+                number = roomkeys.index(room)
+                for i in self.lookupRooms:
+                    self.lookupRooms[i].insertActiveTab(style," "+str(number))
         msg.extend(self.deparse(message))
         self.lookupRooms[room].addLine(msg)
+        if room==self.ShownRoom:
+            self.redisplay()
 
 
     def gotException(self, message):
@@ -353,8 +362,8 @@ class View:
             self.redisplay()
 
     def connectionLost(self, failure): # TODO: Better handling for closed Connections
-        self.lookupRooms[self.ShownRoom].addLine("Verbindung verloren; das Fenster wird sich jetzt schließen")
-        reactor.callLater(3, lambda: self.tui.stop())
+        self.lookupRooms[self.ShownRoom].addLine("Verbindung verloren")
+        #reactor.callLater(3, lambda: self.tui.stop())
 
 class KeckzBaseTab(urwid.Frame):
     def __init__(self, room, parent):
@@ -368,7 +377,8 @@ class KeckzBaseTab(urwid.Frame):
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
         self.upperDivider=urwid.Text(("divider","Ping: inf. ms"), "right")
-        self.lowerDivider=urwid.Text([("dividerstate",self.time),("dividerstate",self.nickname),("dividerstate"," (Act: "),("dividerstate"," )")], "left")
+        self.statelist=[("dividerstate",self.time),("dividerstate",self.nickname),("dividerstate"," (Act:"),("dividerstate"," )")]
+        self.lowerDivider=urwid.Text(self.statelist, "left")
         self.header=urwid.Text("KECKz","center")
         
         self.buildOutputWidgets()
@@ -379,6 +389,20 @@ class KeckzBaseTab(urwid.Frame):
 
     def connectWidgets(self):
         """This should be overwritten by derived classes"""
+
+    def insertActiveTab(self, style, number):
+        ranking=["dividerme","divider","dividerstate"]
+        for i in ranking:
+            try:
+                self.statelist.index((i, number))
+            except ValueError:
+                if i == "dividerstate":
+                    self.statelist.insert(-1,(style, number))
+            else:
+                if ranking.index(style) < i:
+                    self.statelist[self.statelist.index((i, number))]=(style, number)
+                break
+        self.lowerDivider.set_text(self.statelist)
 
     def setPing(self,string):
         self.upperDivider.set_text(string)
