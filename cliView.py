@@ -30,6 +30,8 @@ class View:
         tui.set_input_timeouts(0.1)
         colors =[('normal','default','default','standout'),
             ('divider', 'white', 'dark blue', 'standout'),
+            ('dividerstate', 'light gray', 'dark blue', 'standout'),
+            ('dividerme', 'light red', 'dark blue', 'standout'),
 
             ('red','light red','default'),  #admin
             ('yellow','yellow','default'),  #chatop
@@ -201,6 +203,12 @@ class View:
                 self.lookupRooms[room].setPing(self.Ping)
         if state==4:
             room=self.ShownRoom
+        if (message.find(self.nickname) or state==2 ) and not room == self.ShownRoom:
+            pass
+        elif state == 5 and not room == self.ShownRoom:
+            pass
+        elif not room == self.ShownRoom:
+            pass
         msg.extend(self.deparse(message))
         self.lookupRooms[room].addLine(msg)
 
