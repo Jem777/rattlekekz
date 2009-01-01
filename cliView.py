@@ -123,8 +123,7 @@ class View:
                     index=-1
                 else:
                     index=index-1
-                self.ShownRoom=array[index]
-                self.lookupRooms[self.ShownRoom]
+                self.changeTab(array[index])
             else:
                 self.lookupRooms[self.ShownRoom].onKeyPressed(self.size, key)
         self.redisplay()
@@ -215,12 +214,19 @@ class View:
                 roomkeys=self.lookupRooms.keys()
                 number = roomkeys.index(room)
                 for i in self.lookupRooms:
-                    self.lookupRooms[i].insertActiveTab(style," "+str(number))
+                    self.lookupRooms[i].insertActiveTab(style," "+str(number+1))
         msg.extend(self.deparse(message))
         self.lookupRooms[room].addLine(msg)
         if room==self.ShownRoom:
             self.redisplay()
 
+    def changeTab(self,tabname):
+        roomkeys=self.lookupRooms.keys()
+        number = roomkeys.index(tabname)
+        for i in self.lookupRooms:
+            self.lookupRooms[i].delActiveTab(" "+str(number+1))
+        self.ShownRoom=tabname
+        self.redisplay()
 
     def gotException(self, message):
         if len(self.lookupRooms)==0:
@@ -244,8 +250,7 @@ class View:
         self.lookupRooms.update({room:KeckzMsgTab(room, self)})
         self.lookupRooms[room].setPing(self.Ping)
         if not background:
-            self.ShownRoom=room
-            self.redisplay()
+            self.changeTab(room)
 
     def mePart(self,room):
         if room==self.ShownRoom:
@@ -255,16 +260,15 @@ class View:
                 index=-1
             else:
                 index=index-1
-            self.ShownRoom=array[index]
+            self.changeTab(array[index])
         del self.lookupRooms[room]
         self.redisplay()
 
     def meGo(self,oldroom,newroom):
         self.lookupRooms.update({newroom:KeckzMsgTab(newroom, self)})
         self.lookupRooms[newroom].setPing(self.Ping)
-        self.ShownRoom=newroom
+        self.changeTab(newroom)
         del self.lookupRooms[oldroom]
-        self.redisplay()
 
     def newTopic(self,room,topic):
         self.lookupRooms[room].addLine("Neues Topic: "+topic)
@@ -276,8 +280,8 @@ class View:
     def receivedInformation(self,info):
         if not self.lookupRooms.has_key("$infos"):
             self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
-            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
-        self.ShownRoom="$infos"
+            self.lookupRooms["$infos"].setPing(self.Ping)
+        self.changeTab("$infos")
         msg=self.deparse(info)
         self.lookupRooms[self.ShownRoom].addLine(("divider","Infos: "))
         self.lookupRooms[self.ShownRoom].addLine(msg)
@@ -286,7 +290,7 @@ class View:
         if len(self.lookupRooms)==0:
             self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
             self.lookupRooms[self.ShownRoom].setPing(self.Ping)
-            self.ShownRoom="$infos"
+            self.changeTab("$infos")
         self.lookupRooms[self.ShownRoom].addLine([("divider","Info: "),message])
 
     def receivedCPMsg(self,user,cpmsg):
@@ -306,7 +310,7 @@ class View:
         if not self.lookupRooms.has_key("$infos"):
             self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
             self.lookupRooms[self.ShownRoom].setPing(self.Ping)
-        self.ShownRoom="$infos"
+        self.changeTab("$infos")
         self.lookupRooms[self.ShownRoom].addLine(("divider","Whois von "+nick))
         for i in array:
             self.lookupRooms[self.ShownRoom].addLine(self.deparse(i))
@@ -318,9 +322,9 @@ class View:
     def openMailTab(self):
         if not self.lookupRooms.has_key("$mail"):
             self.lookupRooms.update({"$mail":KeckzMailTab("$mail", self)})
-            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+            self.lookupRooms["$mail"].setPing(self.Ping)
             self.controller.refreshMaillist()
-        self.ShownRoom="$mail"
+        self.changeTab("$mail")
 
     def MailInfo(self,info):
         self.openMailTab()
@@ -358,8 +362,7 @@ class View:
             else:
                 index=index-1
             del self.lookupRooms[window]
-            self.ShownRoom=array[index]
-            self.redisplay()
+            self.changeTab(array[index])
 
     def connectionLost(self, failure): # TODO: Better handling for closed Connections
         self.lookupRooms[self.ShownRoom].addLine("Verbindung verloren")
@@ -390,7 +393,7 @@ class KeckzBaseTab(urwid.Frame):
     def connectWidgets(self):
         """This should be overwritten by derived classes"""
 
-    def insertActiveTab(self, style, number):
+    def insertActiveTab(self, style, number): #TODO sort the entrys by number
         ranking=["dividerme","divider","dividerstate"]
         for i in ranking:
             try:
@@ -402,6 +405,15 @@ class KeckzBaseTab(urwid.Frame):
                 if ranking.index(style) < i:
                     self.statelist[self.statelist.index((i, number))]=(style, number)
                 break
+        self.lowerDivider.set_text(self.statelist)
+
+    def delActiveTab(self, number):
+        ranking=["dividerme","divider","dividerstate"]
+        for i in ranking:
+            try:
+                self.statelist.remove((i, number))
+            except ValueError:
+                pass
         self.lowerDivider.set_text(self.statelist)
 
     def setPing(self,string):
@@ -423,8 +435,7 @@ class KeckzBaseTab(urwid.Frame):
         elif key in altkeys:
             roomkeys=self.parent.lookupRooms.keys()
             try:
-                self.parent.ShownRoom=roomkeys[altkeys.index(key)-1]
-                self.parent.redisplay()
+                self.parent.changeTab(roomkeys[altkeys.index(key)-1])
             except:
                 pass
 

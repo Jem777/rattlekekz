@@ -39,7 +39,7 @@ class main():
                 print '3 ... [HHMM]'
                 sys.exit()
 
-    def startKeckz(self, host, view="cli", *args, **kwds):
+    def startKeckz(self, host, view="cliView", *args, **kwds):
         try:
             exec("from "+view+" import *")
         except:
