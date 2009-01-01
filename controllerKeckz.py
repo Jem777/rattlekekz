@@ -387,7 +387,8 @@ class Kekzcontroller():
         self.view.printMail(user,date,mail)
 
     def receivedNewMail(self,nick,header):
-        self.view.MailInfo("Sie haben eine eine Nachricht von "+nick+" bekommen: "+header)
+        self.view.minorInfo("Sie haben eine eine Nachricht von "+nick+" bekommen: "+header)
+        #self.view.MailInfo("Sie haben eine eine Nachricht von "+nick+" bekommen: "+header)
         #self.refreshMaillist()
 
     def unknownMethod(self,name):

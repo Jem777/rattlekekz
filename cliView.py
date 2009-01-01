@@ -265,6 +265,13 @@ class View:
         self.lookupRooms[self.ShownRoom].addLine(("divider","Infos: "))
         self.lookupRooms[self.ShownRoom].addLine(msg)
 
+    def minorInfo(self, message):
+        if len(self.lookupRooms)==0:
+            self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
+            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+            self.ShownRoom="$infos"
+        self.lookupRooms[self.ShownRoom].addLine([("divider","Info: "),message])
+
     def receivedCPMsg(self,user,cpmsg):
         self.printMsg(user+' [CTCP]',cpmsg,self.ShownRoom,0)
         if cpmsg.upper() not in ('VERSION','PING'):
