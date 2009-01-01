@@ -700,6 +700,21 @@ class KeckzMailTab(KeckzBaseIOTab):
 
     def onKeyPressed(self, size, key):
         KeckzBaseIOTab.onKeyPressed(self, size, key)
+        if key in ('up', 'down'):
+            if key in 'up' and len(self.history) is not (0 or self.count+1):
+                self.count+=1
+                if self.count is 0:
+                    self.current = self.Input.get_edit_text()
+                    self.Input.set_edit_text(self.history[self.count])
+                else:
+                    self.Input.set_edit_text(self.history[self.count])
+            elif key in 'down' and self.count is not -1:
+                self.count-=1
+                if self.count is -1:
+                    self.Input.set_edit_text(self.current)
+                else:
+                    self.Input.set_edit_text(self.history[self.count])
+            self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         if not key in ('page up', 'page down', 'enter'): 
             self.keypress(size, key)
 
