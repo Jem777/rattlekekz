@@ -226,7 +226,7 @@ class View:
             room=self.ShownRoom
         if not (self.ShownRoom == "$login" or room == self.ShownRoom):
             style=""
-            if message.find(self.nickname) or state==2:
+            if message.find(str(self.nickname)) or state==2:
                 style="dividerme"
             elif state==5:
                 style="dividerstate" #TODO: it still doesn't work
