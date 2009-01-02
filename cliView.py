@@ -663,7 +663,7 @@ class KeckzPrivTab(KeckzBaseIOTab):
                 if len(solutions) != 0 and len(solutions) != 1:
                     self.addLine(" ".join(solutions))
                 elif len(solutions) is not 0:
-                    input.append(solutions[0])
+                    input.append(str(solutions[0]))
                     if len(input) is not 1:
                         self.Input.set_edit_text(" ".join(input)+" "+crap)
                     else:
