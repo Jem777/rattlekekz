@@ -275,12 +275,24 @@ class View:
         self.lookupRooms[room].listUser(users,self.kwds['usercolors'])
 
     def meJoin(self,room,background):
+        roomkeys=self.lookupRooms.keys()
+        statelist=self.lookupRooms[self.ShownRoom].statelist
         self.lookupRooms.update({room:KeckzMsgTab(room, self)})
         self.lookupRooms[room].setPing(self.Ping)
+        if not len(statelist) == 2:
+            tablist=statelist[3:-1]
+            newkeys=self.lookupRooms.keys()
+            newlist=[]
+            for i in tablist:
+                newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
+            for a in self.lookupRooms:
+                self.lookupRooms[a].updateActiveTabs(newlist)
         if not background:
             self.changeTab(room)
 
     def mePart(self,room):
+        roomkeys=self.lookupRooms.keys()
+        statelist=self.lookupRooms[self.ShownRoom].statelist
         if room==self.ShownRoom:
             array=self.lookupRooms.keys()
             index=array.index(self.ShownRoom)
@@ -290,13 +302,33 @@ class View:
                 index=index-1
             self.changeTab(array[index])
         del self.lookupRooms[room]
+        if not len(statelist) == 2:
+            tablist=statelist[3:-1]
+            newkeys=self.lookupRooms.keys()
+            newlist=[]
+            for i in tablist:
+                if not roomkeys[int(i[1])-1]==room:
+                    newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
+            for a in self.lookupRooms:
+                self.lookupRooms[a].updateActiveTabs(newlist)
         self.redisplay()
 
     def meGo(self,oldroom,newroom):
+        roomkeys=self.lookupRooms.keys()
+        statelist=self.lookupRooms[self.ShownRoom].statelist
         self.lookupRooms.update({newroom:KeckzMsgTab(newroom, self)})
         self.lookupRooms[newroom].setPing(self.Ping)
-        self.changeTab(newroom)
         del self.lookupRooms[oldroom]
+        if not len(statelist) == 2:
+            tablist=statelist[3:-1]
+            newkeys=self.lookupRooms.keys()
+            newlist=[]
+            for i in tablist:
+                if not roomkeys[int(i[1])-1]==room:
+                    newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
+            for a in self.lookupRooms:
+                self.lookupRooms[a].updateActiveTabs(newlist)
+        self.changeTab(newroom)
 
     def newTopic(self,room,topic):
         self.lookupRooms[room].addLine("Neues Topic: "+topic)
@@ -455,6 +487,15 @@ class KeckzBaseTab(urwid.Frame):
                 pass
         if len(self.statelist)==4:
             del self.statelist[2:]
+        self.lowerDivider.set_text(self.statelist)
+
+    def updateActiveTabs(self, tablist):
+        if tablist[-1]==("dividerstate"," )"):
+            del tablist[-1]
+        if len(self.statelist)==2:
+            self.statelist.extend([("dividerstate"," (Act:"),("dividerstate"," )")])
+        tablist.append(self.statelist.pop())
+        self.statelist.extend(tablist)
         self.lowerDivider.set_text(self.statelist)
 
     def setPing(self,string):
