@@ -714,7 +714,7 @@ class KeckzMsgTab(KeckzPrivTab):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
         self.header.set_text("KECKz (Beta: "+rev+") - Raum: "+self.room)
 
-    def listUser(self,users,color=True):
+    def listUser(self,users,color=True): # TODO: Bugfix aways
         self.completion=[]
         for i in range(0,len(self.Userlistarray)):
             del(self.Userlistarray[0])
@@ -734,9 +734,10 @@ class KeckzMsgTab(KeckzPrivTab):
                     self.color='red'
                 if i[1] == True:
                     self.color=self.color+'away'
-                self.Userlistarray.append(urwid.Text((self.color,i[0]))) # may we use ● in front of nicks
+                    self.Userlistarray.append(urwid.Text((self.color,'('+i[0]+')')))
+                else:
+                    self.Userlistarray.append(urwid.Text((self.color,i[0])))
         else:
-            self.away=''
             for i in users:
                 self.completion.append(i[0])
                 if i[2] in 'x':
@@ -750,9 +751,7 @@ class KeckzMsgTab(KeckzPrivTab):
                 elif i[2] in 'a':
                     self.color='%'
                 if i[1] == True:
-                    self.away=' A'
-                else:
-                    self.away=''
+                    i[0] = '('+i[0]+')'
                 self.Userlistarray.append(urwid.Text(self.color+i[0]+self.away))
         self.Userlist.set_focus(len(self.Userlistarray) - 1)
         self.parent.redisplay()
