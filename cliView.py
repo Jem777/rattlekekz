@@ -203,7 +203,7 @@ class View:
             else:    
                 msg.append(("blue",nick+": "))
         elif state==3:
-            msg.append(("green",self.nickname+": "))
+            msg.append(("green",str(self.nickname)+": "))
         if state==2 or state==3:
             room="#"+nick
             if self.lookupRooms.has_key(room)==False:
