@@ -81,6 +81,7 @@ class View:
         reactor.callWhenRunning(self.init)
         self.tui = tui
         self.lookupRooms={}
+        self.readhistory,self.writehistory=5000,200
 
 
     def fileno(self):
@@ -92,20 +93,17 @@ class View:
 
     def init(self):
         self.size = self.tui.get_cols_rows()
-        if self.parent.controller.configfile.has_key("maxlen"):
+        if self.controller.configfile.has_key("readhistory"):
             try:
-                self.readhistory=int(self.parent.controller.configfile["maxlen"])
+                self.readhistory=int(self.controller.configfile["readhistory"])
             except:
-                self.readhistory=5000
-        else:
-            self.readhistory=5000
-        if self.parent.controller.configfile.has_key("maxlen"):
+                pass
+        if self.controller.configfile.has_key("writehistory"):
             try:
-                self.writehistory=int(self.parent.controller.configfile["maxhistory"])
+                self.writehistory=int(self.controller.configfile["writehistory"])
             except:
-                self.writehistory=200
-        else:
-            self.writehistory=200
+                pass
+
 
     def startConnection(self,server,port):
         reactor.connectSSL(server, port, self.controller.model, ssl.ClientContextFactory())
@@ -464,7 +462,7 @@ class KeckzBaseTab(urwid.Frame):
 
     def addLine(self, text):
         """ add a line to the internal list of lines"""
-        while len(self.Output) > self.readhistory:
+        while len(self.Output) > self.parent.readhistory:
             del self.Output[0]
         self.Output.append(urwid.Text(text))
         self.MainView.set_focus(len(self.Output) - 1)
@@ -523,7 +521,7 @@ class KeckzBaseIOTab(KeckzBaseTab):
                 self.history.insert(0,text)
             self.count = -1
             self.Input.set_edit_text('')
-        while len(self.history) > self.writehistory:
+        while len(self.history) > self.parent.writehistory:
             del self.history[-1]
 
     def sendStr(self,string):
