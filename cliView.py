@@ -680,8 +680,8 @@ class KeckzPrivTab(KeckzBaseIOTab):
             self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         elif key == 'tab':
             input = self.Input.get_edit_text()
+            input,crap=input[:self.Input.edit_pos].split(),input[self.Input.edit_pos:]
             if len(input) is not 0:
-                input,crap=input[:self.Input.edit_pos].split(),input[self.Input.edit_pos:]
                 nick = input.pop().lower()
                 solutions=[]
                 for i in self.completion:
