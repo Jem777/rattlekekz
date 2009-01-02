@@ -490,11 +490,11 @@ class KeckzBaseTab(urwid.Frame):
         self.lowerDivider.set_text(self.statelist)
 
     def updateActiveTabs(self, tablist):
-        if tablist[-1]==("dividerstate"," )"):
-            del tablist[-1]
+        if not tablist[-1]==("dividerstate"," )"):
+            tablist.append(("dividerstate"," )"))
         if len(self.statelist)==2:
-            self.statelist.extend([("dividerstate"," (Act:"),("dividerstate"," )")])
-        tablist.append(self.statelist.pop())
+            self.statelist.append(("dividerstate"," (Act:"))
+        self.statelist=self.statelist[:3]
         self.statelist.extend(tablist)
         self.lowerDivider.set_text(self.statelist)
 
