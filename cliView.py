@@ -424,7 +424,6 @@ class View:
             else:
                 index=index-1
             del self.lookupRooms[window]
-            self.changeTab(array[index])
             if not len(statelist) == 2:
                 tablist=statelist[3:-1]
                 newkeys=self.lookupRooms.keys()
@@ -434,6 +433,7 @@ class View:
                         newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
                 for a in self.lookupRooms:
                     self.lookupRooms[a].updateActiveTabs(newlist)
+            self.changeTab(array[index])
 
     def connectionLost(self, failure): # TODO: Better handling for closed Connections
         self.lookupRooms[self.ShownRoom].addLine("Verbindung verloren")
