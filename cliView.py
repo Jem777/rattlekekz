@@ -10,7 +10,7 @@ import urwid
 from urwid import curses_display
 
 # Twisted imports
-from twisted.internet import reactor, ssl
+from twisted.internet import reactor, ssl, task
 
 rev=re.search("\d+",revision).group()
 
@@ -149,6 +149,7 @@ class View:
         self.lookupRooms[self.ShownRoom].setPing(self.Ping)
         if self.lookupRooms.has_key("$login"):
             del self.lookupRooms["$login"]
+        task.LoopingCall(self.clock).start(1)
 
     def securityCheck(self,infotext):
         if not self.lookupRooms.has_key("$secure"):
@@ -235,6 +236,12 @@ class View:
         for i in self.lookupRooms:
             self.lookupRooms[i].delActiveTab(" "+str(number+1))
         self.ShownRoom=tabname
+        self.clock()
+        self.redisplay()
+
+    def clock(self):
+        if not self.ShownRoom=="$login":
+            self.lookupRooms[self.ShownRoom].clock()
         self.redisplay()
 
     def gotException(self, message):
@@ -401,6 +408,10 @@ class KeckzBaseTab(urwid.Frame):
 
     def connectWidgets(self):
         """This should be overwritten by derived classes"""
+
+    def clock(self):
+        self.statelist[0]=("dividerstate",time.strftime("[%H:%M] ",time.localtime(reactor.seconds())))
+        self.lowerDivider.set_text(self.statelist)
 
     def insertActiveTab(self, style, number): #TODO sort the entrys by number
         if len(self.statelist)==2:
