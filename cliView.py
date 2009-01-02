@@ -191,6 +191,7 @@ class View:
         return msg
 
     def printMsg(self,nick,message,room,state):
+        message = str(message).decode('utf_8')
         if self.kwds['timestamp'] == 1:
             msg=[("timestamp",time.strftime("[%H:%M] ",time.localtime(time.time())))]
         elif self.kwds['timestamp'] == 2:

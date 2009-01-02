@@ -219,35 +219,40 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.pingAnswer=False
 
     def kekzCode100(self,data):
-        foo=data.split(" ")
+        foo=data.decode('utf_8').split(" ")
         channel,nick=foo[0],foo[1]
         msg=" ".join(foo[2:])
+        msg.encode('utf_8')
         if not msg: return
         self.controller.receivedMsg(nick,channel,msg)
 
     def kekzCode101(self,data):
-        foo=data.split(" ")
+        foo=data.decode('utf_8').split(" ")
         channel=foo[0]
         msg=" ".join(foo[1:])
+        msg,channel = msg.encode('utf_8'),channel.encode('utf_8')
         if not msg: return
         self.controller.receivedRoomMsg(channel,msg)
 
     def kekzCode102(self,data):
-        foo=data.split(" ")
+        foo=data.decode('utf_8').split(" ")
         nick=foo[0]
         msg=" ".join(foo[1:])
+        msg,nick = msg.encode('utf_8'),nick.encode('utf_8')
         self.controller.privMsg(nick,msg)
 
     def kekzCode103(self,data):
-        foo=data.split(" ")
+        foo=data.decode('utf_8').split(" ")
         nick=foo[0]
         msg=" ".join(foo[1:])
+        msg,nick = msg.encode('utf_8'),nick.encode('utf_8')
         self.controller.ownprivMsg(nick,msg)
 
     def kekzCode109(self,data):
-        foo=data.split(" ")
+        foo=data.decode('utf_8').split(" ")
         nick=foo[0]
         msg=" ".join(foo[1:])
+        msg,nick = msg.encode('utf_8'),nick.encode('utf_8')
         self.controller.botMsg(nick,msg)
     
     def kekzCode110(self,data):
@@ -306,12 +311,13 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.mePart(data)
 
     def kekzCode222(self,data):
-        room=data.split(" ")
+        room=data.decode('utf_8').split(" ")
         self.controller.meGo(room[0],room[1])
 
     def kekzCode225(self,data):
-        foo=data.split(" ")
+        foo=data.decode('utf_8').split(" ")
         topic=" ".join(foo[1:])
+        topic=topic.encode('utf_8')
         self.controller.newTopic(foo[0],topic)
 
     def kekzCode226(self,data):
@@ -328,15 +334,17 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.receivedWhois(data)
     
     def kekzCode310(self,data):
-        foo=data.split(" ")
+        foo=data.decode('utf_8').split(" ")
         cpmsg=" ".join(foo[1:])
-        user=foo[0]
+        user=foo[0].encode('utf_8')
+        cpmsg = cpmsg.encode('utf_8')
         self.controller.receivedCPMsg(user,cpmsg)
 
     def kekzCode311(self,data):
-        foo=data.split(" ")
+        foo=data.decode('utf_8').split(" ")
         cpanswer=" ".join(foo[1:])
-        user=foo[0]
+        user=foo[0].encode('utf_8')
+        cpanswer=cpanswer.encode('utf_8')
         self.controller.receivedCPAnswer(user,cpanswer)
 
     def kekzCode440(self,data):
