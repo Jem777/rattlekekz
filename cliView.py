@@ -92,6 +92,20 @@ class View:
 
     def init(self):
         self.size = self.tui.get_cols_rows()
+        if self.parent.controller.configfile.has_key("maxlen"):
+            try:
+                self.readhistory=int(self.parent.controller.configfile["maxlen"])
+            except:
+                self.readhistory=5000
+        else:
+            self.readhistory=5000
+        if self.parent.controller.configfile.has_key("maxlen"):
+            try:
+                self.writehistory=int(self.parent.controller.configfile["maxhistory"])
+            except:
+                self.writehistory=200
+        else:
+            self.writehistory=200
 
     def startConnection(self,server,port):
         reactor.connectSSL(server, port, self.controller.model, ssl.ClientContextFactory())
@@ -391,7 +405,7 @@ class KeckzBaseTab(urwid.Frame):
         self.hasOutput=True
         self.hasInput=False
         
-        self.time=time.strftime("[%H:%M] ",time.localtime(time.time())) #TODO make time working
+        self.time=time.strftime("[%H:%M] ",time.localtime(reactor.seconds())) #TODO make time working
         self.nickname=" %s " % self.parent.nickname
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
@@ -450,6 +464,8 @@ class KeckzBaseTab(urwid.Frame):
 
     def addLine(self, text):
         """ add a line to the internal list of lines"""
+        while len(self.Output) > self.readhistory:
+            del self.Output[0]
         self.Output.append(urwid.Text(text))
         self.MainView.set_focus(len(self.Output) - 1)
         self.parent.redisplay()
@@ -507,6 +523,8 @@ class KeckzBaseIOTab(KeckzBaseTab):
                 self.history.insert(0,text)
             self.count = -1
             self.Input.set_edit_text('')
+        while len(self.history) > self.writehistory:
+            del self.history[-1]
 
     def sendStr(self,string):
         pass
