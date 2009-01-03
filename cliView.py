@@ -453,7 +453,7 @@ class KeckzBaseTab(urwid.Frame):
         self.hasOutput=True
         self.hasInput=False
         
-        self.time=time.strftime("[%H:%M] ",time.localtime(reactor.seconds())) #TODO make time working
+        self.time=time.strftime("[%H:%M] ",time.localtime(reactor.seconds()))
         self.nickname=" %s " % self.parent.nickname
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
@@ -775,7 +775,7 @@ class KeckzMsgTab(KeckzPrivTab):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperCol, 'divider' )), self.hsizer,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
         self.header.set_text("KECKz (Beta: "+rev+") - Raum: "+self.room)
 
-    def listUser(self,users,color=True): # TODO: Bugfix aways
+    def listUser(self,users,color=True):
         self.completion=[]
         for i in range(0,len(self.Userlistarray)):
             del(self.Userlistarray[0])
