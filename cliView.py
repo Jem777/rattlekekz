@@ -768,8 +768,8 @@ class KeckzMsgTab(KeckzPrivTab):
     def buildOutputWidgets(self):
         self.Userlistarray=[urwid.Text('Userliste: ')]
         self.Userlist = urwid.ListBox(self.Userlistarray)
-        self.Topic=urwid.Text(("dividerstate",""), "center")
-        self.upperCol=urwid.Columns([self.Topic, self.upperDivider])
+        self.Topic=urwid.Text(("dividerstate",""), "left")
+        self.upperCol=urwid.Columns([("weight",4,self.Topic), self.upperDivider])
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
         #self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperCol, 'divider' )), self.hsizer,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
