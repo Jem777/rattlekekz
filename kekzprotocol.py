@@ -95,6 +95,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def startPing(self):
         """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
+        self.timeout = False
         reactor.callLater(10, lambda: task.LoopingCall(self.sendPing).start(60))
 
     def sendPing(self):
