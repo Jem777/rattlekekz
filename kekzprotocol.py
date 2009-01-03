@@ -104,7 +104,9 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
             self.lastPing = time.time()
             self.pingAnswer = True
         else:
-            self.controller.pingTimeout()
+            if self.timeout is False: # TODO: review this and may just stop the loopingCall of ping
+                self.controller.pingTimeout()
+                self.timeout = True
 
     def sendMsg(self, channel, msg):
         """Send a message to a channel"""
