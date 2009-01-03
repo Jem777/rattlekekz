@@ -161,7 +161,8 @@ class View:
         self.lookupRooms[self.ShownRoom].setPing(self.Ping)
         if self.lookupRooms.has_key("$login"):
             del self.lookupRooms["$login"]
-        task.LoopingCall(self.clock).start(1)
+        self.oldtime=""
+        task.LoopingCall(self.clock).start(5)
 
     def securityCheck(self,infotext):
         if not self.lookupRooms.has_key("$secure"):
@@ -252,9 +253,11 @@ class View:
         self.redisplay()
 
     def clock(self):
-        if not self.ShownRoom=="$login":
-            self.lookupRooms[self.ShownRoom].clock()
+        self.newtime=time.strftime("[%H:%M] ",time.localtime(reactor.seconds()))
+        if not self.ShownRoom=="$login" and self.oldtime==self.newtime:
+            self.lookupRooms[self.ShownRoom].clock(("dividerstate",self.newtime))
         self.redisplay()
+        self.oldtime=self.newtime
 
     def gotException(self, message):
         if len(self.lookupRooms)==0:
@@ -464,8 +467,8 @@ class KeckzBaseTab(urwid.Frame):
     def connectWidgets(self):
         """This should be overwritten by derived classes"""
 
-    def clock(self):
-        self.statelist[0]=("dividerstate",time.strftime("[%H:%M] ",time.localtime(reactor.seconds())))
+    def clock(self, string):
+        self.statelist[0]=string
         self.lowerDivider.set_text(self.statelist)
 
     def insertActiveTab(self, style, number): #TODO sort the entrys by number
