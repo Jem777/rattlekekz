@@ -338,6 +338,7 @@ class View:
 
     def newTopic(self,room,topic):
         self.lookupRooms[room].addLine("Neues Topic: "+topic)
+        self.lookupRooms[room].newTopic(topic)
 
     def loggedOut(self):
         self.tui.stop()
@@ -767,9 +768,11 @@ class KeckzMsgTab(KeckzPrivTab):
     def buildOutputWidgets(self):
         self.Userlistarray=[urwid.Text('Userliste: ')]
         self.Userlist = urwid.ListBox(self.Userlistarray)
+        self.Topic=urwid.Text(("dividerstate",""), "center")
+        self.upperCol=urwid.Columns([self.Topic, self.upperDivider])
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
         #self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
-        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperCol, 'divider' )), self.hsizer,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
         self.header.set_text("KECKz (Beta: "+rev+") - Raum: "+self.room)
 
     def listUser(self,users,color=True): # TODO: Bugfix aways
@@ -813,6 +816,9 @@ class KeckzMsgTab(KeckzPrivTab):
                 self.Userlistarray.append(urwid.Text(self.color+i[0]+self.away))
         self.Userlist.set_focus(len(self.Userlistarray) - 1)
         self.parent.redisplay()
+
+    def newTopic(self, topic):
+        self.Topic.set_text(("dividerstate","Topic: "+topic))
 
     def onKeyPressed(self, size, key):
         KeckzPrivTab.onKeyPressed(self, size, key)
