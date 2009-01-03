@@ -20,6 +20,7 @@ class TextTooLongError(Exception):
 
 class View:
     def __init__(self, controller, *args, **kwds):
+        sys.stdout.write('\033]0;KECKz - Evil Client for KekZ\007') #Set Terminal-Title
         self.Ping="divider","Ping: inf. ms"
         self.nickname=""
         self.controller=controller
@@ -156,6 +157,7 @@ class View:
     def successLogin(self,nick,status,room):
         self.nickname=nick
         self.ShownRoom=room
+        sys.stdout.write('\033]0;KECKz - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.lookupRooms.update({room:KeckzMsgTab(room,self)})
         self.lookupRooms[self.ShownRoom].addLine("Logged successful in as "+nick+"\nJoined room "+room)
         self.lookupRooms[self.ShownRoom].setPing(self.Ping)
@@ -204,7 +206,7 @@ class View:
             #self.lookupRooms[room].addLine(text[i])
         return msg
 
-    def printMsg(self,nick,message,room,state):
+    def printMsg(self,nick,message,room,state): # TODO: Change Terminal-Titel on received Message and back then they were read
         if self.kwds['timestamp'] == 1:
             msg=[("timestamp",time.strftime("[%H:%M] ",time.localtime(time.time())))]
         elif self.kwds['timestamp'] == 2:
@@ -249,6 +251,7 @@ class View:
         for i in self.lookupRooms:
             self.lookupRooms[i].delActiveTab(" "+str(number+1))
         self.ShownRoom=tabname
+        sys.stdout.write('\033]0;KECKz - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.clock()
         self.redisplay()
 
