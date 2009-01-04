@@ -166,7 +166,7 @@ class View:
             del self.lookupRooms["$login"]
         self.oldtime=""
         self.running = False
-        self.clock()
+        self.setClock()
 
     def securityCheck(self,infotext):
         if not self.lookupRooms.has_key("$secure"):
@@ -257,23 +257,9 @@ class View:
         self.clock()
         self.redisplay()
 
-    def clock(self):
-        if self.running is True:
-            self.loop.stop()
-        else:
-            self.loop = LoopingCall(self.setClock)
-        self.time = reactor.seconds()
-        nextcall = 60-self.time%60
-        if nextcall != 0:
-            reactor.callLater(nextcall,self.clock)
-        else:
-            reactor.callLater(60,self.clock)
-        self.loop.start(1)
-        self.running = True
-
     def setClock(self):
-        self.lookupRooms[self.ShownRoom].clock(("dividerstate",time.strftime("[%H:%M:%S] ",time.localtime(self.time))))
-        self.time+=1
+        self.lookupRooms[self.ShownRoom].clock(("dividerstate",time.strftime("[%H:%M:%S] ",time.localtime(reactor.seconds()))))
+        reactor.callLater(1,self.setClock)
         self.redisplay()
 
     def gotException(self, message):
