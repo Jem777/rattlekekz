@@ -10,8 +10,9 @@ import urwid
 from urwid import curses_display
 
 # Twisted imports
-from twisted.internet import reactor, ssl, task
-
+from twisted.internet import reactor
+from twisted.internet.ssl import ClientContextFactory
+from twisted.internet.task import LoopingCall
 rev=re.search("\d+",revision).group()
 
 
@@ -107,7 +108,7 @@ class View:
 
 
     def startConnection(self,server,port):
-        reactor.connectSSL(server, port, self.controller.model, ssl.ClientContextFactory())
+        reactor.connectSSL(server, port, self.controller.model, ClientContextFactory())
         self.tui.run_wrapper(reactor.run)
 
     def redisplay(self):
@@ -164,7 +165,7 @@ class View:
         if self.lookupRooms.has_key("$login"):
             del self.lookupRooms["$login"]
         self.oldtime=""
-        task.LoopingCall(self.clock).start(5)
+        LoopingCall(self.clock).start(5)
 
     def securityCheck(self,infotext):
         if not self.lookupRooms.has_key("$secure"):
@@ -208,11 +209,11 @@ class View:
 
     def printMsg(self,nick,message,room,state): # TODO: Change Terminal-Titel on received Message and back then they were read
         if self.kwds['timestamp'] == 1:
-            msg=[("timestamp",time.strftime("[%H:%M] ",time.localtime(time.time())))]
+            msg=[("timestamp",time.strftime("[%H:%M] ",time.localtime(reactor.seconds())))]
         elif self.kwds['timestamp'] == 2:
-            msg=[("timestamp",time.strftime("[%H:%M:%S] ",time.localtime(time.time())))]
+            msg=[("timestamp",time.strftime("[%H:%M:%S] ",time.localtime(reactor.seconds())))]
         elif self.kwds['timestamp'] == 3:
-            msg=[("timestamp",time.strftime("[%H%M] ",time.localtime(time.time())))]
+            msg=[("timestamp",time.strftime("[%H%M] ",time.localtime(reactor.seconds())))]
         if state==0 or state==2 or state==4:
             if nick==self.nickname:
                 msg.append(("green",nick+": "))
