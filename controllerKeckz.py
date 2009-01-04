@@ -67,6 +67,8 @@ def decode(string):
             elif array[i]=="nr":
                 textlist.append("")
                 formatlist.append("hline")
+                textlist.append("")
+                formatlist.append(formatlist[-2])
             continue
         if array[i].startswith("l"):
             textlist.append(array[i][1:])
