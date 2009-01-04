@@ -272,7 +272,7 @@ class View:
         self.running = True
 
     def setClock(self):
-        self.lookupRooms[self.ShownRoom].clock(time.strftime("[%H:%M:%S] ",time.localtime(self.time)))
+        self.lookupRooms[self.ShownRoom].clock(("dividerstate",time.strftime("[%H:%M:%S] ",time.localtime(self.time))))
         self.time+=1
         self.redisplay()
 
