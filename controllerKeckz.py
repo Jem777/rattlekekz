@@ -52,14 +52,16 @@ def decode(string):
                 formatlist.append("imageurl")
             else:
                 formatlist.append(formatlist[-1]+",imageurl")
-            formatlist.append(formatlist[-2])
+            if formatlist[-2] != 'hline':
+                formatlist.append(formatlist[-2])
         if array[i].startswith("i"):
             textlist.append(array[i][1:])
             if formatlist[-1]=="normal":
                 formatlist.append("sb")
             else:
                 formatlist.append(formatlist[-1]+",sb")
-            formatlist.append(formatlist[-2])
+            if formatlist[-2] != 'hline':
+                formatlist.append(formatlist[-2])
         if array[i].startswith("n"):
             textlist[-1]=textlist[-1]+"\n"
             if array[i]=="nu": 
@@ -67,13 +69,12 @@ def decode(string):
             elif array[i]=="nr":
                 textlist.append("")
                 formatlist.append("hline")
-                textlist.append("")
-                formatlist.append(formatlist[-2])
             continue
         if array[i].startswith("l"):
             textlist.append(array[i][1:])
             formatlist.append("button")
-            formatlist.append(formatlist[-2])
+            if formatlist[-2] != 'hline':
+                formatlist.append(formatlist[-2])
         if len(array[i])==2:
             formatlist=formatopts(formatlist,array[i])
         textlist.append("")

@@ -197,12 +197,14 @@ class View:
                     color=a
                 if a == "bold":
                     font="bold"
-                if a in "sb":
+                if a == "sb":
                     if self.smilies.has_key(text[i]):
                         text[i]=self.smilies[text[i]]
                         color="smilie"
                     else:
                         text[i]=""
+                if a == "hline":
+                    text[i] = u'───────────────\n'
             msg.append((color+font,text[i]))
             #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
             #self.lookupRooms[room].addLine(text[i])
