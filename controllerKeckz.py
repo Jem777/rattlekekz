@@ -75,9 +75,14 @@ def decode(string):
         if len(array[i])==2:
             formatlist=formatopts(formatlist,array[i])
         textlist.append("")
-
-    if not len(textlist)==len(formatlist):
-        raise IndexError
+    while len(textlist)>len(formatlist):
+        formatlist.append("")
+    while len(textlist)<len(formatlist):
+        textlist.append("")
+    for i in range(len(textlist)):
+        if textlist[i]=="" and formatlist[i]=="":
+            del textlist[i]
+            del formatlist[i]
     return textlist,formatlist
 
 class Kekzcontroller():
