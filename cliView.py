@@ -187,8 +187,6 @@ class View:
         text,format=controllerKeckz.decode(msg)
         msg=[]
         for i in range(len(text)):
-            if text[i].isspace() or text[i]=="":
-                continue
             form=format[i].split(",")
             color="normal"
             font=""
@@ -204,7 +202,9 @@ class View:
                     else:
                         text[i]=""
                 if a == "hline":
-                    text[i] = u'───────────────\n'
+                    text[i] = u"───────────────\n"
+                if a == "button":
+                    text[i] = "["+text[i]+"]"
             msg.append((color+font,text[i]))
             #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
             #self.lookupRooms[room].addLine(text[i])
@@ -256,7 +256,6 @@ class View:
             self.lookupRooms[i].delActiveTab(" "+str(number+1))
         self.ShownRoom=tabname
         sys.stdout.write('\033]0;KECKz - '+self.ShownRoom+' \007') # Set Terminal-Title
-        self.clock()
         self.redisplay()
 
     def setClock(self):
