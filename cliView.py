@@ -189,6 +189,7 @@ class View:
         for i in range(len(text)):
             if format[i] == "hline":
                 text[i] = u"───────────────\n"
+                msg.append(('normal',text[i]))
                 continue
             if text[i].isspace() or text[i]=="":
                 continue
