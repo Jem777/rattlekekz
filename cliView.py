@@ -125,6 +125,8 @@ class View:
         for key in keys:
             if key == 'window resize':
                 self.size = self.tui.get_cols_rows()
+                for i in self.lookupRooms:
+                    self.lookupRooms[i].newTopic(self.lookupRooms[i].Topictext)
                 self.redisplay()
             elif key == "ctrl n" or key=="ctrl p":
                 array=self.lookupRooms.keys()
@@ -550,6 +552,9 @@ class KeckzBaseTab(urwid.Frame):
     def OnClose(self):
         self.parent.closeActiveWindow(self.room)
 
+    def newTopic(self, topic):
+        pass
+
 class KeckzBaseIOTab(KeckzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
@@ -774,6 +779,7 @@ class KeckzMsgTab(KeckzPrivTab):
     def buildOutputWidgets(self):
         self.Userlistarray=[urwid.Text('Userliste: ')]
         self.Userlist = urwid.ListBox(self.Userlistarray)
+        self.Topictext=''
         self.Topic=urwid.Text(("dividerstate",""), "left")
         self.upperCol=urwid.Columns([("weight",4,self.Topic), self.upperDivider])
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
@@ -824,7 +830,11 @@ class KeckzMsgTab(KeckzPrivTab):
         self.parent.redisplay()
 
     def newTopic(self, topic):
-        self.Topic.set_text(("dividerstate","Topic: "+topic))
+        self.Topictext=topic
+        if len(topic)>self.parent.size[0]-26:
+            self.Topic.set_text(("dividerstate","Topic: "+topic[:self.parent.size[0]-33]+"[...]"))
+        else:
+            self.Topic.set_text(("dividerstate","Topic: "+topic))
 
     def onKeyPressed(self, size, key):
         KeckzPrivTab.onKeyPressed(self, size, key)
@@ -832,7 +842,10 @@ class KeckzMsgTab(KeckzPrivTab):
             self.Userlist.keypress(size, key.split()[1])
 
     def sendStr(self,string):
-        self.parent.controller.sendMsg(str(self.room),str(string))
+        if string.lower().startswith('/showtopic'):
+            self.addLine("Topic: "+self.Topictext)
+        else:
+            self.parent.controller.sendMsg(str(self.room),str(string))
 
     def OnClose(self):
         self.sendStr("/part")
