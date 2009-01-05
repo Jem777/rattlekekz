@@ -189,6 +189,7 @@ class View:
         for i in range(len(text)):
             if format[i] == "hline":
                 text[i] = u"───────────────\n"
+                continue
             if text[i].isspace() or text[i]=="":
                 continue
             form=format[i].split(",")
