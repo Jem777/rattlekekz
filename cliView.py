@@ -187,6 +187,10 @@ class View:
         text,format=controllerKeckz.decode(msg)
         msg=[]
         for i in range(len(text)):
+            if format[i] == "hline":
+                text[i] = u"───────────────\n"
+            if text[i].isspace() or text[i]=="":
+                continue
             form=format[i].split(",")
             color="normal"
             font=""
@@ -201,9 +205,8 @@ class View:
                         color="smilie"
                     else:
                         text[i]=""
-                if a == "hline":
-                    text[i] = u"───────────────\n"
                 if a == "button":
+                    color="smilie"
                     text[i] = "["+text[i]+"]"
             msg.append((color+font,text[i]))
             #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
