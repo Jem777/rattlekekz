@@ -786,7 +786,7 @@ class KeckzMsgTab(KeckzPrivTab):
         self.Userlistarray=[urwid.Text('Userliste: ')]
         self.Userlist = urwid.ListBox(self.Userlistarray)
         self.Topictext=''
-        self.Topic=urwid.Text(("dividerstate",""), "left")
+        self.Topic=urwid.Text(("dividerstate",""), "left", "clip")
         self.upperCol=urwid.Columns([("weight",4,self.Topic), self.upperDivider])
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
         #self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
@@ -836,11 +836,7 @@ class KeckzMsgTab(KeckzPrivTab):
         self.parent.redisplay()
 
     def newTopic(self, topic):
-        self.Topictext=topic
-        if len(topic)>self.parent.size[0]-26:
-            self.Topic.set_text(("dividerstate","Topic: "+topic[:self.parent.size[0]-33]+"[...]"))
-        else:
-            self.Topic.set_text(("dividerstate","Topic: "+topic))
+        self.Topic.set_text(("dividerstate",str("Topic: "+topic)))
 
     def onKeyPressed(self, size, key):
         KeckzPrivTab.onKeyPressed(self, size, key)
