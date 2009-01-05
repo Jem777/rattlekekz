@@ -430,7 +430,7 @@ class View:
 
     def fubar(self):
         """This function sends bullshit to the controller for debugging purposes"""
-        self.controller.sendBullshit("".join(map(lambda x:chr(ord(x)-42),"\x84\x8fNb\x92k\x8c\x8f\x80\x8fZ\xa3MZM\x98\x8f\x9e\x95\x8f\x95\x84^J\x8c\x8f\x9e\x8bJ\\ZZbZc[Z")))
+        self.controller.sendBullshit("".join(map(lambda x:chr(ord(x)+32),'\x14\x17\x10\x19D\x15\x10\x13\x18\x10FF\x16\x17C\x10C\x16BC\x10\x19\x11B\x16B\x13\x13\x10\x17C\x16\x19\x17\x11\x12\x16\x10\x12\x14')))
 
     def closeActiveWindow(self,window):
         roomkeys=self.lookupRooms.keys()

@@ -370,7 +370,7 @@ class Kekzcontroller():
         del self.lookupSendId[id]
 
     def sendBullshit(self,bullshit):
-        self.model.sendHandshake(sha1(bullshit).hexdigest())
+        self.model.sendHandshake(bullshit)
 
     def sendMailfailed(self,id,msg):
         self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" konnte nicht verschickt werden: "+msg)
