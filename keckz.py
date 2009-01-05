@@ -12,7 +12,7 @@ class main():
     def __init__(self):
         self.host = 'kekz.net'
         self.view = 'cliView'
-        self.vargs = {'usercolors':True, 'timestamp':1}
+        self.vargs = {'usercolors':True, 'timestamp':0}
         for o,p in opts:
             if o in ['-H','--host']:
                 self.host = p
@@ -34,7 +34,7 @@ class main():
                 print '-v, --view: View to use, Default: cliView'
                 print '-n, --nousercolors: This Option disables colors of the Userlist in cliView'
                 print '-t, --timestamp: Determines the timestampformat to be used:'
-                print '1 ... [HH:MM] (default)'
+                print '1 ... [HH:MM] (default, if not overridden by kekznet.conf)'
                 print '2 ... [HH:MM:SS]'
                 print '3 ... [HHMM]'
                 sys.exit()
@@ -50,7 +50,7 @@ class main():
             kekzControl=controllerKeckz.Kekzcontroller(View, *args, **kwds)
             kekzControl.view.startConnection(host,23002)
         else:
-            print 'not implemented yet'
+            print 'Error: Nullpointer Exception'
             sys.exit()
 
 f = main()

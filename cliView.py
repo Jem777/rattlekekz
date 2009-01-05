@@ -105,6 +105,17 @@ class View:
                 self.writehistory=int(self.controller.configfile["writehistory"])
             except:
                 pass
+        if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
+        elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
+        elif self.kwds['timestamp'] == 3: self.timestamp="[%H%M] "
+        elif self.controller.configfile.has_key("timestamp"):
+            self.timestamp=self.controller.configfile["timestamp"]+" "
+        else:
+            self.timestamp="[%H:%M] "
+        if self.controller.configfile.has_key("clock"):
+            self.clockformat=self.controller.configfile["clock"]+" "
+        else:
+            self.clockformat="[%H:%M:%S] "
 
 
     def startConnection(self,server,port):
@@ -218,12 +229,7 @@ class View:
         return msg
 
     def printMsg(self,nick,message,room,state): # TODO: Change Terminal-Titel on received Message and back then they were read
-        if self.kwds['timestamp'] == 1:
-            msg=[("timestamp",time.strftime("[%H:%M] ",time.localtime(reactor.seconds())))]
-        elif self.kwds['timestamp'] == 2:
-            msg=[("timestamp",time.strftime("[%H:%M:%S] ",time.localtime(reactor.seconds())))]
-        elif self.kwds['timestamp'] == 3:
-            msg=[("timestamp",time.strftime("[%H%M] ",time.localtime(reactor.seconds())))]
+        msg=[("timestamp",time.strftime(self.timestamp,time.localtime(reactor.seconds())))]
         if state==0 or state==2 or state==4:
             if nick==self.nickname:
                 msg.append(("green",nick+": "))
@@ -266,7 +272,7 @@ class View:
         self.redisplay()
 
     def setClock(self):
-        self.lookupRooms[self.ShownRoom].clock(("dividerstate",time.strftime("[%H:%M:%S] ",time.localtime(reactor.seconds()))))
+        self.lookupRooms[self.ShownRoom].clock(("dividerstate",time.strftime(self.clockformat,time.localtime(reactor.seconds()))))
         reactor.callLater(1,self.setClock)
         self.redisplay()
 
@@ -461,7 +467,7 @@ class KeckzBaseTab(urwid.Frame):
         self.hasOutput=True
         self.hasInput=False
         
-        self.time=time.strftime("[%H:%M] ",time.localtime(reactor.seconds()))
+        self.time=time.strftime(self.parent.clockformat,time.localtime(reactor.seconds()))
         self.nickname=" %s " % self.parent.nickname
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
