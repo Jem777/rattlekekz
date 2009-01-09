@@ -457,7 +457,10 @@ class View:
             self.changeTab(array[index])
 
     def connectionLost(self, failure): # TODO: Better handling for closed Connections
-        self.lookupRooms[self.ShownRoom].addLine("Verbindung verloren")
+        try:
+            self.lookupRooms[self.ShownRoom].addLine("Verbindung verloren")
+        except:
+            pass
         #reactor.callLater(3, lambda: self.tui.stop())
 
 class KeckzBaseTab(urwid.Frame):
