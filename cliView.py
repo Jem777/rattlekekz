@@ -84,6 +84,7 @@ class View:
         self.tui = tui
         self.lookupRooms={}
         self.readhistory,self.writehistory=5000,200
+        self.ShownRoom = None
 
 
     def fileno(self):
@@ -131,29 +132,30 @@ class View:
 
     def doRead(self):
         """ Input is ready! """
-        keys = self.tui.get_input()
+        if self.ShownRoom != None:
+            keys = self.tui.get_input()
 
-        for key in keys:
-            if key == 'window resize':
-                self.size = self.tui.get_cols_rows()
-                for i in self.lookupRooms:
-                    self.lookupRooms[i].newTopic(self.lookupRooms[i].Topictext)
-                self.redisplay()
-            elif key == "ctrl n" or key=="ctrl p":
-                array=self.lookupRooms.keys()
-                index=array.index(self.ShownRoom)
-                if array[index]==array[-1] and key=="ctrl n":
-                    index=0
-                elif key=="ctrl n":
-                    index=index+1
-                elif array[index]==array[0]:
-                    index=-1
+            for key in keys:
+                if key == 'window resize':
+                    self.size = self.tui.get_cols_rows()
+                    for i in self.lookupRooms:
+                        self.lookupRooms[i].newTopic(self.lookupRooms[i].Topictext)
+                    self.redisplay()
+                elif key == "ctrl n" or key=="ctrl p":
+                    array=self.lookupRooms.keys()
+                    index=array.index(self.ShownRoom)
+                    if array[index]==array[-1] and key=="ctrl n":
+                        index=0
+                    elif key=="ctrl n":
+                        index=index+1
+                    elif array[index]==array[0]:
+                        index=-1
+                    else:
+                        index=index-1
+                    self.changeTab(array[index])
                 else:
-                    index=index-1
-                self.changeTab(array[index])
-            else:
-                self.lookupRooms[self.ShownRoom].onKeyPressed(self.size, key)
-        self.redisplay()
+                    self.lookupRooms[self.ShownRoom].onKeyPressed(self.size, key)
+            self.redisplay()
 
     def receivedPreLoginData(self,rooms,array):
         self.lookupRooms.update({"$login":KeckzLoginTab("$login",self)})
