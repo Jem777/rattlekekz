@@ -273,6 +273,15 @@ class View:
         sys.stdout.write('\033]0;KECKz - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.redisplay()
 
+    def getTab(self,argument):
+        if type(argument)=="""<type 'str'>""":
+            for i in self.lookupRooms:
+                if self.lookupRooms[i][0]==argument: Tab=self.lookupRooms[i][1]
+        else:
+            Tab=self.lookupRooms[argument][1]
+        return Tab
+        
+
     def setClock(self):
         self.lookupRooms[self.ShownRoom].clock(("dividerstate",time.strftime(self.clockformat,time.localtime(reactor.seconds()))))
         reactor.callLater(1,self.setClock)
