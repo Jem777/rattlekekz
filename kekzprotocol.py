@@ -73,7 +73,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def sendMailLogin(self,nick,passhash):
         """Logs on to the Kekz.net mailsystem"""
-        self.sendLine('021 %s#%s#%s' % (nick,passhash))
+        self.sendLine('021 %s#%s' % (nick,passhash))
 
     def registerNick(self,nick,pwhash,email):
         """Register a new Nick"""
