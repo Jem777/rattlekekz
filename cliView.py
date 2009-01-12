@@ -373,43 +373,49 @@ class View(TabManagement):
             self.changeTab(room)
 
     def mePart(self,room):
-        roomkeys=self.lookupRooms.keys()
-        statelist=self.lookupRooms[self.ShownRoom].statelist
-        if room==self.ShownRoom:
-            array=self.lookupRooms.keys()
-            index=array.index(self.ShownRoom)
-            if array[index]==array[0]:
-                index=-1
-            else:
-                index=index-1
-            self.changeTab(array[index])
-        del self.lookupRooms[room]
-        if not len(statelist) == 2:
-            tablist=statelist[3:-1]
-            newkeys=self.lookupRooms.keys()
-            newlist=[]
-            for i in tablist:
-                if not roomkeys[int(i[1])-1]==room:
-                    newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
-            for a in self.lookupRooms:
-                self.lookupRooms[a].updateActiveTabs(newlist)
+        self.updateTabs(self.delTab,room)
+        #roomkeys=self.lookupRooms.keys()
+        #statelist=self.lookupRooms[self.ShownRoom].statelist
+        #if room==self.ShownRoom:
+        #    array=self.lookupRooms.keys()
+        #    index=array.index(self.ShownRoom)
+        #    if array[index]==array[0]:
+        #        index=-1
+        #    else:
+        #        index=index-1
+        #    self.changeTab(array[index])
+        #del self.lookupRooms[room]
+        #if not len(statelist) == 2:
+        #    tablist=statelist[3:-1]
+        #    newkeys=self.lookupRooms.keys()
+        #    newlist=[]
+        #    for i in tablist:
+        #        if not roomkeys[int(i[1])-1]==room:
+        #            newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
+        #    for a in self.lookupRooms:
+        #        self.lookupRooms[a].updateActiveTabs(newlist)
         self.redisplay()
 
     def meGo(self,oldroom,newroom):
-        roomkeys=self.lookupRooms.keys()
-        statelist=self.lookupRooms[self.ShownRoom].statelist
-        self.lookupRooms.update({newroom:KeckzMsgTab(newroom, self)})
-        self.lookupRooms[newroom].setPing(self.Ping)
-        del self.lookupRooms[oldroom]
-        if not len(statelist) == 2:
-            tablist=statelist[3:-1]
-            newkeys=self.lookupRooms.keys()
-            newlist=[]
-            for i in tablist:
-                if not roomkeys[int(i[1])-1]==room:
-                    newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
-            for a in self.lookupRooms:
-                self.lookupRooms[a].updateActiveTabs(newlist)
+        self.addTab(newroom,KeckzMsgTab)
+        
+        if self.sortTabs:
+            self.updateTabs(self.lookupRooms.sort)
+        self.updateTabs(self.delTab,oldroom)
+        #roomkeys=self.lookupRooms.keys()
+        #statelist=self.lookupRooms[self.ShownRoom].statelist
+        #self.lookupRooms.update({newroom:KeckzMsgTab(newroom, self)})
+        #self.lookupRooms[newroom].setPing(self.Ping)
+        #del self.lookupRooms[oldroom]
+        #if not len(statelist) == 2:
+        #    tablist=statelist[3:-1]
+        #    newkeys=self.lookupRooms.keys()
+        #    newlist=[]
+        #    for i in tablist:
+        #        if not roomkeys[int(i[1])-1]==room:
+        #            newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
+        #    for a in self.lookupRooms:
+        #        self.lookupRooms[a].updateActiveTabs(newlist)
         self.changeTab(newroom)
 
     def newTopic(self,room,topic):
