@@ -19,17 +19,92 @@ rev=re.search("\d+",revision).group()
 class TextTooLongError(Exception):
     pass
 
-class View:
+class TabManagement:
+    def __init__(self):
+        self.lookupRooms=[(None,None)]
+        self.sortTabs=False
+        self.ShownRoom = None
+        self.name,self.version="",""
+        self.tui = curses_display.Screen()
+        self.tui.set_input_timeouts(0.1)
+
+    def redisplay(self):
+        """ method for redisplaying lines 
+            based on internal list of lines """
+
+        canvas = self.getTab(self.ShownRoom).render(self.size, focus = True)
+        self.tui.draw_screen(self.size, canvas)
+
+    def changeTab(self,tabname):
+        number = self.getTabId(tabname)
+        for i in self.lookupRooms:
+            if i[1]==None: continue
+            i[1].delActiveTab(" "+str(number))
+        self.ShownRoom=tabname
+        sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
+        self.redisplay()
+
+    def getTab(self,argument):
+        for i in self.lookupRooms:
+            if i[0]==argument: Tab=i[1]
+        return Tab
+    
+    def getTabId(self, name):
+        for i in range(len(self.lookupRooms)):
+            if self.lookupRooms[i][0]==name: return i
+
+    def updateTabs(self,method, arg=None):
+        roomnames=[]
+        for i in self.lookupRooms:
+            roomnames.append(i[0])
+        statelist=self.lookupRooms[self.ShownRoom].statelist
+        if arg==None:
+            method()
+        else:
+            method(arg)
+        if not len(statelist) == 2:
+            tablist=statelist[3:-1]
+            newkeys=[]
+            for i in self.lookupRooms:
+                newkeys.append(i[0])
+            newlist=[]
+            for i in tablist:
+                newlist.append((i[0]," "+str(newkeys.index(roomnames[int(i)]))))
+            for a in self.lookupRooms:
+                self.lookupRooms[a][1].updateActiveTabs(newlist)
+
+    def addTab(self, tabname, tab):
+        try:
+            self.getTab(tabname)
+        except:
+            self.lookupRooms.append((tabname, tab(tabname, self)))
+            #self.GetTab(tabname).setPing(self.Ping)
+            if self.sortTabs:
+                self.updateTabs(self.lookupRooms.sort)
+
+    def delTab(self,room):
+        if room==self.ShownRoom:
+            array=self.lookupRooms
+            index=self.getTabId(self.ShownRoom)
+            if array[index]==array[0]:
+                index=-1
+            else:
+                index=index-1
+            self.changeTab(array[index])
+        del self.lookupRooms[self.getTabId(room)]
+
+
+
+class View(TabManagement):
     def __init__(self, controller, *args, **kwds):
+        TabManagement.__init__(self)
         sys.stdout.write('\033]0;KECKz - Evil Client for KekZ\007') #Set Terminal-Title
-        self.Ping="divider","Ping: inf. ms"
+        self.Ping="Ping: inf. ms"
         self.nickname=""
         self.controller=controller
         self.vargs = args
         self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
         self.name,self.version="KECKz","rev. "+rev
-        tui = curses_display.Screen()
-        tui.set_input_timeouts(0.1)
         colors =[('normal','default','default','standout'),
             ('divider', 'white', 'dark blue', 'standout'),
             ('dividerstate', 'light gray', 'dark blue', 'standout'),
@@ -64,7 +139,7 @@ class View:
             ("whitebold","white","default",'bold'),
             ('graybold','light gray','default',"bold"),
             ('smilie','black','brown')]
-        tui.register_palette(colors)
+        self.tui.register_palette(colors)
         self.smilies={"s6":":-)",
                  "s4":":-(",
                  "s1":":-/",
@@ -81,10 +156,7 @@ class View:
                  "s13":":-G"}
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
-        self.tui = tui
-        self.lookupRooms={}
         self.readhistory,self.writehistory=5000,200
-        self.ShownRoom = None
 
 
     def fileno(self):
@@ -118,32 +190,23 @@ class View:
         else:
             self.clockformat="[%H:%M:%S] "
 
-
     def startConnection(self,server,port):
         reactor.connectSSL(server, port, self.controller.model, ClientContextFactory())
         self.tui.run_wrapper(reactor.run)
-
-    def redisplay(self):
-        """ method for redisplaying lines 
-            based on internal list of lines """
-
-        canvas = self.lookupRooms[self.ShownRoom].render(self.size, focus = True)
-        self.tui.draw_screen(self.size, canvas)
 
     def doRead(self):
         """ Input is ready! """
         if self.ShownRoom != None:
             keys = self.tui.get_input()
-
             for key in keys:
                 if key == 'window resize':
                     self.size = self.tui.get_cols_rows()
                     for i in self.lookupRooms:
-                        self.lookupRooms[i].newTopic(self.lookupRooms[i].Topictext)
+                        i[1].newTopic(i[1].Topictext)
                     self.redisplay()
                 elif key == "ctrl n" or key=="ctrl p":
-                    array=self.lookupRooms.keys()
-                    index=array.index(self.ShownRoom)
+                    array=self.lookupRooms
+                    index=self.getTabId(self.ShownRoom)
                     if array[index]==array[-1] and key=="ctrl n":
                         index=0
                     elif key=="ctrl n":
@@ -152,50 +215,54 @@ class View:
                         index=-1
                     else:
                         index=index-1
-                    self.changeTab(array[index])
+                    self.changeTab(self.lookupRooms[index][0])
                 else:
-                    self.lookupRooms[self.ShownRoom].onKeyPressed(self.size, key)
+                    self.getTab(self.ShownRoom).onKeyPressed(self.size, key)
             self.redisplay()
 
     def receivedPreLoginData(self,rooms,array):
-        self.lookupRooms.update({"$login":KeckzLoginTab("$login",self)})
+        self.lookupRooms.append(("$login",KeckzLoginTab("$login",self)))
         self.ShownRoom="$login"
-        self.lookupRooms[self.ShownRoom].receivedPreLoginData(rooms,array)
+        self.getTab(self.ShownRoom).receivedPreLoginData(rooms,array)
 
     def successRegister(self):
         if len(self.lookupRooms)==0:
-            self.lookupRooms.update({"$login":KeckzInfoTab("$login", self)})
-            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+            self.addTab("$login",KeckzLoginTab)
             self.ShownRoom="$login"
-        self.lookupRooms[self.ShownRoom].addLine("Nick erfolgreich registriert!")
-        self.lookupRooms[self.ShownRoom].reLogin(True)
+        self.getTab(self.ShownRoom).addLine("Nick erfolgreich registriert!")
+        self.getTab(self.ShownRoom).reLogin(True)
 
     def successLogin(self,nick,status,room):
         self.nickname=nick
         self.ShownRoom=room
-        sys.stdout.write('\033]0;KECKz - '+self.ShownRoom+' \007') # Set Terminal-Title
-        self.lookupRooms.update({room:KeckzMsgTab(room,self)})
-        self.lookupRooms[self.ShownRoom].addLine("Logged successful in as "+nick+"\nJoined room "+room)
-        self.lookupRooms[self.ShownRoom].setPing(self.Ping)
-        if self.lookupRooms.has_key("$login"):
-            del self.lookupRooms["$login"]
+        sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
+        self.addTab(room,KeckzMsgTab)
+        self.getTab(room).addLine("Logged successful in as "+nick+"\nJoined room "+room)
+        try:
+            self.delTab("$login")
+        except:
+            pass
+        #self.lookupRooms.update({room:KeckzMsgTab(room,self)})
+        #self.lookupRooms[self.ShownRoom].addLine("Logged successful in as "+nick+"\nJoined room "+room)
+        #self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+        #if self.lookupRooms.has_key("$login"):
+        #    del self.lookupRooms["$login"]
         self.oldtime=""
         self.running = False
         self.setClock()
 
     def securityCheck(self,infotext):
-        if not self.lookupRooms.has_key("$secure"):
-            self.lookupRooms.update({"$secure":KeckzSecureTab("$secure", self)})
-            self.lookupRooms["$secure"].setPing(self.Ping)
+        self.addTab("$secure",KeckzSecureTab)
         self.changeTab("$secure")
         msg=self.deparse(infotext)
-        self.lookupRooms[self.ShownRoom].addLine(("divider","Info: "))
-        self.lookupRooms[self.ShownRoom].addLine(msg)
+        self.getTab(self.ShownRoom).addLine(("divider","Info: "))
+        self.getTab(self.ShownRoom).addLine(msg)
 
     def receivedPing(self,deltaPing):
         self.Ping="Ping: "+str(deltaPing)+"ms"
         for i in self.lookupRooms:
-            self.lookupRooms[i].setPing(self.Ping)
+            if i[1]==None: continue
+            i[1].setPing(self.Ping)
         self.redisplay()
 
     def deparse(self,msg):
@@ -241,9 +308,10 @@ class View:
             msg.append(("green",str(self.nickname)+": "))
         if state==2 or state==3:
             room="#"+nick
-            if self.lookupRooms.has_key(room)==False:
-                self.lookupRooms.update({room:KeckzPrivTab(room, self)})
-                self.lookupRooms[room].setPing(self.Ping)
+            try:
+                self.getTab(room)
+            except:
+                self.addTab(room,KeckzPrivTab)
         if state==4:
             room=self.ShownRoom
         if not (self.ShownRoom == "$login" or room == self.ShownRoom):
@@ -255,69 +323,52 @@ class View:
             else:
                 style="divider"
             if not style=="":
-                roomkeys=self.lookupRooms.keys()
-                number = roomkeys.index(room)
+                number = self.getTabId(room)
                 for i in self.lookupRooms:
-                    self.lookupRooms[i].insertActiveTab(style," "+str(number+1))
+                    if i[1]==None: continue
+                    i[1].insertActiveTab(style," "+str(int(number)))
         msg.extend(self.deparse(message))
-        self.lookupRooms[room].addLine(msg)
+        self.getTab(room).addLine(msg)
         if room==self.ShownRoom:
             self.redisplay()
 
-    def changeTab(self,tabname):
-        roomkeys=self.lookupRooms.keys()
-        number = roomkeys.index(tabname)
-        for i in self.lookupRooms:
-            self.lookupRooms[i].delActiveTab(" "+str(number+1))
-        self.ShownRoom=tabname
-        sys.stdout.write('\033]0;KECKz - '+self.ShownRoom+' \007') # Set Terminal-Title
-        self.redisplay()
-
-    def getTab(self,argument):
-        if type(argument)=="""<type 'str'>""":
-            for i in self.lookupRooms:
-                if self.lookupRooms[i][0]==argument: Tab=self.lookupRooms[i][1]
-        else:
-            Tab=self.lookupRooms[argument][1]
-        return Tab
-        
-
     def setClock(self):
-        self.lookupRooms[self.ShownRoom].clock(("dividerstate",time.strftime(self.clockformat,time.localtime(reactor.seconds()))))
+        self.getTab(self.ShownRoom).clock(("dividerstate",time.strftime(self.clockformat,time.localtime(reactor.seconds()))))
         reactor.callLater(1,self.setClock)
         self.redisplay()
 
     def gotException(self, message):
         if len(self.lookupRooms)==0:
-            self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
-            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+            self.addTab("$infos",KeckzInfoTab)
             self.ShownRoom="$infos"
-        self.lookupRooms[self.ShownRoom].addLine("Fehler: "+message)
+        self.getTab(self.ShownRoom).addLine("Fehler: "+message)
 
     def gotLoginException(self, message):
         if len(self.lookupRooms)==0:
-            self.lookupRooms.update({"$login":KeckzInfoTab("$login", self)})
-            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+            self.addTab("$login",KeckzInfoTab)
             self.ShownRoom="$login"
-        self.lookupRooms[self.ShownRoom].addLine("Fehler: "+message)
-        self.lookupRooms[self.ShownRoom].reLogin()
+        self.getTab(self.ShownRoom).addLine("Fehler: "+message)
+        self.getTab(self.ShownRoom).reLogin()
 
     def listUser(self,room,users):
-        self.lookupRooms[room].listUser(users,self.kwds['usercolors'])
+        self.getTab(room).listUser(users,self.kwds['usercolors'])
 
     def meJoin(self,room,background):
-        roomkeys=self.lookupRooms.keys()
-        statelist=self.lookupRooms[self.ShownRoom].statelist
-        self.lookupRooms.update({room:KeckzMsgTab(room, self)})
-        self.lookupRooms[room].setPing(self.Ping)
-        if not len(statelist) == 2:
-            tablist=statelist[3:-1]
-            newkeys=self.lookupRooms.keys()
-            newlist=[]
-            for i in tablist:
-                newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
-            for a in self.lookupRooms:
-                self.lookupRooms[a].updateActiveTabs(newlist)
+        self.addTab(room,KeckzMsgTab)
+        if self.sortTabs:
+            self.updateTabs(self.lookupRooms.sort)
+        #roomkeys=self.lookupRooms.keys()
+        #statelist=self.lookupRooms[self.ShownRoom].statelist
+        #self.lookupRooms.update({room:KeckzMsgTab(room, self)})
+        #self.lookupRooms[room].setPing(self.Ping)
+        #if not len(statelist) == 2:
+        #    tablist=statelist[3:-1]
+        #    newkeys=self.lookupRooms.keys()
+        #    newlist=[]
+        #    for i in tablist:
+        #        newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
+        #    for a in self.lookupRooms:
+        #        self.lookupRooms[a].updateActiveTabs(newlist)
         if not background:
             self.changeTab(room)
 
@@ -362,26 +413,23 @@ class View:
         self.changeTab(newroom)
 
     def newTopic(self,room,topic):
-        self.lookupRooms[room].addLine("Neues Topic: "+topic)
-        self.lookupRooms[room].newTopic(topic)
+        self.getTab(room).addLine("Topic: "+topic)
+        self.getTab(room).newTopic(topic)
 
     def loggedOut(self):
         self.tui.stop()
         reactor.stop()
 
     def receivedInformation(self,info):
-        if not self.lookupRooms.has_key("$infos"):
-            self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
-            self.lookupRooms["$infos"].setPing(self.Ping)
+        self.addTab("$infos",KeckzInfoTab)
         self.changeTab("$infos")
         msg=self.deparse(info)
-        self.lookupRooms[self.ShownRoom].addLine(("divider","Infos: "))
-        self.lookupRooms[self.ShownRoom].addLine(msg)
+        self.getTab(self.ShownRoom).addLine(("divider","Infos: "))
+        self.getTab(self.ShownRoom).addLine(msg)
 
     def minorInfo(self, message):
         if len(self.lookupRooms)==0:
-            self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
-            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+            self.addTab("$infos",KeckzInfoTab)
             self.changeTab("$infos")
         self.lookupRooms[self.ShownRoom].addLine([("divider","Info: "),message])
 
@@ -399,42 +447,40 @@ class View:
         self.printMsg(user+' [CTCPAnswer]',cpanswer,self.ShownRoom,0)
 
     def receivedWhois(self,nick,array):
-        if not self.lookupRooms.has_key("$infos"):
-            self.lookupRooms.update({"$infos":KeckzInfoTab("$infos", self)})
-            self.lookupRooms[self.ShownRoom].setPing(self.Ping)
+        self.addTab("$infos",KeckzInfoTab)
         self.changeTab("$infos")
-        self.lookupRooms[self.ShownRoom].addLine(("divider","Whois von "+nick))
+        self.getTab(self.ShownRoom).addLine(("divider","Whois von "+nick))
         for i in array:
-            self.lookupRooms[self.ShownRoom].addLine(self.deparse(i))
-        self.lookupRooms[self.ShownRoom].addLine(("divider","Ende des Whois"))
+            self.getTab(self.ShownRoom).addLine(self.deparse(i))
+        self.getTab(self.ShownRoom).addLine(("divider","Ende des Whois"))
 
     def receivedProfile(self,name,ort,homepage,hobbies,signature):
-        self.lookupRooms[self.ShownRoom].addLine('receivedProfile | stub: implement me!')
+        self.getTab(self.ShownRoom).addLine('receivedProfile | stub: implement me!')
 
     def openMailTab(self):
         if not self.lookupRooms.has_key("$mail"):
-            self.lookupRooms.update({"$mail":KeckzMailTab("$mail", self)})
-            self.lookupRooms["$mail"].setPing(self.Ping)
+            self.addTab("$mail",KeckzMailTab)
+            self.getTab("$mail").setPing(self.Ping)
             self.controller.refreshMaillist()
         self.changeTab("$mail")
 
     def MailInfo(self,info):
         self.openMailTab()
-        self.lookupRooms[self.ShownRoom].addLine([("divider","Info:\n"),info])
+        self.getTab(self.ShownRoom).addLine([("divider","Info:\n"),info])
 
     def receivedMails(self,userid,mailcount,mails):
         self.openMailTab()
         if not len(mails)==0:
-            self.lookupRooms[self.ShownRoom].addLine(("green","\nMails: "))
+            self.getTab(self.ShownRoom).addLine(("green","\nMails: "))
             for i in mails:
-                self.lookupRooms[self.ShownRoom].addLine(str(i["index"])+".: von "+i["from"]+", um "+i["date"]+": \n"+i["stub"])
+                self.getTab(self.ShownRoom).addLine(str(i["index"])+".: von "+i["from"]+", um "+i["date"]+": \n"+i["stub"])
 
     def printMail(self,user,date,mail):
         self.openMailTab()
         msg=["\nMail von ",("red",user)," vom ",("gray",date+": \n"),"---Anfang der Mail---\n"]
         msg.extend(self.deparse(mail))
         msg.append("\n---Ende der Mail---")
-        self.lookupRooms[self.ShownRoom].addLine(msg)
+        self.getTab(self.ShownRoom).addLine(msg)
 
     def quit(self):
         self.controller.quitConnection()  #TODO: afterwarts either the login screen must be shown or the application exit
@@ -445,7 +491,7 @@ class View:
 
     def closeActiveWindow(self,window):
         roomkeys=self.lookupRooms.keys()
-        statelist=self.lookupRooms[self.ShownRoom].statelist
+        statelist=self.getTab(self.ShownRoom).statelist
         array=self.lookupRooms.keys()
         if len(array)==1:
             self.quit()
@@ -469,7 +515,7 @@ class View:
 
     def connectionLost(self, failure): # TODO: Better handling for closed Connections
         try:
-            self.lookupRooms[self.ShownRoom].addLine("Verbindung verloren")
+            self.getTab(self.ShownRoom).addLine("Verbindung verloren")
         except:
             pass
         #reactor.callLater(3, lambda: self.tui.stop())
@@ -485,7 +531,7 @@ class KeckzBaseTab(urwid.Frame):
         self.nickname=" %s " % self.parent.nickname
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
-        self.upperDivider=urwid.Text(("divider","Ping: inf. ms"), "right")
+        self.upperDivider=urwid.Text(("divider",self.parent.Ping), "right")
         self.statelist=[("dividerstate",self.time),("dividerstate",self.nickname)]
         self.lowerDivider=urwid.Text(self.statelist, "left")
         self.header=urwid.Text("KECKz","center")
@@ -563,9 +609,8 @@ class KeckzBaseTab(urwid.Frame):
             else:
                 self.MainView.keypress(size, key)
         elif key in altkeys:
-            roomkeys=self.parent.lookupRooms.keys()
             try:
-                self.parent.changeTab(roomkeys[altkeys.index(key)-1])
+                self.parent.changeTab(self.parent.lookupRooms[altkeys.index(key)][0])
             except:
                 pass
 
