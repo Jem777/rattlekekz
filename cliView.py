@@ -464,10 +464,8 @@ class View(TabManagement):
         self.getTab(self.ShownRoom).addLine('receivedProfile | stub: implement me!')
 
     def openMailTab(self):
-        if not self.lookupRooms.has_key("$mail"):
-            self.addTab("$mail",KeckzMailTab)
-            self.getTab("$mail").setPing(self.Ping)
-            self.controller.refreshMaillist()
+        self.addTab("$mail",KeckzMailTab)
+        self.controller.refreshMaillist()
         self.changeTab("$mail")
 
     def MailInfo(self,info):
