@@ -21,7 +21,7 @@ class TextTooLongError(Exception):
 
 class TabManagement:
     def __init__(self):
-        self.lookupRooms=[(None,None)]
+        self.lookupRooms=[(None,None,0)]
         self.sortTabs=False
         self.ShownRoom = None
         self.name,self.version="",""
@@ -36,10 +36,12 @@ class TabManagement:
         self.tui.draw_screen(self.size, canvas)
 
     def changeTab(self,tabname):
-        number = self.getTabId(tabname)
-        for i in self.lookupRooms:
-            if i[1]==None: continue
-            i[1].delActiveTab(" "+str(number))
+        number = int(self.getTabId(tabname))
+        self.lookupRooms[number]=(self.lookupRooms[number][0],self.lookupRooms[number][1],0)
+        #for i in self.lookupRooms:
+        #    if i[1]==None: continue
+        #    i[1].delActiveTab(" "+str(number))
+        self.updateTabs()
         self.ShownRoom=tabname
         sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.redisplay()
@@ -51,47 +53,55 @@ class TabManagement:
     
     def getTabId(self, name):
         for i in range(len(self.lookupRooms)):
-            if self.lookupRooms[i][0]==name: return i
+            if self.lookupRooms[i][0]==name: integer=i
+        return integer
 
-    def updateTabs(self,method, arg=None):
-        roomnames=[]
-        for i in self.lookupRooms:
-            roomnames.append(i[0])
-        statelist=self.lookupRooms[self.ShownRoom].statelist
-        if arg==None:
-            method()
-        else:
-            method(arg)
-        if not len(statelist) == 2:
-            tablist=statelist[3:-1]
-            newkeys=[]
-            for i in self.lookupRooms:
-                newkeys.append(i[0])
-            newlist=[]
-            for i in tablist:
-                newlist.append((i[0]," "+str(newkeys.index(roomnames[int(i)]))))
-            for a in self.lookupRooms:
-                self.lookupRooms[a][1].updateActiveTabs(newlist)
+    def updateTabs(self):
+        #roomnames=[]
+        #for i in self.lookupRooms:
+        #    roomnames.append(i[0])
+        #statelist=self.lookupRooms[self.ShownRoom].statelist
+        #if arg==None:
+        #    method()
+        #else:
+        #    method(arg)
+        #if not len(statelist) == 2:
+        #    tablist=statelist[3:-1]
+        #    newkeys=[]
+        #    for i in self.lookupRooms:
+        #        newkeys.append(i[0])
+        #    newlist=[]
+        #    for i in tablist:
+        #        newlist.append((i[0]," "+str(newkeys.index(roomnames[int(i)]))))
+        #    for a in self.lookupRooms:
+        #        self.lookupRooms[a][1].updateActiveTabs(newlist)
+        statelist=[]
+        for i in range(len(self.lookupRooms)):
+            statelist.append(self.lookupRooms[i][2])
+        self.getTab(self.ShownRoom).updateTabstates(statelist)
+        #for i in self.lookupRooms:
+        #    if not i[1]==None:
+        #        i[1].updateTabstates(statelist)
 
     def addTab(self, tabname, tab):
         try:
             self.getTab(tabname)
         except:
-            self.lookupRooms.append((tabname, tab(tabname, self)))
-            #self.GetTab(tabname).setPing(self.Ping)
+            self.lookupRooms.append((tabname, tab(tabname, self),0))
             if self.sortTabs:
-                self.updateTabs(self.lookupRooms.sort)
+                self.lookupRooms.sort()
+                self.updateTabs()
 
     def delTab(self,room):
         if room==self.ShownRoom:
-            array=self.lookupRooms
             index=self.getTabId(self.ShownRoom)
-            if array[index]==array[0]:
-                index=-1
+            if index==0 or index==1:
+                index=2
             else:
                 index=index-1
-            self.changeTab(array[index])
+            self.changeTab(self.lookupRooms[index][0])
         del self.lookupRooms[self.getTabId(room)]
+        self.updateTabs()
 
 
 
@@ -319,17 +329,22 @@ class View(TabManagement):
             room=self.ShownRoom
         if not (self.ShownRoom == "$login" or room == self.ShownRoom):
             style=""
+            importance=2
             if message.find(str(self.nickname)) or state==2:
-                style="dividerme"
+                importance=3 #style="dividerme"
             elif state==5:
-                style="dividerstate" #TODO: it still doesn't work
+                importance=1 #style="dividerstate" #TODO: it still doesn't work
             else:
-                style="divider"
-            if not style=="":
-                number = self.getTabId(room)
-                for i in self.lookupRooms:
-                    if i[1]==None: continue
-                    i[1].insertActiveTab(style," "+str(int(number)))
+                importance=2 #style="divider"
+            activeroom=self.lookupRooms[self.getTabId(room)]
+            if importance>activeroom[2]:
+                self.lookupRooms[self.getTabId(room)]=(activeroom[0],activeroom[1],importance)
+                self.updateTabs()
+            #if not style=="":
+            #    number = self.getTabId(room)
+            #    for i in self.lookupRooms:
+            #        if i[1]==None: continue
+            #        i[1].insertActiveTab(style," "+str(int(number)))
         msg.extend(self.deparse(message))
         self.getTab(room).addLine(msg)
         if room==self.ShownRoom:
@@ -359,7 +374,8 @@ class View(TabManagement):
     def meJoin(self,room,background):
         self.addTab(room,KeckzMsgTab)
         if self.sortTabs:
-            self.updateTabs(self.lookupRooms.sort)
+            self.lookupRooms.sort()
+            self.updateTabs()
         #roomkeys=self.lookupRooms.keys()
         #statelist=self.lookupRooms[self.ShownRoom].statelist
         #self.lookupRooms.update({room:KeckzMsgTab(room, self)})
@@ -376,7 +392,8 @@ class View(TabManagement):
             self.changeTab(room)
 
     def mePart(self,room):
-        self.updateTabs(self.delTab,room)
+        self.delTab(room)
+        self.updateTabs()
         #roomkeys=self.lookupRooms.keys()
         #statelist=self.lookupRooms[self.ShownRoom].statelist
         #if room==self.ShownRoom:
@@ -401,10 +418,11 @@ class View(TabManagement):
 
     def meGo(self,oldroom,newroom):
         self.addTab(newroom,KeckzMsgTab)
-        
         if self.sortTabs:
-            self.updateTabs(self.lookupRooms.sort)
-        self.updateTabs(self.delTab,oldroom)
+            self.lookupRooms.sort()
+            self.updateTabs()
+        self.delTab(oldroom)
+        self.updateTabs()
         #roomkeys=self.lookupRooms.keys()
         #statelist=self.lookupRooms[self.ShownRoom].statelist
         #self.lookupRooms.update({newroom:KeckzMsgTab(newroom, self)})
@@ -497,28 +515,31 @@ class View(TabManagement):
         self.controller.sendBullshit("".join(map(lambda x:chr(ord(x)+32),'\x14\x17\x10\x19D\x15\x10\x13\x18\x10FF\x16\x17C\x10C\x16BC\x10\x19\x11B\x16B\x13\x13\x10\x17C\x16\x19\x17\x11\x12\x16\x10\x12\x14')))
 
     def closeActiveWindow(self,window):
-        roomkeys=self.lookupRooms.keys()
-        statelist=self.getTab(self.ShownRoom).statelist
-        array=self.lookupRooms.keys()
-        if len(array)==1:
-            self.quit()
-        else:
-            index=array.index(window)
-            if array[index]==array[0]:
-                index=-1
-            else:
-                index=index-1
-            del self.lookupRooms[window]
-            if not len(statelist) == 2:
-                tablist=statelist[3:-1]
-                newkeys=self.lookupRooms.keys()
-                newlist=[]
-                for i in tablist:
-                    if not roomkeys[int(i[1])-1]==window:
-                        newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
-                for a in self.lookupRooms:
-                    self.lookupRooms[a].updateActiveTabs(newlist)
-            self.changeTab(array[index])
+        self.delTab(window)
+        self.updateTabs()
+        self.redisplay()
+        #roomkeys=self.lookupRooms.keys()
+        #statelist=self.getTab(self.ShownRoom).statelist
+        #array=self.lookupRooms.keys()
+        #if len(array)==1:
+        #    self.quit()
+        #else:
+        #    index=array.index(window)
+        #    if array[index]==array[0]:
+        #        index=-1
+        #    else:
+        #        index=index-1
+        #    del self.lookupRooms[window]
+        #    if not len(statelist) == 2:
+        #        tablist=statelist[3:-1]
+        #        newkeys=self.lookupRooms.keys()
+        #        newlist=[]
+        #        for i in tablist:
+        #            if not roomkeys[int(i[1])-1]==window:
+        #                newlist.append((i[0]," "+str(newkeys.index(roomkeys[int(i[1])-1])+1))) #dont try to understand this, it just changes the number
+        #        for a in self.lookupRooms:
+        #            self.lookupRooms[a].updateActiveTabs(newlist)
+        #    self.changeTab(array[index])
 
     def connectionLost(self, failure): # TODO: Better handling for closed Connections
         try:
@@ -556,45 +577,49 @@ class KeckzBaseTab(urwid.Frame):
         self.statelist[0]=string
         self.lowerDivider.set_text(self.statelist)
 
-    def insertActiveTab(self, style, number): #TODO sort the entrys by number
-        if len(self.statelist)==2:
-            self.statelist.extend([("dividerstate"," (Act:"),("dividerstate"," )")])
-        ranking=["dividerme","divider","dividerstate"]
-        for i in ranking:
-            try:
-                self.statelist.index((i, number))
-            except ValueError:
-                if i == "dividerstate":
-                    self.statelist.insert(-1,(style, number))
-            else:
-                if ranking.index(style) > ranking.index(i):
-                    self.statelist[self.statelist.index((i, number))]=(style, number)
-                break
-        numbers=self.statelist[3:-1]
-        del self.statelist[3:-1]
-        numbers.sort()
-        numbers.append(self.statelist.pop())
-        self.statelist.extend(numbers)
-        self.lowerDivider.set_text(self.statelist)
+    #def insertActiveTab(self, style, number): #TODO sort the entrys by number
+    #    if len(self.statelist)==2:
+    #        self.statelist.extend([("dividerstate"," (Act:"),("dividerstate"," )")])
+    #    ranking=["dividerme","divider","dividerstate"]
+    #    for i in ranking:
+    #        try:
+    #            self.statelist.index((i, number))
+    #        except ValueError:
+    #            if i == "dividerstate":
+    #                self.statelist.insert(-1,(style, number))
+    #        else:
+    #            if ranking.index(style) > ranking.index(i):
+    #                self.statelist[self.statelist.index((i, number))]=(style, number)
+    #            break
+    #    numbers=self.statelist[3:-1]
+    #    del self.statelist[3:-1]
+    #    numbers.sort()
+    #    numbers.append(self.statelist.pop())
+    #    self.statelist.extend(numbers)
+    #    self.lowerDivider.set_text(self.statelist)
 
-    def delActiveTab(self, number): 
-        ranking=["dividerme","divider","dividerstate"]
-        for i in ranking:
-            try:
-                self.statelist.remove((i, number))
-            except ValueError:
-                pass
-        if len(self.statelist)==4:
-            del self.statelist[2:]
-        self.lowerDivider.set_text(self.statelist)
+    #def delActiveTab(self, number): 
+    #    ranking=["dividerme","divider","dividerstate"]
+    #    for i in ranking:
+    #        try:
+    #            self.statelist.remove((i, number))
+    #        except ValueError:
+    #            pass
+    #    if len(self.statelist)==4:
+    #        del self.statelist[2:]
+    #    self.lowerDivider.set_text(self.statelist)
 
-    def updateActiveTabs(self, tablist):
-        if not tablist[-1]==("dividerstate"," )"):
-            tablist.append(("dividerstate"," )"))
-        if len(self.statelist)==2:
+    def updateTabstates(self, tablist):
+        ranking=["","dividerstate","divider","dividerme"]
+        newtablist=[]
+        for i in range(len(tablist)):
+            if not tablist[i] == 0:
+                newtablist.append((ranking[tablist[i]]," "+str(i)))
+        del self.statelist[2:]
+        if not newtablist==[]:
             self.statelist.append(("dividerstate"," (Act:"))
-        self.statelist=self.statelist[:3]
-        self.statelist.extend(tablist)
+            self.statelist.extend(newtablist)
+            self.statelist.append(("dividerstate"," )"))
         self.lowerDivider.set_text(self.statelist)
 
     def setPing(self,string):
