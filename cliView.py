@@ -202,7 +202,10 @@ class View(TabManagement):
                 if key == 'window resize':
                     self.size = self.tui.get_cols_rows()
                     for i in self.lookupRooms:
-                        i[1].newTopic(i[1].Topictext)
+                        try:
+                            i[1].newTopic(i[1].Topictext)
+                        except:
+                            pass
                     self.redisplay()
                 elif key == "ctrl n" or key=="ctrl p":
                     array=self.lookupRooms
