@@ -222,11 +222,13 @@ class View(TabManagement):
                 elif key == "ctrl n" or key=="ctrl p":
                     array=self.lookupRooms
                     index=self.getTabId(self.ShownRoom)
-                    if array[index]==array[-1] and key=="ctrl n":
-                        index=0
+                    if len(array)==2:
+                        pass
+                    elif array[index]==array[-1] and key=="ctrl n":
+                        index=1
                     elif key=="ctrl n":
                         index=index+1
-                    elif array[index]==array[0]:
+                    elif array[index]==array[0] or array[index]==array[1] :
                         index=-1
                     else:
                         index=index-1
