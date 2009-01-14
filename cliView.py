@@ -261,7 +261,7 @@ class View(TabManagement):
         self.redisplay()
 
     def deparse(self,msg):
-        text,format=controllerKeckz.decode(msg)
+        text,format=controllerKeckz.decode(msg,self.nickname)
         msg=[]
         for i in range(len(text)):
             if format[i] == "hline":
@@ -287,6 +287,11 @@ class View(TabManagement):
                 if a == "button":
                     color="smilie"
                     text[i] = "["+text[i]+"]"
+                if a == "nickname":
+                    if color is  not "green":
+                        color="green"
+                    else:
+                        color="blue"
             msg.append((color+font,text[i]))
             #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
             #self.lookupRooms[room].addLine(text[i])
