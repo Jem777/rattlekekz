@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import kekzprotocol, os, sys, re
+import kekzprotocol, os, sys
 from hashlib import sha1, md5
 
 def formatopts(formlist, opt):
@@ -32,7 +32,7 @@ def formatopts(formlist, opt):
             formlist.append(formlist[-1]+","+kekzformat[opt])
     return formlist
 
-def decode(string,nickname=None):
+def decode(string):
     array=string.split("%")
     textlist=[""]
     formatlist=["normal"]
@@ -82,22 +82,6 @@ def decode(string,nickname=None):
     while len(textlist)<len(formatlist):
         textlist.append("")
     for i in range(len(textlist)):
-        if textlist[i]=="" and formatlist[i]=="":
-            del textlist[i]
-            del formatlist[i]
-        if nickname is not None:
-            pattern = re.compile(nickname,re.IGNORECASE)
-            craplist = pattern.split(textlist[i])
-            if len(craplist) > 1:
-                nicks = pattern.findall(textlist[i])
-                newtext,newform = [],[]
-                for x in range(len(craplist)):
-                    newtext.append(craplist[x])
-                    newform.append(formatlist[i])
-                    if x < len(nicks):
-                        newtext.append(nicks[x])
-                        newform.append('nickname')
-                textlist,formatlist = newtext,newform
         if textlist[i]=="" and formatlist[i]=="":
             del textlist[i]
             del formatlist[i]

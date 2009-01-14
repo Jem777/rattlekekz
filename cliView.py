@@ -809,6 +809,7 @@ class KeckzMsgTab(KeckzPrivTab):
         self.parent.redisplay()
 
     def newTopic(self, topic):
+        self.Topictext=topic
         self.Topic.set_text(("dividerstate",str("Topic: "+topic)))
 
     def onKeyPressed(self, size, key):
