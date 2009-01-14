@@ -110,6 +110,7 @@ class View(TabManagement):
         TabManagement.__init__(self)
         sys.stdout.write('\033]0;KECKz - Evil Client for KekZ\007') #Set Terminal-Title
         self.Ping="Ping: inf. ms"
+        self.time=""
         self.nickname=""
         self.controller=controller
         self.vargs = args
@@ -205,6 +206,12 @@ class View(TabManagement):
     def startConnection(self,server,port):
         reactor.connectSSL(server, port, self.controller.model, ClientContextFactory())
         self.tui.run_wrapper(reactor.run)
+
+    def changeTab(self,tabname):
+        TabManagement.changeTab(self,tabname)
+        if not self.ShownRoom == "$login":
+            self.getTab(self.ShownRoom).clock(self.time)
+            self.redisplay()
 
     def doRead(self):
         """ Input is ready! """
@@ -355,7 +362,8 @@ class View(TabManagement):
             self.redisplay()
 
     def setClock(self):
-        self.getTab(self.ShownRoom).clock(("dividerstate",time.strftime(self.clockformat,time.localtime(reactor.seconds()))))
+        self.time=("dividerstate",time.strftime(self.clockformat,time.localtime(reactor.seconds())))
+        self.getTab(self.ShownRoom).clock(self.time)
         reactor.callLater(1,self.setClock)
         self.redisplay()
 
