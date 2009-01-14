@@ -188,6 +188,8 @@ class View(TabManagement):
                 self.writehistory=int(self.controller.configfile["writehistory"])
             except:
                 pass
+        if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
+            self.sortTabs=True
         if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
         elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
         elif self.kwds['timestamp'] == 3: self.timestamp="[%H%M] "
