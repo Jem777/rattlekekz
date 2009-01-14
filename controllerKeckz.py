@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import kekzprotocol, os, sys, re
+import kekzprotocol, os, sys
 from hashlib import sha1, md5
 
 def formatopts(formlist, opt):
@@ -32,27 +32,14 @@ def formatopts(formlist, opt):
             formlist.append(formlist[-1]+","+kekzformat[opt])
     return formlist
 
-def decode(string,nick=None):
+def decode(string,nick):
     array=string.split("%")
     textlist=[""]
     formatlist=["normal"]
     output={}
-    if nick is not None:
-        pattern = re.compile(nick.lower(),re.IGNORECASE)
     for i in range(len(array)):
         if i%2==0:
-            craplist = pattern.split(array[i])
-            newtext,newform=[],[]
-            if craplist is not 1:
-                nicks = pattern.findall(array[i])
-                for x in range(len(craplist)):
-                    newtext.append(craplist[x])
-                    newform.append(formatlist[-1])
-                    if len(nicks) is not 0:
-                        newtext.append(nicks.pop(0))
-                        newform.append("nickname")
-            textlist.extend(newtext)
-            formatlist.extend(newform)
+            textlist[-1]=textlist[-1]+array[i]
             continue
         elif len(array[i])==0:
             textlist[-1]=textlist[-1]+"%"
