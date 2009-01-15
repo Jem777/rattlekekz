@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import kekzprotocol, os, sys
+import kekzprotocol, os, sys, re
 from hashlib import sha1, md5
 
 def formatopts(formlist, opt):
@@ -38,8 +38,41 @@ def decode(string,nick):
     formatlist=["normal"]
     output={}
     for i in range(len(array)):
+        nicks = []
+        newtextlist,newformatlist = [""],["normal"]
         if i%2==0:
-            textlist[-1]=textlist[-1]+array[i]
+            pattern = re.compile(nick.lower().strip(),re.IGNORECASE)
+            nicks = pattern.findall(array[i])
+            if len(nicks) is 0:
+                textlist[-1]=textlist[-1]+array[i]
+            else:
+                crap = pattern.split(array[i]) # TODO: Fix problem with nicks following smilies and missing spaces
+                while (len(nicks) and len(crap)) is not 0:
+                    if not crap[0].isspace():
+                        newtextlist.append(crap.pop(0))
+                        newformatlist.append(formatlist[-1])
+                    else:
+                        newtextlist[-1] = newtextlist[-1] + crap.pop(0)
+                    newtextlist.append(nicks.pop(0))
+                    newformatlist.append("ownnick-green") # TODO: implement color-recognition
+                    newtextlist.append("")
+                    newformatlist.append(formatlist[-1])
+                if (len(nicks) or len(crap)) is not 0:
+                    if len(crap) is not 0:
+                        for x in crap:
+                            if not x.isspace():
+                                newtextlist.append(x)
+                                newformatlist.append(formatlist[-1])
+                            else:
+                                newtextlist[-1] = newtextlist[-1] + x
+                    elif len(nicks) is not 0:
+                        for x in nicks:
+                            newtextlist.append(x)
+                            newformatlist.append("ownnick-green") # TODO: implement color-recognition
+                            newtextlist.append("")
+                            newformatlist.append(formatlist[-1])
+                textlist.extend(newtextlist)
+                formatlist.extend(newformatlist)
             continue
         elif len(array[i])==0:
             textlist[-1]=textlist[-1]+"%"

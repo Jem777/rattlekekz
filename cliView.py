@@ -287,11 +287,10 @@ class View(TabManagement):
                 if a == "button":
                     color="smilie"
                     text[i] = "["+text[i]+"]"
-                if a == "nickname":
-                    if color is  not "green":
-                        color="green"
-                    else:
-                        color="blue"
+                if a == "ownnick-green":
+                    color="green"
+                elif a == "ownnick-blue":
+                    color="blue"
             msg.append((color+font,text[i]))
             #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
             #self.lookupRooms[room].addLine(text[i])
