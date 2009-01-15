@@ -282,10 +282,12 @@ class View(TabManagement):
                     if self.smilies.has_key(text[i]):
                         text[i]=self.smilies[text[i]]
                         color="smilie"
+                        font=""
                     else:
                         text[i]=""
                 if a == "button":
                     color="smilie"
+                    font=""
                     text[i] = "["+text[i]+"]"
                 if a == "ownnick-green":
                     color="green"
