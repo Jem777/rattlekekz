@@ -46,7 +46,7 @@ def decode(string,nick):
             if len(nicks) is 0:
                 textlist[-1]=textlist[-1]+array[i]
             else:
-                crap = pattern.split(array[i]) # TODO: Fix problem with nicks following smilies and missing spaces
+                crap = pattern.split(array[i])
                 while (len(nicks) and len(crap)) is not 0:
                     if not crap[0].isspace():
                         newtextlist.append(crap.pop(0))
@@ -54,7 +54,10 @@ def decode(string,nick):
                     else:
                         newtextlist[-1] = newtextlist[-1] + crap.pop(0)
                     newtextlist.append(nicks.pop(0))
-                    newformatlist.append("ownnick-green") # TODO: implement color-recognition
+                    if not 'green' in formatlist[-1]:
+                        newformatlist.append("ownnick-green")
+                    else:
+                        newformatlist.append("ownnick-blue")
                     newtextlist.append("")
                     newformatlist.append(formatlist[-1])
                 if (len(nicks) or len(crap)) is not 0:
@@ -68,7 +71,10 @@ def decode(string,nick):
                     elif len(nicks) is not 0:
                         for x in nicks:
                             newtextlist.append(x)
-                            newformatlist.append("ownnick-green") # TODO: implement color-recognition
+                            if not 'green' in formatlist[-1]:
+                                newformatlist.append("ownnick-green")
+                            else:
+                                newformatlist.append("ownnick-blue")
                             newtextlist.append("")
                             newformatlist.append(formatlist[-1])
                 textlist.extend(newtextlist)

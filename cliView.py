@@ -268,8 +268,10 @@ class View(TabManagement):
                 text[i] = u"───────────────\n"
                 msg.append(('normal',text[i]))
                 continue
-            if text[i].isspace() or text[i]=="":
-                continue
+            #if text[i].isspace() or text[i]=="":   # NOTE: If there are any bugs with new rooms and the roomop-message THIS could be is the reason ;)
+            #    continue                           #
+            if text[i] == "":                       #
+                continue                            #
             form=format[i].split(",")
             color="normal"
             font=""
