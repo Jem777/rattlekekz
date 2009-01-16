@@ -234,6 +234,7 @@ class View(TabManagement):
 
     def successLogin(self,nick,status,room):
         self.nickname=nick
+        self.nickpattern = re.compile(self.nickname.lower(),re.IGNORECASE)
         self.ShownRoom=room
         sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.addTab(room,KeckzMsgTab)
@@ -303,7 +304,7 @@ class View(TabManagement):
     def printMsg(self,nick,message,room,state): # TODO: Change Terminal-Titel on received Message and back then they were read
         msg=[("timestamp",time.strftime(self.timestamp,time.localtime(reactor.seconds())))]
         if state==0 or state==2 or state==4:
-            if nick==self.nickname:
+            if nick.lower()==self.nickname.lower():
                 msg.append(("green",nick+": "))
             else:    
                 msg.append(("blue",nick+": "))
@@ -319,7 +320,7 @@ class View(TabManagement):
             room=self.ShownRoom
         if not (self.ShownRoom == "$login" or room == self.ShownRoom):
             importance=2
-            if message.find(str(self.nickname)) or state==2:
+            if (self.nickpattern.search(message) is not None) or state==2:
                 importance=3 
             elif state==5:
                 importance=1 #TODO: it still doesn't work
