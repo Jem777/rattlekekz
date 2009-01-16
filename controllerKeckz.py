@@ -54,10 +54,7 @@ def decode(string,nick):
                     else:
                         newtextlist[-1] = newtextlist[-1] + crap.pop(0)
                     newtextlist.append(nicks.pop(0))
-                    if not 'green' in formatlist[-1]:
-                        newformatlist.append("ownnick-green")
-                    else:
-                        newformatlist.append("ownnick-blue")
+                    newformatlist.append(("ownnick",formatlist[-1]))
                     newtextlist.append("")
                     newformatlist.append(formatlist[-1])
                 if (len(nicks) or len(crap)) is not 0:
@@ -71,10 +68,7 @@ def decode(string,nick):
                     elif len(nicks) is not 0:
                         for x in nicks:
                             newtextlist.append(x)
-                            if not 'green' in formatlist[-1]:
-                                newformatlist.append("ownnick-green")
-                            else:
-                                newformatlist.append("ownnick-blue")
+                            newformatlist.append(("ownnick",formatlist[-1]))
                             newtextlist.append("")
                             newformatlist.append(formatlist[-1])
                 textlist.extend(newtextlist)

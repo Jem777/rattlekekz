@@ -269,6 +269,13 @@ class View(TabManagement):
                 text[i] = u"───────────────\n"
                 msg.append(('normal',text[i]))
                 continue
+            if format[i][0] == "ownnick":
+                if not "green" in format[i][1]:
+                    color = "green"
+                else:
+                    color = "blue"
+                msg.append((color,text[i]))
+                continue
             #if text[i].isspace() or text[i]=="":   # NOTE: If there are any bugs with new rooms and the roomop-message THIS could be is the reason ;)
             #    continue                           #
             if text[i] == "":                       #
@@ -292,10 +299,6 @@ class View(TabManagement):
                     color="smilie"
                     font=""
                     text[i] = "["+text[i]+"]"
-                if a == "ownnick-green":
-                    color="green"
-                elif a == "ownnick-blue":
-                    color="blue"
             msg.append((color+font,text[i]))
             #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
             #self.lookupRooms[room].addLine(text[i])
