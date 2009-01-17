@@ -21,7 +21,7 @@ class TextTooLongError(Exception):
 
 class TabManagement:
     def __init__(self):
-        self.lookupRooms=[(None,None,0)]
+        self.lookupRooms=[[None,None,0]]
         self.sortTabs=False
         self.ShownRoom = None
         self.name,self.version="",""
@@ -37,9 +37,9 @@ class TabManagement:
 
     def changeTab(self,tabname):
         number = int(self.getTabId(tabname))
-        self.lookupRooms[number]=(self.lookupRooms[number][0],self.lookupRooms[number][1],0)
-        self.updateTabs()
+        self.lookupRooms[number][-1]=0
         self.ShownRoom=tabname
+        self.updateTabs()
         sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.redisplay()
 
@@ -58,12 +58,13 @@ class TabManagement:
         for i in range(len(self.lookupRooms)):
             statelist.append(self.lookupRooms[i][2])
         self.getTab(self.ShownRoom).updateTabstates(statelist)
+        self.redisplay()
 
     def addTab(self, tabname, tab):
         try:
             self.getTab(tabname)
         except:
-            self.lookupRooms.append((tabname, tab(tabname, self),0))
+            self.lookupRooms.append([tabname, tab(tabname, self),0])
             if self.sortTabs:
                 self.lookupRooms.sort()
                 self.updateTabs()
@@ -331,7 +332,7 @@ class View(TabManagement):
                 importance=2
             activeroom=self.lookupRooms[self.getTabId(room)]
             if importance>activeroom[2]:
-                self.lookupRooms[self.getTabId(room)]=(activeroom[0],activeroom[1],importance)
+                self.lookupRooms[self.getTabId(room)][2]=importance
                 self.updateTabs()
         msg.extend(self.deparse(message))
         self.getTab(room).addLine(msg)
