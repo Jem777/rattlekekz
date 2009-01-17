@@ -153,7 +153,6 @@ class View(TabManagement):
                  "s13":":-G"}
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
-        self.readhistory,self.writehistory=5000,200
 
 
     def fileno(self):
@@ -165,29 +164,13 @@ class View(TabManagement):
 
     def init(self):
         self.size = self.tui.get_cols_rows()
-        if self.controller.configfile.has_key("readhistory"):
-            try:
-                self.readhistory=int(self.controller.configfile["readhistory"])
-            except:
-                pass
-        if self.controller.configfile.has_key("writehistory"):
-            try:
-                self.writehistory=int(self.controller.configfile["writehistory"])
-            except:
-                pass
         if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
             self.sortTabs=True
-        if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
-        elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
-        elif self.kwds['timestamp'] == 3: self.timestamp="[%H%M] "
-        elif self.controller.configfile.has_key("timestamp"):
-            self.timestamp=self.controller.configfile["timestamp"]+" "
-        else:
-            self.timestamp="[%H:%M] "
         if self.controller.configfile.has_key("clock"):
             self.clockformat=self.controller.configfile["clock"]+" "
         else:
             self.clockformat="[%H:%M:%S] "
+        self.readhistory,self.writehistory=self.controller.readhistory,self.controller.writehistory
 
     def startConnection(self,server,port):
         reactor.connectSSL(server, port, self.controller.model, ClientContextFactory())
@@ -315,7 +298,7 @@ class View(TabManagement):
         return msg
 
     def printMsg(self,nick,message,room,state): # TODO: Change Terminal-Titel on received Message and back then they were read
-        msg=[("timestamp",time.strftime(self.timestamp,time.localtime(reactor.seconds())))]
+        msg=[("timestamp",time.strftime(self.controller.timestamp,time.localtime(reactor.seconds())))]
         if state==0 or state==2 or state==4:
             if nick.lower()==self.nickname.lower():
                 msg.append(("green",nick+": "))
