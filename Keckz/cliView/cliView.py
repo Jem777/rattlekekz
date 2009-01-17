@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-revision = "$Revision$"
+revision = "$Revision: 304 $"
 
-import controllerKeckz, time, re, sys
+from Keckz.main import controller
+from Keckz.cliView.tabmanagement import TabManager
+import time, re, sys
 
 # Urwid
 import urwid
@@ -19,81 +21,10 @@ rev=re.search("\d+",revision).group()
 class TextTooLongError(Exception):
     pass
 
-class TabManagement:
-    def __init__(self):
-        self.lookupRooms=[[None,None,0]]
-        self.sortTabs=False
-        self.ShownRoom = None
-        self.name,self.version="",""
-        self.tui = curses_display.Screen()
-        self.tui.set_input_timeouts(0.1)
 
-    def redisplay(self):
-        """ method for redisplaying lines 
-            based on internal list of lines """
-
-        canvas = self.getTab(self.ShownRoom).render(self.size, focus = True)
-        self.tui.draw_screen(self.size, canvas)
-
-    def changeTab(self,tabname):
-        number = int(self.getTabId(tabname))
-        self.lookupRooms[number][-1]=0
-        self.ShownRoom=tabname
-        self.updateTabs()
-        sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
-        self.redisplay()
-
-    def getTab(self,argument):
-        for i in self.lookupRooms:
-            if i[0]==argument: Tab=i[1]
-        return Tab
-    
-    def getTabId(self, name):
-        for i in range(len(self.lookupRooms)):
-            if self.lookupRooms[i][0]==name: integer=i
-        return integer
-
-    def updateTabs(self):
-        statelist=[]
-        for i in range(len(self.lookupRooms)):
-            statelist.append(self.lookupRooms[i][2])
-        self.getTab(self.ShownRoom).updateTabstates(statelist)
-        self.redisplay()
-
-    def addTab(self, tabname, tab):
-        try:
-            self.getTab(tabname)
-        except:
-            self.lookupRooms.append([tabname, tab(tabname, self),0])
-            if self.sortTabs:
-                self.lookupRooms.sort()
-                self.updateTabs()
-
-    def delTab(self,room):
-        if room==self.ShownRoom:
-            index=self.getTabId(self.ShownRoom)
-            if index==0 or index==1:
-                index=2
-            else:
-                index=index-1
-            self.changeTab(self.lookupRooms[index][0])
-        del self.lookupRooms[self.getTabId(room)]
-        self.updateTabs()
-
-    def highlightTab(self,tab,highlight):
-        try:
-            if highlight>self.lookupRooms[tab][2]:
-                self.lookupRooms[tab][2]=highlight
-            self.updateTabs()
-        except:
-            if highlight>self.lookupRooms[self.getTabId(tab)][2]:
-                self.lookupRooms[self.getTabId(tab)][2]=highlight
-            self.updateTabs()
-
-
-class View(TabManagement):
+class View(TabManager):
     def __init__(self, controller, *args, **kwds):
-        TabManagement.__init__(self)
+        TabManager.__init__(self)
         sys.stdout.write('\033]0;KECKz - Evil Client for KekZ\007') #Set Terminal-Title
         self.Ping="Ping: inf. ms"
         self.time=""
@@ -177,7 +108,7 @@ class View(TabManagement):
         self.tui.run_wrapper(reactor.run)
 
     def changeTab(self,tabname):
-        TabManagement.changeTab(self,tabname)
+        TabManager.changeTab(self,tabname)
         if not self.ShownRoom == "$login":
             self.getTab(self.ShownRoom).clock(self.time)
             self.redisplay()
@@ -255,7 +186,7 @@ class View(TabManagement):
         self.redisplay()
 
     def deparse(self,msg):
-        text,format=controllerKeckz.decode(msg,self.nickname)
+        text,format=controller.decode(msg,self.nickname)
         msg=[]
         for i in range(len(text)):
             if format[i] == "hline":

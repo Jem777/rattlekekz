@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import kekzprotocol, os, sys, re
+import Keckz.main.protocol
+import os, sys, re
 from hashlib import sha1, md5
 
 def formatopts(formlist, opt):
