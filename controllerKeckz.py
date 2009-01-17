@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import Keckz.main.protocol
-import os, sys, re
+import kekzprotocol, os, sys, re
 from hashlib import sha1, md5
 
 def formatopts(formlist, opt):
@@ -123,7 +122,6 @@ def decode(string,nick):
 
 class Kekzcontroller():
     def __init__(self, interface, *args, **kwds):
-        self.kwds=kwds
         self.model = kekzprotocol.KekzClient(self)
         self.view = interface(self, *args, **kwds)
         self.readConfigfile()
@@ -153,26 +151,6 @@ class Kekzcontroller():
             pass
         else:
             self.configfile={}
-            
-        if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
-        elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
-        elif self.kwds['timestamp'] == 3: self.timestamp="[%H%M] "
-        elif self.configfile.has_key("timestamp"):
-            self.timestamp=self.configfile["timestamp"]+" "
-        else:
-            self.timestamp="[%H:%M] "
-            
-        self.readhistory,self.writehistory=5000,200
-        if self.configfile.has_key("readhistory"):
-            try:
-                self.readhistory=int(self.configfile["readhistory"])
-            except:
-                pass
-        if self.configfile.has_key("writehistory"):
-            try:
-                self.writehistory=int(self.configfile["writehistory"])
-            except:
-                pass
 
 
     """following methods transport data from the View to the model"""

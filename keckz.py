@@ -40,12 +40,11 @@ class main():
                 sys.exit()
 
     def startKeckz(self, host, view="cliView", *args, **kwds):
-        #try:
-        #    exec("from Keckz."+view+"."+view+" import *")
-        #except:
-        #    print "No View found"
-        #    sys.exit()
-        exec("from Keckz."+view+"."+view+" import *")
+        try:
+            exec("from "+view+" import *")
+        except:
+            print "No View found"
+            sys.exit()
         if str(type(View))=="""<type 'classobj'>""": #TODO: We'll have to have a check whether foo.View exists
             import controllerKeckz
             kekzControl=controllerKeckz.Kekzcontroller(View, *args, **kwds)

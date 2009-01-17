@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-revision = "$Revision: 304 $"
+revision = "$Revision$"
 
-from Keckz.main import controller
-from Keckz.cliView.tabmanagement import TabManager
-import time, re, sys
+import controllerKeckz, time, re, sys
 
 # Urwid
 import urwid
@@ -21,10 +19,72 @@ rev=re.search("\d+",revision).group()
 class TextTooLongError(Exception):
     pass
 
+class TabManagement:
+    def __init__(self):
+        self.lookupRooms=[[None,None,0]]
+        self.sortTabs=False
+        self.ShownRoom = None
+        self.name,self.version="",""
+        self.tui = curses_display.Screen()
+        self.tui.set_input_timeouts(0.1)
 
-class View(TabManager):
+    def redisplay(self):
+        """ method for redisplaying lines 
+            based on internal list of lines """
+
+        canvas = self.getTab(self.ShownRoom).render(self.size, focus = True)
+        self.tui.draw_screen(self.size, canvas)
+
+    def changeTab(self,tabname):
+        number = int(self.getTabId(tabname))
+        self.lookupRooms[number][-1]=0
+        self.ShownRoom=tabname
+        self.updateTabs()
+        sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
+        self.redisplay()
+
+    def getTab(self,argument):
+        for i in self.lookupRooms:
+            if i[0]==argument: Tab=i[1]
+        return Tab
+    
+    def getTabId(self, name):
+        for i in range(len(self.lookupRooms)):
+            if self.lookupRooms[i][0]==name: integer=i
+        return integer
+
+    def updateTabs(self):
+        statelist=[]
+        for i in range(len(self.lookupRooms)):
+            statelist.append(self.lookupRooms[i][2])
+        self.getTab(self.ShownRoom).updateTabstates(statelist)
+        self.redisplay()
+
+    def addTab(self, tabname, tab):
+        try:
+            self.getTab(tabname)
+        except:
+            self.lookupRooms.append([tabname, tab(tabname, self),0])
+            if self.sortTabs:
+                self.lookupRooms.sort()
+                self.updateTabs()
+
+    def delTab(self,room):
+        if room==self.ShownRoom:
+            index=self.getTabId(self.ShownRoom)
+            if index==0 or index==1:
+                index=2
+            else:
+                index=index-1
+            self.changeTab(self.lookupRooms[index][0])
+        del self.lookupRooms[self.getTabId(room)]
+        self.updateTabs()
+
+
+
+class View(TabManagement):
     def __init__(self, controller, *args, **kwds):
-        TabManager.__init__(self)
+        TabManagement.__init__(self)
         sys.stdout.write('\033]0;KECKz - Evil Client for KekZ\007') #Set Terminal-Title
         self.Ping="Ping: inf. ms"
         self.time=""
@@ -84,6 +144,7 @@ class View(TabManager):
                  "s13":":-G"}
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
+        self.readhistory,self.writehistory=5000,200
 
 
     def fileno(self):
@@ -95,20 +156,36 @@ class View(TabManager):
 
     def init(self):
         self.size = self.tui.get_cols_rows()
+        if self.controller.configfile.has_key("readhistory"):
+            try:
+                self.readhistory=int(self.controller.configfile["readhistory"])
+            except:
+                pass
+        if self.controller.configfile.has_key("writehistory"):
+            try:
+                self.writehistory=int(self.controller.configfile["writehistory"])
+            except:
+                pass
         if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
             self.sortTabs=True
+        if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
+        elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
+        elif self.kwds['timestamp'] == 3: self.timestamp="[%H%M] "
+        elif self.controller.configfile.has_key("timestamp"):
+            self.timestamp=self.controller.configfile["timestamp"]+" "
+        else:
+            self.timestamp="[%H:%M] "
         if self.controller.configfile.has_key("clock"):
             self.clockformat=self.controller.configfile["clock"]+" "
         else:
             self.clockformat="[%H:%M:%S] "
-        self.readhistory,self.writehistory=self.controller.readhistory,self.controller.writehistory
 
     def startConnection(self,server,port):
         reactor.connectSSL(server, port, self.controller.model, ClientContextFactory())
         self.tui.run_wrapper(reactor.run)
 
     def changeTab(self,tabname):
-        TabManager.changeTab(self,tabname)
+        TabManagement.changeTab(self,tabname)
         if not self.ShownRoom == "$login":
             self.getTab(self.ShownRoom).clock(self.time)
             self.redisplay()
@@ -186,7 +263,7 @@ class View(TabManager):
         self.redisplay()
 
     def deparse(self,msg):
-        text,format=controller.decode(msg,self.nickname)
+        text,format=controllerKeckz.decode(msg,self.nickname)
         msg=[]
         for i in range(len(text)):
             if format[i] == "hline":
@@ -229,7 +306,7 @@ class View(TabManager):
         return msg
 
     def printMsg(self,nick,message,room,state): # TODO: Change Terminal-Titel on received Message and back then they were read
-        msg=[("timestamp",time.strftime(self.controller.timestamp,time.localtime(reactor.seconds())))]
+        msg=[("timestamp",time.strftime(self.timestamp,time.localtime(reactor.seconds())))]
         if state==0 or state==2 or state==4:
             if nick.lower()==self.nickname.lower():
                 msg.append(("green",nick+": "))
@@ -253,7 +330,10 @@ class View(TabManager):
                 importance=1 #TODO: it still doesn't work
             else:
                 importance=2
-            self.highlightTab(room,importance)
+            activeroom=self.lookupRooms[self.getTabId(room)]
+            if importance>activeroom[2]:
+                self.lookupRooms[self.getTabId(room)][2]=importance
+                self.updateTabs()
         msg.extend(self.deparse(message))
         self.getTab(room).addLine(msg)
         if room==self.ShownRoom:
