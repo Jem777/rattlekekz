@@ -80,6 +80,15 @@ class TabManagement:
         del self.lookupRooms[self.getTabId(room)]
         self.updateTabs()
 
+    def highlightTab(self,tab,highlight):
+        try:
+            if highlight>self.lookupRooms[tab][2]:
+                self.lookupRooms[tab][2]=highlight
+            self.updateTabs()
+        except:
+            if highlight>self.lookupRooms[self.getTabId(tab)][2]:
+                self.lookupRooms[self.getTabId(tab)][2]=highlight
+            self.updateTabs()
 
 
 class View(TabManagement):
@@ -330,10 +339,7 @@ class View(TabManagement):
                 importance=1 #TODO: it still doesn't work
             else:
                 importance=2
-            activeroom=self.lookupRooms[self.getTabId(room)]
-            if importance>activeroom[2]:
-                self.lookupRooms[self.getTabId(room)][2]=importance
-                self.updateTabs()
+            self.highlightTab(room,importance)
         msg.extend(self.deparse(message))
         self.getTab(room).addLine(msg)
         if room==self.ShownRoom:
