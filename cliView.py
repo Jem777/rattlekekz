@@ -434,18 +434,18 @@ class View(TabManagement):
         self.changeTab("$mail")
 
     def MailInfo(self,info):
-        self.openMailTab()
+        #self.openMailTab() # TODO: review this and the following two methods with this call wether it is needed and if it is add an if-challenge
         self.getTab(self.ShownRoom).addLine([("divider","Info:\n"),info])
 
     def receivedMails(self,userid,mailcount,mails):
-        self.openMailTab()
+        #self.openMailTab()
         if not len(mails)==0:
             self.getTab(self.ShownRoom).addLine(("green","\nMails: "))
             for i in mails:
                 self.getTab(self.ShownRoom).addLine(str(i["index"])+".: von "+i["from"]+", um "+i["date"]+": \n"+i["stub"])
 
     def printMail(self,user,date,mail):
-        self.openMailTab()
+        #self.openMailTab()
         msg=["\nMail von ",("red",user)," vom ",("gray",date+": \n"),"---Anfang der Mail---\n"]
         msg.extend(self.deparse(mail))
         msg.append("\n---Ende der Mail---")
@@ -536,7 +536,7 @@ class KeckzBaseTab(urwid.Frame):
             except:
                 pass
 
-    def OnClose(self):
+    def onClose(self):
         self.parent.closeActiveWindow(self.room)
 
     def newTopic(self, topic):
@@ -557,7 +557,7 @@ class KeckzBaseIOTab(KeckzBaseTab):
             text = self.Input.get_edit_text()
             if text=="":
                pass
-            elif text=="/m":
+            elif text.lower().startswith("/m"):
                 self.parent.openMailTab()
             elif text.startswith("/ctcp"):
                 cpmsg=text.split(' ')
@@ -566,10 +566,10 @@ class KeckzBaseIOTab(KeckzBaseTab):
                     user=cpmsg.pop(0)
                     cpmsg=" ".join(cpmsg)
                     self.sendCPMsg(user,cpmsg)
-            elif text=="/quit":
+            elif text.lower().startswith("/quit"):
                 self.parent.quit()
-            elif text=="/close":
-                self.OnClose()
+            elif text.lower().startswith("/close"):
+                self.onClose()
             else:
                 self.sendStr(str(text))
             if self.count is not -1 and self.Input.get_edit_text() == self.history[self.count]:
@@ -831,7 +831,7 @@ class KeckzMsgTab(KeckzPrivTab):
         else:
             self.parent.controller.sendMsg(str(self.room),str(string))
 
-    def OnClose(self):
+    def onClose(self):
         self.sendStr("/part")
 
 class KeckzMailTab(KeckzBaseIOTab):
@@ -908,7 +908,7 @@ class KeckzInfoTab(KeckzBaseTab):
         if key in ('page up', 'page down'):
             self.MainView.keypress(size, key)
         elif key=="q":
-            self.OnClose()
+            self.onClose()
 
 class KeckzSecureTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
