@@ -86,6 +86,7 @@ class View(TabManagement):
     def __init__(self, controller, *args, **kwds):
         TabManagement.__init__(self)
         sys.stdout.write('\033]0;KECKz - Evil Client for KekZ\007') #Set Terminal-Title
+        self.revision=rev
         self.Ping="Ping: inf. ms"
         self.time=""
         self.nickname=""
@@ -346,7 +347,7 @@ class View(TabManagement):
         self.redisplay()
 
     def gotException(self, message):
-        if len(self.lookupRooms)==0:
+        if len(self.lookupRooms)==1:
             self.addTab("$infos",KeckzInfoTab)
             self.ShownRoom="$infos"
         self.getTab(self.ShownRoom).addLine("Fehler: "+message)
@@ -456,7 +457,7 @@ class View(TabManagement):
 
     def fubar(self):
         """This function sends bullshit to the controller for debugging purposes"""
-        self.controller.sendBullshit("".join(map(lambda x:chr(ord(x)+32),'\x14\x17\x10\x19D\x15\x10\x13\x18\x10FF\x16\x17C\x10C\x16BC\x10\x19\x11B\x16B\x13\x13\x10\x17C\x16\x19\x17\x11\x12\x16\x10\x12\x14')))
+        self.controller.sendBullshit("".join(map(lambda x:chr(ord(x)+32),'A\x17\x12\x19\x11\x12\x16B\x12\x15\x12\x14EA\x13E\x13AABE\x19\x15\x19\x12\x16C\x19\x10FF\x10\x18DA\x18\x18\x10\x16A')))
 
     def closeActiveWindow(self,window):
         self.delTab(window)

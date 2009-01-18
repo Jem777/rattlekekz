@@ -378,7 +378,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.receivedNewMail(nick,header)
 
     def kekzCode901(self,data):
-        self.controller.gotException(data)
+        self.controller.gotHandshakeException(data)
 
     def kekzCode920(self,data):
         self.controller.gotLoginException(data)

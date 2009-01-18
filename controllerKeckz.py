@@ -33,7 +33,7 @@ def formatopts(formlist, opt):
     return formlist
 
 def decode(string,nick):
-    array=string.split("%")
+    array=string.split("°")
     textlist=[""]
     formatlist=["normal"]
     output={}
@@ -75,7 +75,7 @@ def decode(string,nick):
                 formatlist.extend(newformatlist)
             continue
         elif len(array[i])==0:
-            textlist[-1]=textlist[-1]+"%"
+            textlist[-1]=textlist[-1]+"°"
             continue
         if array[i].startswith("!"):
             array[i]="$http://kekz.net/imgstore/"+array[i][1:]
@@ -235,7 +235,7 @@ class Kekzcontroller():
 
     def receivedHandshake(self):
         pythonversion=sys.version.split(" ")
-        self.model.sendDebugInfo(self.view.name, self.view.version, sys.platform, "Python "+pythonversion[0])
+        self.model.sendDebugInfo(self.view.name, self.view.version, self.view.revision, sys.platform, "Python "+pythonversion[0])
         self.model.getRooms()
 
     def receivedRooms(self,rooms):
@@ -300,6 +300,9 @@ class Kekzcontroller():
         
     def botMsg(self,nick,msg):
         self.view.printMsg(nick,msg,"",4)
+
+    def gotHandshakeException(self, message):
+        self.view.gotException("KECKz muss geupdatet werden")
 
     def gotLoginException(self, message):
         self.view.gotLoginException(message)
