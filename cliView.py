@@ -80,6 +80,15 @@ class TabManagement:
         del self.lookupRooms[self.getTabId(room)]
         self.updateTabs()
 
+    def highlightTab(self,tab,highlight):
+        try:
+            if highlight>self.lookupRooms[tab][2]:
+                self.lookupRooms[tab][2]=highlight
+            self.updateTabs()
+        except:
+            if highlight>self.lookupRooms[self.getTabId(tab)][2]:
+                self.lookupRooms[self.getTabId(tab)][2]=highlight
+            self.updateTabs()
 
 
 class View(TabManagement):
@@ -169,13 +178,6 @@ class View(TabManagement):
                 pass
         if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
             self.sortTabs=True
-        if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
-        elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
-        elif self.kwds['timestamp'] == 3: self.timestamp="[%H%M] "
-        elif self.controller.configfile.has_key("timestamp"):
-            self.timestamp=self.controller.configfile["timestamp"]+" "
-        else:
-            self.timestamp="[%H:%M] "
         if self.controller.configfile.has_key("clock"):
             self.clockformat=self.controller.configfile["clock"]+" "
         else:
@@ -184,6 +186,10 @@ class View(TabManagement):
     def startConnection(self,server,port):
         reactor.connectSSL(server, port, self.controller.model, ClientContextFactory())
         self.tui.run_wrapper(reactor.run)
+
+    def addRoom(self,room,tab):
+        tablist={"ChatRoom":KeckzMsgTab,"PrivRoom":KeckzPrivTab,"InfoRoom":KeckzInfoTab,"MailRoom":KeckzMailTab,"SecureRoom":KeckzSecureTab,"EditRoom":KeckzEditTab}
+        self.addTab(room,tablist[tab])
 
     def changeTab(self,tabname):
         TabManagement.changeTab(self,tabname)
@@ -309,36 +315,10 @@ class View(TabManagement):
             #self.lookupRooms[room].addLine(text[i])
         return msg
 
-    def printMsg(self,nick,message,room,state): # TODO: Change Terminal-Titel on received Message and back then they were read
-        msg=[("timestamp",time.strftime(self.timestamp,time.localtime(reactor.seconds())))]
-        if state==0 or state==2 or state==4:
-            if nick.lower()==self.nickname.lower():
-                msg.append(("green",nick+": "))
-            else:    
-                msg.append(("blue",nick+": "))
-        elif state==3:
-            msg.append(("green",str(self.nickname)+": "))
-        if state==2 or state==3:
-            room="#"+nick
-            try:
-                self.getTab(room)
-            except:
-                self.addTab(room,KeckzPrivTab)
-        if state==4:
-            room=self.ShownRoom
-        if not (self.ShownRoom == "$login" or room == self.ShownRoom):
-            importance=2
-            if (self.nickpattern.search(message) is not None) or state==2:
-                importance=3 
-            elif state==5:
-                importance=1 #TODO: it still doesn't work
-            else:
-                importance=2
-            activeroom=self.lookupRooms[self.getTabId(room)]
-            if importance>activeroom[2]:
-                self.lookupRooms[self.getTabId(room)][2]=importance
-                self.updateTabs()
-        msg.extend(self.deparse(message))
+    def timestamp(self,string):
+        return ("timestamp",string)
+
+    def printMsg(self,room,msg): 
         self.getTab(room).addLine(msg)
         if room==self.ShownRoom:
             self.redisplay()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import kekzprotocol, os, sys, re
+import kekzprotocol, os, sys, re, time
 from hashlib import sha1, md5
 
 def formatopts(formlist, opt):
@@ -128,6 +128,7 @@ def decode(string,nick):
 
 class Kekzcontroller():
     def __init__(self, interface, *args, **kwds):
+        self.kwds=kwds
         self.model = kekzprotocol.KekzClient(self)
         self.view = interface(self, *args, **kwds)
         self.readConfigfile()
@@ -157,7 +158,26 @@ class Kekzcontroller():
             pass
         else:
             self.configfile={}
-
+            
+        if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
+        elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
+        elif self.kwds['timestamp'] == 3: self.timestamp="[%H%M] "
+        elif self.configfile.has_key("timestamp"):
+            self.timestamp=self.configfile["timestamp"]+" "
+        else:
+            self.timestamp="[%H:%M] "
+            
+        self.readhistory,self.writehistory=5000,200
+        if self.configfile.has_key("readhistory"):
+            try:
+                self.readhistory=int(self.configfile["readhistory"])
+            except:
+                pass
+        if self.configfile.has_key("writehistory"):
+            try:
+                self.writehistory=int(self.configfile["writehistory"])
+            except:
+                pass
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
@@ -260,6 +280,8 @@ class Kekzcontroller():
 
 
     def successLogin(self,nick,status,room):
+        self.nickname=nick
+        self.nickpattern = re.compile(self.nickname.lower(),re.IGNORECASE)
         self.lookupSendId={}
         self.sendMailCount=0
         self.Userlist={room:[]}
@@ -293,19 +315,47 @@ class Kekzcontroller():
         self.lostConnection("PingTimeout")
 
     def receivedMsg(self,nick,room,msg):
-        self.view.printMsg(nick,msg,room,0)
+        self.printMsg(nick,msg,room,0)
 
     def receivedRoomMsg(self,room,msg):
-        self.view.printMsg("",msg,room,1)
+        self.printMsg("",msg,room,1)
 
     def privMsg(self,nick,msg):
-        self.view.printMsg(nick,msg,"",2)
+        self.printMsg(nick,msg,"",2)
 
     def ownprivMsg(self,nick,msg):
-        self.view.printMsg(nick,msg,"",3)
+        self.printMsg(nick,msg,"",3)
         
     def botMsg(self,nick,msg):
-        self.view.printMsg(nick,msg,"",4)
+        self.printMsg(nick,msg,"",4)
+
+    def printMsg(self,nick,message,room,state): # TODO: Change Terminal-Titel on received Message and back then they were read
+        #msg=[("timestamp",time.strftime(self.timestamp,time.localtime(reactor.seconds())))]
+        msg=[]
+        msg.append(self.view.timestamp(time.strftime(self.timestamp,time.localtime(time.time()))))
+        if state==0 or state==2 or state==4:
+            if nick.lower()==self.nickname.lower():
+                msg.append(("green",nick+": "))
+            else:    
+                msg.append(("blue",nick+": "))
+        elif state==3:
+            msg.append(("green",str(self.nickname)+": "))
+        if state==2 or state==3:
+            room="#"+nick
+            self.view.addRoom(room,"PrivRoom")
+        if state==4:
+            room=self.view.ShownRoom
+        if not (self.view.ShownRoom == "$login" or room == self.view.ShownRoom):
+            importance=2
+            if (self.nickpattern.search(message) is not None) or state==2:
+                importance=3 
+            elif state==5:
+                importance=1
+            else:
+                importance=2
+            self.view.highlightTab(room,importance)
+        msg.extend(self.view.deparse(message))
+        self.view.printMsg(room,msg)
 
     def gotHandshakeException(self, message):
         self.view.gotException("KECKz muss geupdatet werden")
@@ -329,14 +379,14 @@ class Kekzcontroller():
                 self.Userlist[room].insert(0,i)
                 del self.Userlist[room][index+1] 
         self.view.listUser(room,self.Userlist[room])
-        self.view.printMsg("",nick+" betritt den Raum ("+self.joinInfo[int(joinmsg)]+")",room,5)
+        self.printMsg("",nick+" betritt den Raum ("+self.joinInfo[int(joinmsg)]+")",room,5)
 
     def quitUser(self,room,nick,partmsg):
         for i in self.Userlist[room]:
             if i[0]==nick:
                 self.Userlist[room].remove(i)
         self.view.listUser(room,self.Userlist[room])
-        self.view.printMsg("",nick+" hat den Raum verlassen ("+self.partInfo[int(partmsg)]+")",room,5)
+        self.printMsg("",nick+" hat den Raum verlassen ("+self.partInfo[int(partmsg)]+")",room,5)
 
     def changedUserdata(self,room,nick,away,state):
         for i in self.Userlist[room]:
