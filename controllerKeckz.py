@@ -434,7 +434,7 @@ class Kekzcontroller():
                     value="Der Status ist unbekannt.%nn%"
             if key == "kekz":
                 key="<raw>"
-                value="%cb%" + nick + " kann noch %fb%" + value + "x%fb% kekzen."
+                value="%cb%" + nick + " kann noch %fb%" + str(value) + "x%fb% kekzen."
             if key == "usertext":
                 key="<raw>"
             if key == "<h1>":
@@ -442,7 +442,7 @@ class Kekzcontroller():
                 value="%nn%%nn%%cb%%fb%"+value.capitalize()+"%fb%%cb%"
             if not key == "<raw>":
                 value="%fb%"+key.capitalize()+":%fb% "+value
-            Output.append(value)
+            Output.append(value.encode("utf_8"))
         self.view.receivedWhois(nick, Output)
 
     def receivedCPMsg(self,user,cpmsg):
