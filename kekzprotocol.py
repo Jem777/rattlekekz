@@ -58,9 +58,9 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         """The Handshake has to be send first, after a ssl connection is established"""
         self.sendLine('000 '+ hash)
 
-    def sendDebugInfo(self,client,ver,os,java):
+    def sendDebugInfo(self,client,ver,rev,os,java):
         """Sends client informations to the server. used for debugging purposes."""
-        Infos={"client":client,"ver":ver,"os":os,"java":java}
+        Infos={"client":client,"ver":ver,"rev":rev,"os":os,"java":java}
         self.sendLine("001 "+self.encoder(Infos))
 
     def getRooms(self):
