@@ -15,6 +15,7 @@ def formatopts(formlist, opt):
                 "cp":"pink",
                 "cy":"yellow",
                 "cw":"white",
+                "cx":"reset",
                 "fi":"italic",
                 "fb":"bold"}
     if opt=="fx":
@@ -75,7 +76,7 @@ def decode(string,nick):
                 formatlist.extend(newformatlist)
             continue
         elif len(array[i])==0:
-            textlist[-1]=textlist[-1]+"°".decode("utf_8")
+            textlist[-1]=textlist[-1]+"°"
             continue
         if array[i].startswith("!"):
             array[i]="$http://kekz.net/imgstore/"+array[i][1:]
@@ -97,6 +98,8 @@ def decode(string,nick):
             textlist[-1]=textlist[-1]+"\n"
             if array[i]=="nu": 
                 textlist[-1]=textlist[-1]+" > > > "
+            elif array[i]=="np":
+                textlist[-1]=textlist[-1]+"\n"
             elif array[i]=="nr":
                 textlist.append("")
                 formatlist.append("hline")
@@ -104,7 +107,10 @@ def decode(string,nick):
                 textlist.append("")
             continue
         if array[i].startswith("l"):
-            textlist.append(array[i][1:])
+            if array[i][1:].startswith("/"):
+                textlist.append(array[i][1:])
+            else:
+                textlist.append("/"+array[i][1:])
             formatlist.append("button")
             formatlist.append(formatlist[-2])
         if len(array[i])==2:

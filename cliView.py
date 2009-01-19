@@ -286,8 +286,11 @@ class View(TabManagement):
             color="normal"
             font=""
             for a in form:
-                if a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow","white"]:
-                    color=a
+                if a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow","white","reset"]:
+                    if a != "reset":
+                        color=a
+                    else:
+                        color="normal"
                 if a == "bold":
                     font="bold"
                 if a == "sb":
@@ -407,8 +410,8 @@ class View(TabManagement):
 
     def receivedCPMsg(self,user,cpmsg):
         self.printMsg(user+' [CTCP]',cpmsg,self.ShownRoom,0)
-        if cpmsg.upper() not in ('VERSION','PING'):
-            self.controller.sendCPAnswer(user,cpmsg+' unknown')
+        if cpmsg.lower() not in ('version','ping'):
+            self.controller.sendCPAnswer(user,cpmsg+' (unknown)')
         else:
             if cpmsg.lower() in 'version':
                 self.controller.sendCPAnswer(user,cpmsg+' '+self.name+' ('+self.version+')')
