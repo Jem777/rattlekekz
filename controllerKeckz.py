@@ -33,7 +33,7 @@ def formatopts(formlist, opt):
     return formlist
 
 def decode(string,nick):
-    array=string.split("°".decode("utf_8"))
+    array=string.split("°")
     textlist=[""]
     formatlist=["normal"]
     output={}
