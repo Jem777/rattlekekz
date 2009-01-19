@@ -184,7 +184,7 @@ class View(TabManagement):
             self.clockformat="[%H:%M:%S] "
 
     def startConnection(self,server,port):
-        reactor.connectSSL(server, port, self.controller.model, ClientContextFactory())
+        reactor.connectSSL(server, port, self.controller.model, self.controller.model)
         self.tui.run_wrapper(reactor.run)
 
     def addRoom(self,room,tab):

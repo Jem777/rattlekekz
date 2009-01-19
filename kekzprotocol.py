@@ -3,6 +3,7 @@
 
 # Modules
 import json, time, sys
+from OpenSSL.SSL import SSLv3_METHOD, Context
 
 # Modules for twisted
 from twisted.internet import reactor, protocol, task, ssl
@@ -37,9 +38,14 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.nickname=""
         self.delimiter='\n'
 
+    def getContext(self):
+        ctx = Context(SSLv3_METHOD)
+        ctx.set_options(0x00004000L)
+        return ctx
+
     def startConnection(self,server,port):
         """Initiate the connection."""
-        reactor.connectSSL(server, port, self, ssl.ClientContextFactory())
+        reactor.connectSSL(server, port, self, self)
         reactor.run()
 
     def buildProtocol(self, addr):
