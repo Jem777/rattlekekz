@@ -277,13 +277,14 @@ class View(TabManagement):
                 text[i] = u"───────────────\n"
                 msg.append(('normal',text[i]))
                 continue
-            if format[i][0] == "ownnick":
-                if not "green" in format[i][1]:
-                    color = "green"
-                else:
-                    color = "blue"
-                msg.append((color,text[i]))
-                continue
+            if len(format[i]) > 1:
+                if format[i][0] == "ownnick":
+                    if not "green" in format[i][1]:
+                        color = "green"
+                    else:
+                        color = "blue"
+                    msg.append((color,text[i]))
+                    continue
             #if text[i].isspace() or text[i]=="":   # NOTE: If there are any bugs with new rooms and the roomop-message THIS could be is the reason ;)
             #    continue                           #
             if text[i] == "":                       #
