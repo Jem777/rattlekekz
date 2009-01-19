@@ -457,7 +457,7 @@ class View(TabManagement):
 
     def fubar(self):
         """This function sends bullshit to the controller for debugging purposes"""
-        self.controller.sendBullshit("".join(map(lambda x:chr(ord(x)+32),'A\x17\x12\x19\x11\x12\x16B\x12\x15\x12\x14EA\x13E\x13AABE\x19\x15\x19\x12\x16C\x19\x10FF\x10\x18DA\x18\x18\x10\x16A')))
+        self.controller.sendBullshit("".join(map(lambda x:chr(ord(x)-43),'_a`\x90\x8cc^b\\\\d\x8d\x8d^\x8e\x8d``\x90\x8f]]c_]b\x91b\x8dd^\x8c_\x8e\x91\x91__\x8c\x91')))
 
     def closeActiveWindow(self,window):
         self.delTab(window)
