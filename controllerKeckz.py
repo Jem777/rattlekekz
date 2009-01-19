@@ -33,7 +33,7 @@ def formatopts(formlist, opt):
     return formlist
 
 def decode(string,nick):
-    array=string.split("°")
+    array=string.split("°".decode("utf_8"))
     textlist=[""]
     formatlist=["normal"]
     output={}
@@ -75,7 +75,7 @@ def decode(string,nick):
                 formatlist.extend(newformatlist)
             continue
         elif len(array[i])==0:
-            textlist[-1]=textlist[-1]+"°"
+            textlist[-1]=textlist[-1]+"°".decode("utf_8")
             continue
         if array[i].startswith("!"):
             array[i]="$http://kekz.net/imgstore/"+array[i][1:]
