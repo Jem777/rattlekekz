@@ -3,6 +3,7 @@
 
 import kekzprotocol, os, sys, re, time
 from hashlib import sha1, md5
+from twisted.internet.reactor import callLater
 
 def formatopts(formlist, opt):
     kekzformat={"cr":"red",
@@ -178,6 +179,20 @@ class Kekzcontroller():
                 self.writehistory=int(self.configfile["writehistory"])
             except:
                 pass
+        if self.configfile.has_key("clock"):
+            self.clockformat=self.configfile["clock"]+" "
+        else:
+            self.clockformat="[%H:%M:%S] "
+        self.oldtime=""
+        self.running = False
+        self.time=""
+        self.setClock()
+
+    def setClock(self):
+        self.time=("dividerstate",time.strftime(self.clockformat,time.localtime(time.time())))
+        self.view.setClock(self.time)
+        callLater(1,self.setClock)
+
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):

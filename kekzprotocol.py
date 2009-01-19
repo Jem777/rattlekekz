@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # Modules
-import json, time, sys
+import sys
+from time import time
 from OpenSSL.SSL import SSLv3_METHOD, Context
 
 # Modules for twisted
@@ -27,6 +28,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
             self.encoder=lambda x: cjson.encode(x)
             self.decoder=lambda y: cjson.decode(y)
         except:
+            import json
             if sys.version.startswith("2.5"):
                 self.encoder=lambda x: json.JsonWriter().write(x)
                 self.decoder=lambda y: json.JsonReader().read(y)
@@ -108,7 +110,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         """Sends the ping, this needn't to be called by the controller, just startPing"""
         if self.pingAnswer is False:
             self.sendLine("088")
-            self.lastPing = time.time()
+            self.lastPing = time()
             self.pingAnswer = True
         else:
             if self.timeout is False: # TODO: review this and may just stop the loopingCall of ping
@@ -224,7 +226,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.securityCheck(data)
 
     def kekzCode088(self,data):
-        self.controller.receivedPing(int((time.time()-self.lastPing)*1000))
+        self.controller.receivedPing(int((time()-self.lastPing)*1000))
         self.pingAnswer=False
 
     def kekzCode100(self,data):

@@ -3,7 +3,7 @@
 
 revision = "$Revision$"
 
-import controllerKeckz, time, re, sys
+import controllerKeckz, re, sys
 
 # Urwid
 import urwid
@@ -96,8 +96,8 @@ class View(TabManagement):
         TabManagement.__init__(self)
         sys.stdout.write('\033]0;KECKz - Evil Client for KekZ\007') #Set Terminal-Title
         self.revision=rev
+        self.ShownRoom=None
         self.Ping="Ping: inf. ms"
-        self.time=""
         self.nickname=""
         self.controller=controller
         self.vargs = args
@@ -178,10 +178,6 @@ class View(TabManagement):
                 pass
         if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
             self.sortTabs=True
-        if self.controller.configfile.has_key("clock"):
-            self.clockformat=self.controller.configfile["clock"]+" "
-        else:
-            self.clockformat="[%H:%M:%S] "
 
     def startConnection(self,server,port):
         reactor.connectSSL(server, port, self.controller.model, self.controller.model)
@@ -193,8 +189,8 @@ class View(TabManagement):
 
     def changeTab(self,tabname):
         TabManagement.changeTab(self,tabname)
-        if not self.ShownRoom == "$login":
-            self.getTab(self.ShownRoom).clock(self.time)
+        if not self.ShownRoom == None:
+            self.getTab(self.ShownRoom).clock(self.controller.time)
             self.redisplay()
 
     def doRead(self):
@@ -246,14 +242,11 @@ class View(TabManagement):
         self.ShownRoom=room
         sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.addTab(room,KeckzMsgTab)
-        self.getTab(room).addLine("Logged successful in as "+nick+"\nJoined room "+room)
+        #self.getTab(room).addLine("Logged successful in as "+nick+"\nJoined room "+room)
         try:
             self.delTab("$login")
         except:
             pass
-        self.oldtime=""
-        self.running = False
-        self.setClock()
 
     def securityCheck(self,infotext):
         self.addTab("$secure",KeckzSecureTab)
@@ -261,6 +254,11 @@ class View(TabManagement):
         msg=self.deparse(infotext)
         self.getTab(self.ShownRoom).addLine(("divider","Info: "))
         self.getTab(self.ShownRoom).addLine(msg)
+
+    def setClock(self, clock):
+        if not self.ShownRoom==None:
+            self.getTab(self.ShownRoom).clock(clock)
+            self.redisplay()
 
     def receivedPing(self,deltaPing):
         self.Ping="Ping: "+str(deltaPing)+"ms"
@@ -323,12 +321,6 @@ class View(TabManagement):
         self.getTab(room).addLine(msg)
         if room==self.ShownRoom:
             self.redisplay()
-
-    def setClock(self):
-        self.time=("dividerstate",time.strftime(self.clockformat,time.localtime(reactor.seconds())))
-        self.getTab(self.ShownRoom).clock(self.time)
-        reactor.callLater(1,self.setClock)
-        self.redisplay()
 
     def gotException(self, message):
         if len(self.lookupRooms)==1:
@@ -462,7 +454,7 @@ class KeckzBaseTab(urwid.Frame):
         self.hasOutput=True
         self.hasInput=False
         
-        self.time=time.strftime(self.parent.clockformat,time.localtime(reactor.seconds()))
+        self.time=""
         self.nickname=" %s " % self.parent.nickname
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
@@ -574,7 +566,7 @@ class KeckzBaseIOTab(KeckzBaseTab):
 
 class KeckzLoginTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
-        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))])
         self.hasOutput=False
         self.hasInput=True
         self.header.set_text("KECKz (Beta: "+rev+") - Willkommen im Kekznet :) | "+self.room)
