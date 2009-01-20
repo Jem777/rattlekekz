@@ -275,6 +275,9 @@ class View(TabManagement):
                 text[i] = u"───────────────\n"
                 msg.append(('normal',text[i]))
                 continue
+            if format[i] == "imageurl":
+                msg.append(('smilie',text[i]))
+                continue
             if len(format[i]) > 1:
                 if format[i][0] == "ownnick":
                     if not "green" in format[i][1]:
