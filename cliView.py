@@ -40,7 +40,6 @@ class TabManagement:
         self.lookupRooms[number][-1]=0
         self.ShownRoom=tabname
         self.updateTabs()
-        sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.redisplay()
 
     def getTab(self,argument):
@@ -187,8 +186,22 @@ class View(TabManagement):
         tablist={"ChatRoom":KeckzMsgTab,"PrivRoom":KeckzPrivTab,"InfoRoom":KeckzInfoTab,"MailRoom":KeckzMailTab,"SecureRoom":KeckzSecureTab,"EditRoom":KeckzEditTab}
         self.addTab(room,tablist[tab])
 
+    def setTitle(self):
+        highlight=0
+        for i in self.lookupRooms:
+            if i[2]>highlight:
+                highlight=i[2]
+        if highlight==0 or highlight==1:
+            prefix=""
+        elif highlight==2:
+            prefix="[+] "
+        else:
+            prefix="[*] "
+        sys.stdout.write('\033]0;'+prefix+self.name+' - '+self.ShownRoom+' \007')
+
     def changeTab(self,tabname):
         TabManagement.changeTab(self,tabname)
+        self.setTitle()
         if not self.ShownRoom == None:
             self.getTab(self.ShownRoom).clock(self.controller.time)
             self.redisplay()
@@ -324,6 +337,7 @@ class View(TabManagement):
         self.getTab(room).addLine(msg)
         if room==self.ShownRoom:
             self.redisplay()
+        self.setTitle()
 
     def gotException(self, message):
         if len(self.lookupRooms)==1:
@@ -348,11 +362,13 @@ class View(TabManagement):
             self.updateTabs()
         if not background:
             self.changeTab(room)
+        self.setTitle()
 
     def mePart(self,room):
         self.delTab(room)
         self.updateTabs()
         self.redisplay()
+        self.setTitle()
 
     def meGo(self,oldroom,newroom):
         self.addTab(newroom,KeckzMsgTab)
@@ -362,6 +378,7 @@ class View(TabManagement):
         self.delTab(oldroom)
         self.updateTabs()
         self.changeTab(newroom)
+        self.setTitle()
 
     def newTopic(self,room,topic):
         self.getTab(room).addLine("Topic: "+topic)
