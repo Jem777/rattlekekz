@@ -34,7 +34,7 @@ def formatopts(formlist, opt):
             formlist.append(formlist[-1]+","+kekzformat[opt])
     return formlist
 
-def decode(string,nick):
+def decode(string, nick):
     if type(string) is str:
         array=string.split("°")
     elif type(string) is unicode:
@@ -136,6 +136,7 @@ class Kekzcontroller():
         self.model = kekzprotocol.KekzClient(self)
         self.view = interface(self, *args, **kwds)
         self.readConfigfile()
+        self.nickname=""
         
         self.joinInfo=["Join","Login","Einladung"]
         self.partInfo=["Part","Logout","Lost Connection","Nick-Kollision","Ping Timeout","Kick"]
@@ -304,7 +305,10 @@ class Kekzcontroller():
 
     def successLogin(self,nick,status,room):
         self.nickname=nick
-        self.nickpattern = re.compile(self.nickname.lower(),re.IGNORECASE)
+        if self.configfile.has_key("regex"):
+            self.nickpattern = re.compile(self.configfile["regex"], re.IGNORECASE)
+        else:
+            self.nickpattern = re.compile(self.nickname,re.IGNORECASE)
         self.lookupSendId={}
         self.sendMailCount=0
         self.Userlist={room:[]}
@@ -323,6 +327,7 @@ class Kekzcontroller():
         self.view.successNewPassword()
 
     def receivedProfile(self,name,ort,homepage,hobbies,signature):
+        self.view.addRoom("$edit","EditRoom")
         self.view.receivedProfile(name,ort,homepage,hobbies,signature)
 
     def successNewProfile(self):
@@ -367,6 +372,9 @@ class Kekzcontroller():
             room="#"+nick
             self.view.addRoom(room,"PrivRoom")
         if state==4:
+            if len(self.view.lookupRooms)==1:
+                self.view.addRoom("$info","InfoRoom")
+                self.view.ShownRoom="$info"
             room=self.view.ShownRoom
         if not (self.view.ShownRoom == "$login" or room == self.view.ShownRoom):
             importance=2

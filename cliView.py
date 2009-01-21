@@ -242,13 +242,6 @@ class View(TabManagement):
         self.ShownRoom="$login"
         self.getTab(self.ShownRoom).receivedPreLoginData(rooms,array)
 
-    def successRegister(self):
-        if len(self.lookupRooms)==0:
-            self.addTab("$login",KeckzLoginTab)
-            self.ShownRoom="$login"
-        self.getTab(self.ShownRoom).addLine("Nick erfolgreich registriert!")
-        self.getTab(self.ShownRoom).reLogin(True)
-
     def successLogin(self,nick,status,room):
         self.nickname=nick
         self.nickpattern = re.compile(self.nickname.lower(),re.IGNORECASE)
@@ -260,6 +253,23 @@ class View(TabManagement):
             self.delTab("$login")
         except:
             pass
+
+    def successRegister(self):
+        if len(self.lookupRooms)==0:
+            self.addTab("$login",KeckzLoginTab)
+            self.ShownRoom="$login"
+        self.getTab(self.ShownRoom).addLine("Nick erfolgreich registriert!")
+        self.getTab(self.ShownRoom).reLogin(True)
+
+    def successNewPassword(self):
+        self.getTab("$edit").addLine("Passwort erfolgreich geändert")
+
+    def receivedProfile(self,name,location,homepage,hobbies,signature):
+        self.changeTab("$edit")
+        self.getTab("$edit").receivedProfile(name,location,homepage,hobbies,signature)
+
+    def successNewProfile(self):
+        self.getTab("$edit").addLine("Profil erfolgreich geändert")
 
     def securityCheck(self,infotext):
         self.addTab("$secure",KeckzSecureTab)
@@ -425,9 +435,6 @@ class View(TabManagement):
             self.getTab(self.ShownRoom).addLine(self.deparse(i))
         self.getTab(self.ShownRoom).addLine(("divider","Ende des Whois"))
 
-    def receivedProfile(self,name,ort,homepage,hobbies,signature):
-        self.getTab(self.ShownRoom).addLine('receivedProfile | stub: implement me!')
-
     def openMailTab(self):
         self.addTab("$mail",KeckzMailTab)
         self.controller.refreshMaillist()
@@ -557,7 +564,7 @@ class KeckzBaseIOTab(KeckzBaseTab):
             text = self.Input.get_edit_text()
             if text=="":
                pass
-            elif text.lower().startswith("/m"):
+            elif text.lower().startswith("/m") and not text.lower().startswith("/me"):
                 self.parent.openMailTab()
             elif text.startswith("/ctcp"):
                 cpmsg=text.split(' ')
@@ -1053,8 +1060,8 @@ class KeckzEditTab(KeckzBaseIOTab):
                 self.addLine("*"*len(self.oldPassword)+"\nGeben Sie Ihr neues Passwort ein: ")
                 self.Input.set_edit_text("")
             else:
-                self.newname=self.Input.get_edit_text()
-                self.addLine(self.newname+"\nOrt: ")
+                self.newName=self.Input.get_edit_text()
+                self.addLine(self.newName+"\nOrt: ")
                 self.Input.set_edit_text(self.location)
             self.integer+=1
         elif self.integer==1:
@@ -1063,8 +1070,8 @@ class KeckzEditTab(KeckzBaseIOTab):
                 self.addLine('*'*len(self.newPassword)+"\nWiederholen Sie Ihr neues Passwort: ")
                 self.Input.set_edit_text("")
             else:
-                self.newlocation=self.Input.get_edit_text()
-                self.addLine(self.newlocation+"\nHomepage: ")
+                self.newLocation=self.Input.get_edit_text()
+                self.addLine(self.newLocation+"\nHomepage: ")
                 self.Input.set_edit_text(self.homepage)
             self.integer+=1
         elif self.integer==2:
@@ -1075,15 +1082,28 @@ class KeckzEditTab(KeckzBaseIOTab):
                     self.addLine("Passwörter nicht identisch")
                     self.editPassword()
                 else:
-                    
-                    self.room.strip()
-                re.sub("\s","",self.room)
-                self.nick.strip()
-                self.parent.controller.sendLogin(self.nick,self.passwd,self.room)
+                    self.parent.controller.changePassword(self.oldPassword,self.newPassword)
             else:
-                self.mail = self.Input.get_edit_text()
-                self.addLine("\nregister nick "+self.nick)
-                self.parent.controller.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
+                self.newHomepage=self.Input.get_edit_text()
+                self.addLine(self.newHomepage+"\nHobbies: ")
+                self.Input.set_edit_text(self.hobbies)
+                self.integer+=1
+        elif self.integer==3:
+            self.newHobbies=self.Input.get_edit_text()
+            self.addLine(self.newHobbies+"\nFreitext: ")
+            self.Input.set_edit_text(self.signature)
+            self.integer+=1
+        elif self.integer==4:
+            self.newSignature=self.Input.get_edit_text()
+            self.addLine(self.newSignature+"\nPasswort zum bestätigen: ")
+            self.Input.set_edit_text("")
+            self.blind=True
+            self.integer+=1
+        elif self.integer==5:
+            passwd==self.Input.get_edit_text()
+            self.addLine("*"*len(passwd)+"Ändere Profil...")
+            self.parent.controller.updateProfile(self.newName,self.newLocation,self.newHomepage,self.newHobbies,self.newSignature,passwd)
+            #self.parent.controller.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
             self.Input.set_edit_text("")
 
 if __name__ == '__main__':
