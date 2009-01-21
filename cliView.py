@@ -414,19 +414,6 @@ class View(TabManagement):
             self.changeTab("$infos")
         self.lookupRooms[self.ShownRoom].addLine([("divider","Info: "),message])
 
-    def receivedCPMsg(self,user,cpmsg):
-        self.printMsg(user+' [CTCP]',cpmsg,self.ShownRoom,0)
-        if cpmsg.lower() not in ('version','ping'):
-            self.controller.sendCPAnswer(user,cpmsg+' (unknown)')
-        else:
-            if cpmsg.lower() in 'version':
-                self.controller.sendCPAnswer(user,cpmsg+' '+self.name+' ('+self.version+')')
-            elif cpmsg.lower() in 'ping':
-                self.controller.sendCPAnswer(user,cpmsg+' ping')
-
-    def receivedCPAnswer(self,user,cpanswer):
-        self.printMsg(user+' [CTCPAnswer]',cpanswer,self.ShownRoom,0)
-
     def receivedWhois(self,nick,array):
         self.addTab("$infos",KeckzInfoTab)
         self.changeTab("$infos")

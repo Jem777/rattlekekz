@@ -477,7 +477,14 @@ class Kekzcontroller():
         self.view.receivedWhois(nick, Output)
 
     def receivedCPMsg(self,user,cpmsg):
-        self.view.receivedCPMsg(user,cpmsg)
+        self.printMsg(user+' [CTCP]',cpmsg,self.view.ShownRoom,0)
+        if cpmsg.lower() not in ('version','ping'):
+            self.sendCPAnswer(user,cpmsg+' (unknown)')
+        else:
+            if cpmsg.lower() in 'version':
+                self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
+            elif cpmsg.lower() in 'ping':
+                self.sendCPAnswer(user,cpmsg+' ping')
 
     def sendCPAnswer(self,user,cpmsg):
         self.model.sendCPAnswer(user,cpmsg)
@@ -486,7 +493,7 @@ class Kekzcontroller():
         self.model.sendCPMsg(user,cpmsg)
 
     def receivedCPAnswer(self,user,cpanswer):
-        self.view.receivedCPAnswer(user,cpanswer)
+        self.printMsg(user+' [CTCPAnswer]',cpanswer,self.view.ShownRoom,0)
 
     def sendMailsuccessful(self,id):
         self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" wurde erfolgreich verschickt")
