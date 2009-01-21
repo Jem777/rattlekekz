@@ -35,7 +35,10 @@ def formatopts(formlist, opt):
     return formlist
 
 def decode(string,nick):
-    array=string.split("°")
+    if type(string) is str:
+        array=string.split("°")
+    elif type(string) is unicode:
+        array=string.split(u"°")
     textlist=[""]
     formatlist=["normal"]
     output={}

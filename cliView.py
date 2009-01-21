@@ -326,6 +326,9 @@ class View(TabManagement):
                     font=""
                     text[i] = "["+text[i]+"]"
             msg.append((color+font,text[i]))
+            for i in range(len(msg)):
+                if type(msg[i][1]) is unicode:
+                    msg[i] = (msg[i][0],msg[i][1].encode("utf_8"))
             #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
             #self.lookupRooms[room].addLine(text[i])
         return msg
