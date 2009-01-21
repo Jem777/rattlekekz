@@ -3,8 +3,7 @@
 
 revision = "$Revision$"
 
-import controllerKeckz, re, sys
-
+import controllerKeckz, re, sys, subprocess
 # Urwid
 import urwid
 from urwid import curses_display
@@ -33,7 +32,10 @@ class TabManagement:
             based on internal list of lines """
 
         canvas = self.getTab(self.ShownRoom).render(self.size, focus = True)
-        self.tui.draw_screen(self.size, canvas)
+        try:
+            self.tui.draw_screen(self.size, canvas)
+        except:
+            pass
 
     def changeTab(self,tabname):
         number = int(self.getTabId(tabname))
@@ -177,6 +179,11 @@ class View(TabManagement):
                 pass
         if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
             self.sortTabs=True
+
+    def suspendView(self):
+        self.tui.stop()
+        fubar = subprocess.call("links www.google.de", shell=True)
+        self.tui.start()
 
     def startConnection(self,server,port):
         reactor.connectSSL(server, port, self.controller.model, self.controller.model)
@@ -398,7 +405,7 @@ class View(TabManagement):
         self.getTab(room).newTopic(topic)
 
     def loggedOut(self):
-        self.tui.stop()
+        #self.tui.stop()
         reactor.stop()
 
     def receivedInformation(self,info):
@@ -560,6 +567,8 @@ class KeckzBaseIOTab(KeckzBaseTab):
                     user=cpmsg.pop(0)
                     cpmsg=" ".join(cpmsg)
                     self.sendCPMsg(user,cpmsg)
+            elif text.lower().startswith("/suspend"):
+                self.parent.suspendView()
             elif text.lower().startswith("/quit"):
                 self.parent.quit()
             elif text.lower().startswith("/close"):
