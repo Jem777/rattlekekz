@@ -957,6 +957,132 @@ class KeckzSecureTab(KeckzBaseIOTab):
             else:
                 self.keypress(size, key)
 
+class KeckzEditTab(KeckzBaseIOTab):
+    def buildOutputWidgets(self):
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
+        self.hasOutput=False
+        self.hasInput=True
+        self.header.set_text("KECKz (Beta: "+rev+") - Profil editieren ")
+
+    def connectWidgets(self):
+        self.set_header(self.header)
+        self.set_body(self.vsizer)
+        self.set_footer(self.Input)
+        self.set_focus('footer')
+
+    def reLogin(self,registered=False):
+        self.nick,self.passwd,self.room=["","",""]
+        self.integer=-1
+        self.register=False
+        for i in self.rooms:
+            if i["users"]==i["max"]:
+                self.addLine(("red",i["name"]+"("+str(i["users"])+")"))
+            else:
+                self.addLine(i["name"]+"("+str(i["users"])+")")
+        if registered is False:
+            self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
+        else:
+            self.addLine("\nGeben sie ihren Nicknamen ein:")
+        self.Input.set_edit_text(self.nick)
+
+    def receivedProfile(self,name,ort,homepage,hobbies,signature):
+        self.name,self.location,self.homepage,self.hobbies,self.signature=name,ort,homepage,hobbies,signature
+        self.integer=0
+        self.editPassword=False
+        self.blind=False
+        self.addLine("\n(Drücken Sie Strg + P um ihr Passwort zu ändern)\nName: ")
+        self.Input.set_edit_text(self.name)
+
+    def editPassword(self):
+        self.integer=0
+        self.editPassword=True
+        self.blind=True
+        self.addLine("\nGeben sie ihr altes Passwort ein: (Um um ihr Profil zu ändern drücken Sie Strg + E)")
+        self.Input.set_edit_text("")
+
+    def onKeyPressed(self, size, key):
+        KeckzBaseTab.onKeyPressed(self, size, key)
+        if key == 'backspace' and self.blind:
+            if self.Input.edit_pos != 0:
+                self.passwd = self.passwd[:self.Input.edit_pos-1]+self.passwd[self.Input.edit_pos:]
+                self.Input.set_edit_text('*'*len(self.passwd))
+                if self.Input.edit_pos != len(self.passwd):
+                    self.Input.set_edit_pos(self.Input.edit_pos-1)
+        elif key == 'delete' and self.blind:
+            if self.Input.edit_pos != len(self.passwd):
+                self.passwd = self.passwd[:self.Input.edit_pos]+self.passwd[self.Input.edit_pos+1:]
+                self.Input.set_edit_text('*'*len(self.passwd))
+        elif key == 'left':
+            if self.Input.edit_pos != 0:
+                self.Input.set_edit_pos(self.Input.edit_pos-1)
+        elif key == 'right':
+            if self.Input.edit_pos != len(self.Input.get_edit_text()):
+                self.Input.set_edit_pos(self.Input.edit_pos+1)
+        elif key == 'end':
+            self.Input.set_edit_pos(len(self.parent))
+        elif key == 'home':
+            self.Input.set_edit_pos(0)
+        elif key == 'enter':
+            self.onEnter()
+        elif key == 'ctrl p':
+            if self.register is False:
+                self.receivedProfile(self.name,self.ort,self.homepage,self.hobbies,self.signature)
+        elif key == 'ctrl e':
+            if self.register is True:
+                self.editPassword()
+        elif self.blind and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'): # TODO: Filter more keys
+            if len(key) is 2:
+                if key[0].lower() != 'f':
+                    self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
+                    self.Input.set_edit_text('*'*len(self.passwd))
+                    self.Input.set_edit_pos(self.Input.edit_pos+1)
+            else:
+                self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
+                self.Input.set_edit_text('*'*len(self.passwd))
+                self.Input.set_edit_pos(self.Input.edit_pos+1)
+        else:
+            self.keypress(size, key)
+
+    def onEnter(self):
+        if self.integer==0:
+            if self.editPassword:
+                self.oldPassword=self.Input.get_edit_text()
+                self.addLine("*"*len(self.oldPassword)+"\nGeben Sie Ihr neues Passwort ein: ")
+                self.Input.set_edit_text("")
+            else:
+                self.newname=self.Input.get_edit_text()
+                self.addLine(self.newname+"\nOrt: ")
+                self.Input.set_edit_text(self.location)
+            self.integer+=1
+        elif self.integer==1:
+            if self.editPassword:
+                self.newPassword=self.Input.get_edit_text()
+                self.addLine('*'*len(self.newPassword)+"\nWiederholen Sie Ihr neues Passwort: ")
+                self.Input.set_edit_text("")
+            else:
+                self.newlocation=self.Input.get_edit_text()
+                self.addLine(self.newlocation+"\nHomepage: ")
+                self.Input.set_edit_text(self.homepage)
+            self.integer+=1
+        elif self.integer==2:
+            if self.editPassword:
+                self.newPasswordagain = self.Input.get_edit_text()
+                self.addLine("*"*len(self.newPasswordagain))
+                if self.newPassword != self.newPasswordagain:
+                    self.addLine("Passwörter nicht identisch")
+                    self.editPassword()
+                else:
+                    
+                    self.room.strip()
+                re.sub("\s","",self.room)
+                self.nick.strip()
+                self.parent.controller.sendLogin(self.nick,self.passwd,self.room)
+            else:
+                self.mail = self.Input.get_edit_text()
+                self.addLine("\nregister nick "+self.nick)
+                self.parent.controller.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
+            self.Input.set_edit_text("")
+
 if __name__ == '__main__':
     kekzControl=controllerKeckz.Kekzcontroller(View,usercolors=True,timestamp=1)
     kekzControl.view.startConnection("kekz.net",23002)

@@ -196,7 +196,12 @@ class Kekzcontroller():
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
-        self.model.sendLogin(nick, sha1(passwd).hexdigest(), rooms)
+        self.nick,self.rooms=nick, rooms
+        self.passwd=sha1(passwd).hexdigest()
+        self.rooms.strip()
+        re.sub("\s","",self.rooms)
+        self.nick.strip()
+        self.model.sendLogin(self.nick, self.passwd, self.rooms)
 
     def registerNick(self,nick,passwd,email):
         self.model.registerNick(nick,sha1(passwd).hexdigest(),email)
