@@ -645,7 +645,7 @@ class KeckzLoginTab(KeckzBaseIOTab):
             self.Input.set_edit_pos(len(self.parent))
         elif key == 'home':
             self.Input.set_edit_pos(0)
-        elif key == 'enter':
+        elif key in ['enter','tab','shift tab']:
             if self.integer==-1:
                 self.nick = self.Input.get_edit_text()
                 if self.register is False:
@@ -655,26 +655,44 @@ class KeckzLoginTab(KeckzBaseIOTab):
                 self.Input.set_edit_text('*'*len(self.passwd))
                 self.integer+=1
             elif self.integer==0:
-                if self.register is False:
-                    self.addLine('*'*len(self.passwd)+"\nGeben Sie den Raum ein in den Sie joinen wollen: ")
-                    self.Input.set_edit_text(self.room)
+                if key != 'shift tab':
+                    if self.register is False:
+                        self.addLine('*'*len(self.passwd)+"\nGeben Sie den Raum ein in den Sie joinen wollen: ")
+                        self.Input.set_edit_text(self.room)
+                    else:
+                        self.addLine('*'*len(self.passwd)+"\nGeben Sie bitte ihre E-Mail-Adresse an: ")
+                        self.Input.set_edit_text(self.mail)
+                    self.integer+=1
                 else:
-                    self.addLine('*'*len(self.passwd)+"\nGeben Sie bitte ihre E-Mail-Adresse an: ")
-                    self.Input.set_edit_text(self.mail)
-                self.integer+=1
+                    if self.register is False:
+                        self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
+                    else:
+                        self.addLine("\nGeben Sie den gewünschen Nicknamen ein: (Drücken Sie Strg + L um sich einzuloggen)")
+                    self.Input.set_edit_text(self.nick)
+                    self.integer-=1
             elif self.integer==1:
-                if self.register is False:
-                    self.room = self.Input.get_edit_text()
-                    self.addLine(self.room+"\nLogging in")
-                    self.room.strip()
-                    re.sub("\s","",self.room)
-                    self.nick.strip()
-                    self.parent.controller.sendLogin(self.nick,self.passwd,self.room)
+                if key != 'shift tab':
+                    if self.register is False:
+                        self.room = self.Input.get_edit_text()
+                        self.addLine(self.room+"\nLogging in")
+                        self.room.strip()
+                        re.sub("\s","",self.room)
+                        self.nick.strip()
+                        self.parent.controller.sendLogin(self.nick,self.passwd,self.room)
+                    else:
+                        self.mail = self.Input.get_edit_text()
+                        self.addLine("\nregister nick "+self.nick)
+                        self.parent.controller.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
+                    self.Input.set_edit_text("")
                 else:
-                    self.mail = self.Input.get_edit_text()
-                    self.addLine("\nregister nick "+self.nick)
-                    self.parent.controller.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
-                self.Input.set_edit_text("")
+                    self.room = self.Input.get_edit_text()
+                    if self.register is False:
+                        self.addLine(self.nick+"\nGeben Sie Ihr Passwort ein: ")
+                    else:
+                        self.addLine(self.nick+"\nGeben Sie Ihr gewünschtes Passwort ein: ")
+                    self.Input.set_edit_text('*'*len(self.passwd))
+                    self.integer-=1
+            self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         else:
             if key == 'ctrl r':
                 if self.register is False:
