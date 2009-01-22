@@ -5,131 +5,6 @@ import kekzprotocol, os, sys, re, time
 from hashlib import sha1, md5
 from twisted.internet.reactor import callLater
 
-def formatopts(formlist, opt):
-    kekzformat={"cr":"red",
-                "cb":"blue",
-                "cg":"green",
-                "ca":"gray",
-                "cc":"cyan",
-                "cm":"magenta",
-                "co":"orange",
-                "cp":"pink",
-                "cy":"yellow",
-                "cw":"white",
-                "cx":"reset",
-                "fi":"italic",
-                "fb":"bold"}
-    if opt=="fx":
-        formlist.append("normal")
-    if kekzformat.has_key(opt):
-        if formlist[-1]=="normal":
-            formlist.append(kekzformat[opt])
-        elif formlist[-1]==kekzformat[opt]:
-            formlist.append("normal")
-        elif not formlist[-1].find(kekzformat[opt]+",")==-1:
-            formlist.append(formlist[-1].replace(kekzformat[opt]+",",""))
-        elif not formlist[-1].find(","+kekzformat[opt])==-1:
-            formlist.append(formlist[-1].replace(","+kekzformat[opt],""))
-        else:
-            formlist.append(formlist[-1]+","+kekzformat[opt])
-    return formlist
-
-def decode(string, nick):
-    if type(string) is str:
-        array=string.split("°")
-    elif type(string) is unicode:
-        array=string.split(u"°")
-    textlist=[""]
-    formatlist=["normal"]
-    output={}
-    for i in range(len(array)):
-        nicks = []
-        newtextlist,newformatlist = [""],["normal"]
-        if i%2==0:
-            pattern = re.compile(nick.lower().strip(),re.IGNORECASE)
-            nicks = pattern.findall(array[i])
-            if len(nicks) is 0:
-                textlist[-1]=textlist[-1]+array[i]
-            else:
-                crap = pattern.split(array[i])
-                while (len(nicks) and len(crap)) is not 0:
-                    if not crap[0].isspace():
-                        newtextlist.append(crap.pop(0))
-                        newformatlist.append(formatlist[-1])
-                    else:
-                        newtextlist[-1] = newtextlist[-1] + crap.pop(0)
-                    newtextlist.append(nicks.pop(0))
-                    newformatlist.append(("ownnick",formatlist[-1]))
-                    newtextlist.append("")
-                    newformatlist.append(formatlist[-1])
-                if (len(nicks) or len(crap)) is not 0:
-                    if len(crap) is not 0:
-                        for x in crap:
-                            if not x.isspace():
-                                newtextlist.append(x)
-                                newformatlist.append(formatlist[-1])
-                            else:
-                                newtextlist[-1] = newtextlist[-1] + x
-                    elif len(nicks) is not 0:
-                        for x in nicks:
-                            newtextlist.append(x)
-                            newformatlist.append(("ownnick",formatlist[-1]))
-                            newtextlist.append("")
-                            newformatlist.append(formatlist[-1])
-                textlist.extend(newtextlist)
-                formatlist.extend(newformatlist)
-            continue
-        elif len(array[i])==0:
-            textlist[-1]=textlist[-1]+"°"
-            continue
-        if array[i].startswith("!"):
-            array[i]="$http://kekz.net/imgstore/"+array[i][1:]
-        if array[i].startswith("$"):
-            textlist.append(array[i][1:])
-            if formatlist[-1]=="normal":
-                formatlist.append("imageurl")
-            else:
-                formatlist.append(formatlist[-1]+",imageurl")
-            formatlist.append(formatlist[-2])
-        if array[i].startswith("i"):
-            textlist.append(array[i][1:])
-            if formatlist[-1]=="normal":
-                formatlist.append("sb")
-            else:
-                formatlist.append(formatlist[-1]+",sb")
-            formatlist.append(formatlist[-2])
-        if array[i].startswith("n"):
-            textlist[-1]=textlist[-1]+"\n"
-            if array[i]=="nu": 
-                textlist[-1]=textlist[-1]+" > > > "
-            elif array[i]=="np":
-                textlist[-1]=textlist[-1]+"\n"
-            elif array[i]=="nr":
-                textlist.append("")
-                formatlist.append("hline")
-                formatlist.append(formatlist[-2])
-                textlist.append("")
-            continue
-        if array[i].startswith("l"):
-            if array[i][1:].startswith("/"):
-                textlist.append(array[i][1:])
-            else:
-                textlist.append("/"+array[i][1:])
-            formatlist.append("button")
-            formatlist.append(formatlist[-2])
-        if len(array[i])==2:
-            formatlist=formatopts(formatlist,array[i])
-        textlist.append("")
-    while len(textlist)>len(formatlist):
-        formatlist.append("")
-    while len(textlist)<len(formatlist):
-        textlist.append("")
-    for i in range(len(textlist)):
-        if textlist[i]=="" and formatlist[i]=="":
-            del textlist[i]
-            del formatlist[i]
-    return textlist,formatlist
-
 class Kekzcontroller():
     def __init__(self, interface, *args, **kwds):
         self.kwds=kwds
@@ -143,6 +18,132 @@ class Kekzcontroller():
 
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
+
+    def decode(self, string):
+        if type(string) is str:
+            array=string.split("°")
+        elif type(string) is unicode:
+            array=string.split(u"°")
+        textlist=[""]
+        formatlist=["normal"]
+        output={}
+        for i in range(len(array)):
+            nicks = []
+            newtextlist,newformatlist = [""],["normal"]
+            if i%2==0:
+                pattern = self.nickpattern
+                nicks = pattern.findall(array[i])
+                if len(nicks) is 0:
+                    textlist[-1]=textlist[-1]+array[i]
+                else:
+                    crap = pattern.split(array[i])
+                    while (len(nicks) and len(crap)) is not 0:
+                        if not crap[0].isspace():
+                            newtextlist.append(crap.pop(0))
+                            newformatlist.append(formatlist[-1])
+                        else:
+                            newtextlist[-1] = newtextlist[-1] + crap.pop(0)
+                        newtextlist.append(nicks.pop(0))
+                        newformatlist.append(("ownnick",formatlist[-1]))
+                        newtextlist.append("")
+                        newformatlist.append(formatlist[-1])
+                    if (len(nicks) or len(crap)) is not 0:
+                        if len(crap) is not 0:
+                            for x in crap:
+                                if not x.isspace():
+                                    newtextlist.append(x)
+                                    newformatlist.append(formatlist[-1])
+                                else:
+                                    newtextlist[-1] = newtextlist[-1] + x
+                        elif len(nicks) is not 0:
+                            for x in nicks:
+                                newtextlist.append(x)
+                                newformatlist.append(("ownnick",formatlist[-1]))
+                                newtextlist.append("")
+                                newformatlist.append(formatlist[-1])
+                    textlist.extend(newtextlist)
+                    formatlist.extend(newformatlist)
+                continue
+            elif len(array[i])==0:
+                textlist[-1]=textlist[-1]+"°"
+                continue
+            if array[i].startswith("!"):
+                array[i]="$http://kekz.net/imgstore/"+array[i][1:]
+            if array[i].startswith("$"):
+                textlist.append(array[i][1:])
+                if formatlist[-1]=="normal":
+                    formatlist.append("imageurl")
+                else:
+                    formatlist.append(formatlist[-1]+",imageurl")
+                formatlist.append(formatlist[-2])
+            if array[i].startswith("i"):
+                textlist.append(array[i][1:])
+                if formatlist[-1]=="normal":
+                    formatlist.append("sb")
+                else:
+                    formatlist.append(formatlist[-1]+",sb")
+                formatlist.append(formatlist[-2])
+            if array[i].startswith("n"):
+                textlist[-1]=textlist[-1]+"\n"
+                if array[i]=="nu": 
+                    textlist[-1]=textlist[-1]+" > > > "
+                elif array[i]=="np":
+                    textlist[-1]=textlist[-1]+"\n"
+                elif array[i]=="nr":
+                    textlist.append("")
+                    formatlist.append("hline")
+                    formatlist.append(formatlist[-2])
+                    textlist.append("")
+                continue
+            if array[i].startswith("l"):
+                if array[i][1:].startswith("/"):
+                    textlist.append(array[i][1:])
+                else:
+                    textlist.append("/"+array[i][1:])
+                formatlist.append("button")
+                formatlist.append(formatlist[-2])
+            if len(array[i])==2:
+                formatlist=self.formatopts(formatlist,array[i])
+            textlist.append("")
+        while len(textlist)>len(formatlist):
+            formatlist.append("")
+        while len(textlist)<len(formatlist):
+            textlist.append("")
+        for i in range(len(textlist)):
+            if textlist[i]=="" and formatlist[i]=="":
+                del textlist[i]
+                del formatlist[i]
+        return textlist,formatlist
+
+    def formatopts(self, formlist, opt):
+        kekzformat={"cr":"red",
+                    "cb":"blue",
+                    "cg":"green",
+                    "ca":"gray",
+                    "cc":"cyan",
+                    "cm":"magenta",
+                    "co":"orange",
+                    "cp":"pink",
+                    "cy":"yellow",
+                    "cw":"white",
+                    "cx":"reset",
+                    "fi":"italic",
+                    "fb":"bold"}
+        if opt=="fx":
+            formlist.append("normal")
+        if kekzformat.has_key(opt):
+            if formlist[-1]=="normal":
+                formlist.append(kekzformat[opt])
+            elif formlist[-1]==kekzformat[opt]:
+                formlist.append("normal")
+            elif not formlist[-1].find(kekzformat[opt]+",")==-1:
+                formlist.append(formlist[-1].replace(kekzformat[opt]+",",""))
+            elif not formlist[-1].find(","+kekzformat[opt])==-1:
+                formlist.append(formlist[-1].replace(","+kekzformat[opt],""))
+            else:
+                formlist.append(formlist[-1]+","+kekzformat[opt])
+        return formlist
+
 
     def readConfigfile(self):
         #filepath=os.environ["HOME"]+os.sep+".kekznet.conf"

@@ -298,7 +298,7 @@ class View(TabManagement):
         self.redisplay()
 
     def deparse(self,msg):
-        text,format=controllerKeckz.decode(msg,self.nickname)
+        text,format=self.controller.decode(msg)
         msg=[]
         for i in range(len(text)):
             if format[i] == "hline":
@@ -620,6 +620,7 @@ class KeckzLoginTab(KeckzBaseIOTab):
 
     def receivedPreLoginData(self,rooms,array):
         self.nick,self.passwd,self.room=array
+        self.passwd=""
         self.integer=-1
         self.register=False
         self.addLine("connected sucessful")
