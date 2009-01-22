@@ -103,7 +103,7 @@ class View(TabManagement):
         self.controller=controller
         self.vargs = args
         self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
-        self.name,self.version="KECKz","rev. "+rev
+        self.name,self.version="KECKz","0.1 Beta 'Nullpointer-Exception'"
         colors =[('normal','default','default','standout'),
             ('divider', 'white', 'dark blue', 'standout'),
             ('dividerstate', 'light gray', 'dark blue', 'standout'),
@@ -251,7 +251,6 @@ class View(TabManagement):
 
     def successLogin(self,nick,status,room):
         self.nickname=nick
-        self.nickpattern = re.compile(self.nickname.lower(),re.IGNORECASE)
         self.ShownRoom=room
         sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.addTab(room,KeckzMsgTab)
