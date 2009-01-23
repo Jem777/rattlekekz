@@ -288,6 +288,7 @@ class View(TabManagement):
 
     def successNewPassword(self):
         self.getTab("$edit").addLine("Passwort erfolgreich geändert")
+        self.getTab("$edit").addLine("\ndrücken Sie Strg+Q zum beenden oder Strg+E um das Profil zu ändern")
 
     def receivedProfile(self,name,location,homepage,hobbies,signature):
         self.changeTab("$edit")
@@ -295,6 +296,7 @@ class View(TabManagement):
 
     def successNewProfile(self):
         self.getTab("$edit").addLine("Profil erfolgreich geändert")
+        self.getTab("$edit").addLine("\ndrücken Sie Strg+Q zum beenden oder Strg+A um das Passwort zu ändern")
 
     def securityCheck(self,infotext):
         self.addTab("$secure",KeckzSecureTab)
@@ -1033,15 +1035,17 @@ class KeckzEditTab(KeckzBaseIOTab):
         self.integer=0
         self.editPassword=False
         self.blind=False
-        self.addLine("\n(Drücken Sie Strg + P um ihr Passwort zu ändern)\nName: ")
+        self.addLine("\n(Drücken Sie Strg + A um ihr Passwort zu ändern)\nName: ")
         self.Input.set_edit_text(self.name)
+        self.passwd=""
 
-    def editPassword(self):
+    def receivedPassword(self):
         self.integer=0
         self.editPassword=True
         self.blind=True
         self.addLine("\nGeben sie ihr altes Passwort ein: (Um um ihr Profil zu ändern drücken Sie Strg + E)")
         self.Input.set_edit_text("")
+        self.passwd=""
 
     def onKeyPressed(self, size, key):
         KeckzBaseTab.onKeyPressed(self, size, key)
@@ -1067,12 +1071,14 @@ class KeckzEditTab(KeckzBaseIOTab):
             self.Input.set_edit_pos(0)
         elif key == 'enter':
             self.onEnter()
-        elif key == 'ctrl p':
-            if self.register is False:
-                self.receivedProfile(self.name,self.ort,self.homepage,self.hobbies,self.signature)
         elif key == 'ctrl e':
-            if self.register is True:
-                self.editPassword()
+            if self.editPassword is True:
+                self.receivedProfile(self.name,self.location,self.homepage,self.hobbies,self.signature)
+        elif key == 'ctrl a':
+            if self.editPassword is False:
+                self.receivedPassword()
+        elif key == 'ctrl q':
+            self.onClose()
         elif self.blind and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'): # TODO: Filter more keys
             if len(key) is 2:
                 if key[0].lower() != 'f':
@@ -1092,6 +1098,7 @@ class KeckzEditTab(KeckzBaseIOTab):
                 self.oldPassword=self.Input.get_edit_text()
                 self.addLine("*"*len(self.oldPassword)+"\nGeben Sie Ihr neues Passwort ein: ")
                 self.Input.set_edit_text("")
+                self.passwd=""
             else:
                 self.newName=self.Input.get_edit_text()
                 self.addLine(self.newName+"\nOrt: ")
@@ -1102,6 +1109,7 @@ class KeckzEditTab(KeckzBaseIOTab):
                 self.newPassword=self.Input.get_edit_text()
                 self.addLine('*'*len(self.newPassword)+"\nWiederholen Sie Ihr neues Passwort: ")
                 self.Input.set_edit_text("")
+                self.passwd=""
             else:
                 self.newLocation=self.Input.get_edit_text()
                 self.addLine(self.newLocation+"\nHomepage: ")
@@ -1113,9 +1121,12 @@ class KeckzEditTab(KeckzBaseIOTab):
                 self.addLine("*"*len(self.newPasswordagain))
                 if self.newPassword != self.newPasswordagain:
                     self.addLine("Passwörter nicht identisch")
-                    self.editPassword()
+                    self.receivedPassword()
                 else:
                     self.parent.controller.changePassword(self.oldPassword,self.newPassword)
+                    self.passwd=""
+                    self.integer=-1
+                    self.blind=False
             else:
                 self.newHomepage=self.Input.get_edit_text()
                 self.addLine(self.newHomepage+"\nHobbies: ")
@@ -1133,11 +1144,14 @@ class KeckzEditTab(KeckzBaseIOTab):
             self.blind=True
             self.integer+=1
         elif self.integer==5:
-            passwd==self.Input.get_edit_text()
-            self.addLine("*"*len(passwd)+"Ändere Profil...")
-            self.parent.controller.updateProfile(self.newName,self.newLocation,self.newHomepage,self.newHobbies,self.newSignature,passwd)
+            self.passwd=self.Input.get_edit_text()
+            self.addLine("*"*len(self.passwd)+"\nÄndere Profil...")
+            self.parent.controller.updateProfile(self.newName,self.newLocation,self.newHomepage,self.newHobbies,self.newSignature,self.passwd)
             #self.parent.controller.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
             self.Input.set_edit_text("")
+            self.passwd=""
+            self.integer=-1
+            self.blind=False
 
 if __name__ == '__main__':
     kekzControl=controllerKeckz.Kekzcontroller(View,usercolors=True,timestamp=1)

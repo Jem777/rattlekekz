@@ -112,10 +112,10 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         Data={"passwd":passwd,"passwdnew":passwdnew}
         self.sendLine("031 "+self.encoder(Data))
         
-    def updateProfile(self,name,ort,homepage,hobbies,signature,passwd):
+    def updateProfile(self,name,location,homepage,hobbies,signature,passwd):
         """Update the Profile - passwd has to be hashed"""
-        Data={"name":name,"ort":ort,"homepage":homepage,"hobbies":hobbies,"freitext":signature,"passwd":passwd}
-        self.sendLine("040 "+self.encoder(Data))
+        Data={"name":name,"ort":location,"homepage":homepage,"hobbies":hobbies,"freitext":signature,"passwd":passwd}
+        self.sendLine("041 "+self.encoder(Data))
 
     def sendIdentify(self, data):
         self.sendLine("070 "+data)
@@ -156,7 +156,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         else: self.sendLine("101 %s %s %s" % (channel,command,msg))
 
     def sendPrivMsg(self,nick,msg):
-        """Private Msgs, they call be send with /m or in another window like a room"""
+        """Private Msgs, they call be send with /p or in another window like a room"""
         self.sendLine('102 %s %s' % (nick,msg))
 
     def sendJoin(self,room):
@@ -231,7 +231,10 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.successRegister()
 
     def kekzCode031(self,data):
-        self.controller.successNewPassword()
+        if data.startswith("!ERROR "):
+            self.controller.gotException(data[7:])
+        else:
+            self.controller.successNewPassword()
 
     def kekzCode040(self,data):
         dic=self.decoder(data)
@@ -239,7 +242,10 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.receivedProfile(name,ort,homepage,hobbies,signature)
 
     def kekzCode041(self,data):
-        self.controller.successNewProfile()
+        if data.startswith("!ERROR "):
+            self.controller.gotException(data[7:])
+        else:
+            self.controller.successNewProfile()
 
     def kekzCode070(self,data):
         self.controller.securityCheck(data)

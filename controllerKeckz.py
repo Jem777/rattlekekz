@@ -233,8 +233,8 @@ class Kekzcontroller():
     def changePassword(self,passwd,passwdnew):
         self.model.changePassword(sha1(passwd).hexdigest(),sha1(passwdnew).hexdigest())
         
-    def updateProfile(self,name,ort,homepage,hobbies,signature,passwd):
-        self.model.updateProfile(name,ort,homepage,hobbies,signature,sha1(passwd).hexdigest())
+    def updateProfile(self,name,location,homepage,hobbies,signature,passwd):
+        self.model.updateProfile(name,location,homepage,hobbies,signature,sha1(passwd).hexdigest())
 
     def sendIdentify(self,passwd):
         sha1_hash=sha1(passwd).hexdigest()
