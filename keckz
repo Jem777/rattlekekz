@@ -53,8 +53,8 @@ copy of the Program in return for a fee.
 
 import sys, getopt
 
-letters = 'H:v:?hlnt:'
-keywords = ['host=','view=','help','localhost','nousercolors','timestamp=']
+letters = 'H:v:?hlnt:cw'
+keywords = ['host=','view=','help','copyright','warranty','localhost','nousercolors','timestamp=']
 opts, extraparams = getopt.getopt(sys.argv[1:],letters,keywords)
 
 
@@ -65,13 +65,12 @@ class main():
         self.vargs = {'usercolors':True, 'timestamp':0}
         print """
     KECKz  Copyright (C) 2008, 2009  Moritz Doll and Christian Scharkus
-    This program comes with ABSOLUTELY NO WARRANTY; for details type use 'keckz -w'.
-    This is free software, and you are welcome to redistribute it
-    under certain conditions; type 'keckz -c' for details.
+    KECKz comes with ABSOLUTELY NO WARRANTY; for details run 'keckz -w'.
+    KECKz is free software, and you are welcome to redistribute it
+    under certain conditions; run 'keckz -c' for details.
 """
 
         for o,p in opts:
-            o,p = o.lower(),p.lower()
             if o in ['-H','--host']:
                 self.host = p
             elif o in ['-v','--view']:
@@ -91,8 +90,10 @@ class main():
                 print copyright
                 sys.exit()
             elif o in ['-?','-h','--help']:
-                print 'Usage: keckz [-h, -?, --help][-H, --host <host>][-v, --view <view>][-n, --nocolors][-t, --timestamp <integer>]'
+                print 'Usage: keckz [-h, -?, --help][-c, --copyright][-w, --warranty][-H, --host <host>][-v, --view <view>][-n, --nocolors][-t, --timestamp <integer>]'
                 print '-?, -h, --help: Display this help'
+                print '-c, --copyright: Display copyright information'
+                print '-w, --warranty: Display disclaimer'
                 print '-H, --host: Host to connect, Default: kekz.net'
                 print '-l, --localhost: Connects to localhost (127.0.0.1)'
                 print '-v, --view: View to use, Default: cliView'
