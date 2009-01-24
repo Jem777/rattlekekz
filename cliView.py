@@ -56,6 +56,18 @@ class TabManagement:
         except:
             pass
 
+    def sort(self):
+        if self.sortTabs:
+            namelist=[]
+            lookupRooms=[]
+            for i in self.lookupRooms:
+                namelist.append(i[0])
+            namelist.sort()
+            for i in namelist:
+                lookupRooms.append(self.lookupRooms[self.getTabId(i)])
+            self.lookupRooms=lookupRooms
+            self.updateTabs()
+
     def changeTab(self,tabname):
         number = int(self.getTabId(tabname))
         self.lookupRooms[number][-1]=0
@@ -85,9 +97,7 @@ class TabManagement:
             self.getTab(tabname)
         except:
             self.lookupRooms.append([tabname, tab(tabname, self),0])
-            if self.sortTabs:
-                self.lookupRooms.sort()
-                self.updateTabs()
+            self.sort()
 
     def delTab(self,room):
         if room==self.ShownRoom:
@@ -264,8 +274,8 @@ class View(TabManagement):
             self.redisplay()
 
     def receivedPreLoginData(self,rooms,array):
-        self.lookupRooms.append(("$login",KeckzLoginTab("$login",self)))
         self.ShownRoom="$login"
+        self.addTab("$login",KeckzLoginTab)
         self.getTab(self.ShownRoom).receivedPreLoginData(rooms,array)
 
     def successLogin(self,nick,status,room):
@@ -397,9 +407,6 @@ class View(TabManagement):
 
     def meJoin(self,room,background):
         self.addTab(room,KeckzMsgTab)
-        if self.sortTabs:
-            self.lookupRooms.sort()
-            self.updateTabs()
         if not background:
             self.changeTab(room)
         self.setTitle()
@@ -412,9 +419,6 @@ class View(TabManagement):
 
     def meGo(self,oldroom,newroom):
         self.addTab(newroom,KeckzMsgTab)
-        if self.sortTabs:
-            self.lookupRooms.sort()
-            self.updateTabs()
         self.delTab(oldroom)
         self.updateTabs()
         self.changeTab(newroom)
