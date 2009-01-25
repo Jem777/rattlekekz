@@ -23,6 +23,8 @@ copyright = """
 revision = "$Revision$"
 
 import controllerKeckz, re, sys, subprocess
+from tabmanagement import TabManager
+
 # Urwid
 import urwid
 from urwid import curses_display
@@ -37,93 +39,9 @@ rev=re.search("\d+",revision).group()
 class TextTooLongError(Exception):
     pass
 
-class TabManagement:
-    def __init__(self):
-        self.lookupRooms=[[None,None,0]]
-        self.sortTabs=False
-        self.ShownRoom = None
-        self.name,self.version="",""
-        self.tui = curses_display.Screen()
-        self.tui.set_input_timeouts(0.1)
-
-    def redisplay(self):
-        """ method for redisplaying lines 
-            based on internal list of lines """
-
-        canvas = self.getTab(self.ShownRoom).render(self.size, focus = True)
-        try:
-            self.tui.draw_screen(self.size, canvas)
-        except:
-            pass
-
-    def sort(self):
-        if self.sortTabs:
-            namelist=[]
-            lookupRooms=[]
-            for i in self.lookupRooms:
-                namelist.append(i[0])
-            namelist.sort()
-            for i in namelist:
-                lookupRooms.append(self.lookupRooms[self.getTabId(i)])
-            self.lookupRooms=lookupRooms
-            self.updateTabs()
-
-    def changeTab(self,tabname):
-        number = int(self.getTabId(tabname))
-        self.lookupRooms[number][-1]=0
-        self.ShownRoom=tabname
-        self.updateTabs()
-        self.redisplay()
-
-    def getTab(self,argument):
-        for i in self.lookupRooms:
-            if i[0]==argument: Tab=i[1]
-        return Tab
-    
-    def getTabId(self, name):
-        for i in range(len(self.lookupRooms)):
-            if self.lookupRooms[i][0]==name: integer=i
-        return integer
-
-    def updateTabs(self):
-        statelist=[]
-        for i in range(len(self.lookupRooms)):
-            statelist.append(self.lookupRooms[i][2])
-        self.getTab(self.ShownRoom).updateTabstates(statelist)
-        self.redisplay()
-
-    def addTab(self, tabname, tab):
-        try:
-            self.getTab(tabname)
-        except:
-            self.lookupRooms.append([tabname, tab(tabname, self),0])
-            self.sort()
-
-    def delTab(self,room):
-        if room==self.ShownRoom:
-            index=self.getTabId(self.ShownRoom)
-            if index==0 or index==1:
-                index=2
-            else:
-                index=index-1
-            self.changeTab(self.lookupRooms[index][0])
-        del self.lookupRooms[self.getTabId(room)]
-        self.updateTabs()
-
-    def highlightTab(self,tab,highlight):
-        try:
-            if highlight>self.lookupRooms[tab][2]:
-                self.lookupRooms[tab][2]=highlight
-            self.updateTabs()
-        except:
-            if highlight>self.lookupRooms[self.getTabId(tab)][2]:
-                self.lookupRooms[self.getTabId(tab)][2]=highlight
-            self.updateTabs()
-
-
-class View(TabManagement):
+class View(TabManager):
     def __init__(self, controller, *args, **kwds):
-        TabManagement.__init__(self)
+        TabManager.__init__(self)
         sys.stdout.write('\033]0;KECKz - Evil Client for KekZ\007') #Set Terminal-Title
         self.revision=rev
         self.ShownRoom=None
@@ -236,7 +154,7 @@ class View(TabManagement):
         sys.stdout.write('\033]0;'+prefix+self.name+' - '+self.ShownRoom+' \007')
 
     def changeTab(self,tabname):
-        TabManagement.changeTab(self,tabname)
+        TabManager.changeTab(self,tabname)
         self.setTitle()
         if not self.ShownRoom == None:
             self.getTab(self.ShownRoom).clock(self.controller.time)
@@ -1009,7 +927,7 @@ class KeckzSecureTab(KeckzBaseIOTab):
 
 class KeckzEditTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
-        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
+        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
         self.hasOutput=False
         self.hasInput=True
         self.header.set_text("KECKz (Beta: "+rev+") - Profil editieren ")
@@ -1083,7 +1001,7 @@ class KeckzEditTab(KeckzBaseIOTab):
             if self.editPassword is False:
                 self.receivedPassword()
         elif key == 'ctrl q':
-            self.onClose()
+            self.parent.closeActiveWindow(self.room)
         elif self.blind and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'): # TODO: Filter more keys
             if len(key) is 2:
                 if key[0].lower() != 'f':
@@ -1100,7 +1018,7 @@ class KeckzEditTab(KeckzBaseIOTab):
     def onEnter(self):
         if self.integer==0:
             if self.editPassword:
-                self.oldPassword=self.Input.get_edit_text()
+                self.oldPassword = self.passwd
                 self.addLine("*"*len(self.oldPassword)+"\nGeben Sie Ihr neues Passwort ein: ")
                 self.Input.set_edit_text("")
                 self.passwd=""
@@ -1111,7 +1029,7 @@ class KeckzEditTab(KeckzBaseIOTab):
             self.integer+=1
         elif self.integer==1:
             if self.editPassword:
-                self.newPassword=self.Input.get_edit_text()
+                self.newPassword = self.passwd
                 self.addLine('*'*len(self.newPassword)+"\nWiederholen Sie Ihr neues Passwort: ")
                 self.Input.set_edit_text("")
                 self.passwd=""
@@ -1122,8 +1040,9 @@ class KeckzEditTab(KeckzBaseIOTab):
             self.integer+=1
         elif self.integer==2:
             if self.editPassword:
-                self.newPasswordagain = self.Input.get_edit_text()
+                self.newPasswordagain = self.passwd
                 self.addLine("*"*len(self.newPasswordagain))
+                self.passwd=""
                 if self.newPassword != self.newPasswordagain:
                     self.addLine("Passwörter nicht identisch")
                     self.receivedPassword()
@@ -1149,7 +1068,6 @@ class KeckzEditTab(KeckzBaseIOTab):
             self.blind=True
             self.integer+=1
         elif self.integer==5:
-            self.passwd=self.Input.get_edit_text()
             self.addLine("*"*len(self.passwd)+"\nÄndere Profil...")
             self.parent.controller.updateProfile(self.newName,self.newLocation,self.newHomepage,self.newHobbies,self.newSignature,self.passwd)
             #self.parent.controller.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
