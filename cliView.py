@@ -717,6 +717,7 @@ class KeckzLoginTab(KeckzBaseIOTab):
                         self.mail = self.Input.get_edit_text()
                         self.addLine("\nregister nick "+self.nick)
                         self.parent.controller.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
+                    self.integer+=1
                     self.Input.set_edit_text("")
                 else:
                     self.room = self.Input.get_edit_text()
