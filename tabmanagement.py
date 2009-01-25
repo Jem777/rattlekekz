@@ -35,7 +35,7 @@ class TabManager:
     def redisplay(self):
         """ method for redisplaying lines 
             based on internal list of lines """
-
+        self.size = self.tui.get_cols_rows()
         canvas = self.getTab(self.ShownRoom).render(self.size, focus = True)
         try:
             self.tui.draw_screen(self.size, canvas)
