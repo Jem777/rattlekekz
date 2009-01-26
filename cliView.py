@@ -870,6 +870,7 @@ class KeckzInfoTab(KeckzBaseTab):
         self.set_focus('body')
 
     def onKeyPressed(self, size, key):
+        KeckzBaseTab.onKeyPressed(self, size, key)
         if key in ('page up', 'page down'):
             self.MainView.keypress(size, key)
         elif key=="q":
@@ -938,21 +939,6 @@ class KeckzEditTab(KeckzBaseIOTab):
         self.set_footer(self.Input)
         self.set_focus('footer')
 
-    def reLogin(self,registered=False):
-        self.nick,self.passwd,self.room=["","",""]
-        self.integer=-1
-        self.register=False
-        for i in self.rooms:
-            if i["users"]==i["max"]:
-                self.addLine(("red",i["name"]+"("+str(i["users"])+")"))
-            else:
-                self.addLine(i["name"]+"("+str(i["users"])+")")
-        if registered is False:
-            self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
-        else:
-            self.addLine("\nGeben sie ihren Nicknamen ein:")
-        self.Input.set_edit_text(self.nick)
-
     def receivedProfile(self,name,ort,homepage,hobbies,signature):
         self.name,self.location,self.homepage,self.hobbies,self.signature=name,ort,homepage,hobbies,signature
         self.integer=0
@@ -1000,8 +986,8 @@ class KeckzEditTab(KeckzBaseIOTab):
         elif key == 'ctrl a':
             if self.editPassword is False:
                 self.receivedPassword()
-        elif key == 'ctrl q':
-            self.parent.closeActiveWindow(self.room)
+        elif key == 'meta q':
+            self.onClose()
         elif self.blind and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'): # TODO: Filter more keys
             if len(key) is 2:
                 if key[0].lower() != 'f':
