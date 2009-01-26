@@ -250,7 +250,7 @@ class View(TabManager):
         msg=[]
         for i in range(len(text)):
             if format[i] == "hline":
-                text[i] = u"───────────────\n"
+                text[i] = "---------------\n"
                 msg.append(('normal',text[i]))
                 continue
             if format[i] == "imageurl":
@@ -377,7 +377,6 @@ class View(TabManager):
         self.changeTab("$mail")
 
     def MailInfo(self,info):
-        #self.openMailTab() # TODO: review this and the following two methods with this call wether it is needed and if it is add an if-challenge
         self.getTab(self.ShownRoom).addLine([("divider","Info:\n"),info])
 
     def receivedMails(self,userid,mailcount,mails):
@@ -396,6 +395,7 @@ class View(TabManager):
 
     def quit(self):
         self.controller.quitConnection()  #TODO: afterwarts either the login screen must be shown or the application exit
+        
 
     def fubar(self):
         """This function sends bullshit to the controller for debugging purposes"""
@@ -657,7 +657,7 @@ class KeckzLoginTab(KeckzBaseIOTab):
                     self.integer,self.register=-1,False
                     self.nick,self.passwd,self.room='','',''
                     self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
-            elif self.integer == 0 and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'): # TODO: Filter more keys
+            elif self.integer == 0 and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'):
                 if len(key) is 2:
                     if key[0].lower() != 'f':
                         self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
@@ -913,7 +913,7 @@ class KeckzSecureTab(KeckzBaseIOTab):
         elif key == 'enter':
             self.parent.controller.sendIdentify(self.passwd)
         else:
-            if key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'): # TODO: Filter more keys
+            if key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'):
                 if len(key) is 2:
                     if key[0].lower() != 'f':
                         self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
@@ -941,6 +941,7 @@ class KeckzEditTab(KeckzBaseIOTab):
 
     def receivedProfile(self,name,ort,homepage,hobbies,signature):
         self.name,self.location,self.homepage,self.hobbies,self.signature=name,ort,homepage,hobbies,signature
+        self.signature = re.subn("\\n","~n~",self.signature)[0]
         self.integer=0
         self.editPassword=False
         self.blind=False
@@ -975,7 +976,7 @@ class KeckzEditTab(KeckzBaseIOTab):
             if self.Input.edit_pos != len(self.Input.get_edit_text()):
                 self.Input.set_edit_pos(self.Input.edit_pos+1)
         elif key == 'end':
-            self.Input.set_edit_pos(len(self.parent))
+            self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         elif key == 'home':
             self.Input.set_edit_pos(0)
         elif key == 'enter':
@@ -988,7 +989,7 @@ class KeckzEditTab(KeckzBaseIOTab):
                 self.receivedPassword()
         elif key == 'meta q':
             self.onClose()
-        elif self.blind and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'): # TODO: Filter more keys
+        elif self.blind and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'):
             if len(key) is 2:
                 if key[0].lower() != 'f':
                     self.passwd=self.passwd[:self.Input.edit_pos]+key+self.passwd[self.Input.edit_pos:]
@@ -1024,8 +1025,11 @@ class KeckzEditTab(KeckzBaseIOTab):
                 self.passwd=""
             else:
                 self.newLocation=self.Input.get_edit_text()
-                self.addLine(self.newLocation+"\nHomepage: ")
-                if type(self.location) is unicode:
+                if type(self.newLocation) is unicode:
+                    self.addLine(self.newLocation+u"\nHomepage: ")
+                else:
+                    self.addLine(str(self.newLocation)+"\nHomepage: ")
+                if type(self.homepage) is unicode:
                     self.Input.set_edit_text(self.homepage)
                 else:
                     self.Input.set_edit_text(str(self.homepage))
@@ -1046,7 +1050,10 @@ class KeckzEditTab(KeckzBaseIOTab):
                     self.blind=False
             else:
                 self.newHomepage=self.Input.get_edit_text()
-                self.addLine(self.newHomepage+"\nHobbies: ")
+                if type(self.newHomepage) is unicode:
+                    self.addLine(self.newHomepage+u"\nHobbies: ")
+                else:
+                    self.addLine(str(self.newHomepage)+"\nHobbies: ")
                 if type(self.hobbies) is unicode:
                     self.Input.set_edit_text(self.hobbies)
                 else:
@@ -1054,7 +1061,10 @@ class KeckzEditTab(KeckzBaseIOTab):
                 self.integer+=1
         elif self.integer==3:
             self.newHobbies=self.Input.get_edit_text()
-            self.addLine(self.newHobbies+"\nFreitext: ")
+            if type(self.newHobbies) is unicode:
+                self.addLine(self.newHobbies+u"\nFreitext: ")
+            else:
+                self.addLine(str(self.newHobbies)+"\nFreitext: ")
             if type(self.signature) is unicode:
                 self.Input.set_edit_text(self.signature)
             else:
@@ -1062,7 +1072,10 @@ class KeckzEditTab(KeckzBaseIOTab):
             self.integer+=1
         elif self.integer==4:
             self.newSignature=self.Input.get_edit_text()
-            self.addLine(str(self.newSignature)+"\nPasswort zum bestätigen: ")
+            if type(self.newSignature) is unicode:
+                self.addLine(self.newSignature+u"\nPasswort zum bestätigen: ")
+            else:
+                self.addLine(str(self.newSignature)+"\nPasswort zum bestätigen: ")
             self.Input.set_edit_text("")
             self.blind=True
             self.integer+=1
