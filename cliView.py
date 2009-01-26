@@ -216,7 +216,7 @@ class View(TabManager):
 
     def successNewPassword(self):
         self.getTab("$edit").addLine("Passwort erfolgreich geändert")
-        self.getTab("$edit").addLine("\ndrücken Sie Strg+Q zum beenden oder Strg+E um das Profil zu ändern")
+        self.getTab("$edit").addLine("\ndrücken Sie Alt+Q zum beenden oder Strg+E um das Profil zu ändern")
 
     def receivedProfile(self,name,location,homepage,hobbies,signature):
         self.changeTab("$edit")
@@ -224,7 +224,7 @@ class View(TabManager):
 
     def successNewProfile(self):
         self.getTab("$edit").addLine("Profil erfolgreich geändert")
-        self.getTab("$edit").addLine("\ndrücken Sie Strg+Q zum beenden oder Strg+A um das Passwort zu ändern")
+        self.getTab("$edit").addLine("\ndrücken Sie Alt+Q zum beenden oder Strg+A um das Passwort zu ändern")
 
     def securityCheck(self,infotext):
         self.addTab("$secure",KeckzSecureTab)
@@ -945,7 +945,7 @@ class KeckzEditTab(KeckzBaseIOTab):
         self.editPassword=False
         self.blind=False
         self.addLine("\n(Drücken Sie Strg + A um ihr Passwort zu ändern)\nName: ")
-        self.Input.set_edit_text(self.name)
+        self.Input.set_edit_text(str(self.name))
         self.passwd=""
 
     def receivedPassword(self):
@@ -1011,7 +1011,10 @@ class KeckzEditTab(KeckzBaseIOTab):
             else:
                 self.newName=self.Input.get_edit_text()
                 self.addLine(self.newName+"\nOrt: ")
-                self.Input.set_edit_text(self.location)
+                if type(self.location) is unicode:
+                    self.Input.set_edit_text(self.location)
+                else:
+                    self.Input.set_edit_text(str(self.location))
             self.integer+=1
         elif self.integer==1:
             if self.editPassword:
@@ -1022,7 +1025,10 @@ class KeckzEditTab(KeckzBaseIOTab):
             else:
                 self.newLocation=self.Input.get_edit_text()
                 self.addLine(self.newLocation+"\nHomepage: ")
-                self.Input.set_edit_text(self.homepage)
+                if type(self.location) is unicode:
+                    self.Input.set_edit_text(self.homepage)
+                else:
+                    self.Input.set_edit_text(str(self.homepage))
             self.integer+=1
         elif self.integer==2:
             if self.editPassword:
@@ -1034,22 +1040,29 @@ class KeckzEditTab(KeckzBaseIOTab):
                     self.receivedPassword()
                 else:
                     self.parent.controller.changePassword(self.oldPassword,self.newPassword)
+                    self.Input.set_edit_text("")
                     self.passwd=""
                     self.integer=-1
                     self.blind=False
             else:
                 self.newHomepage=self.Input.get_edit_text()
                 self.addLine(self.newHomepage+"\nHobbies: ")
-                self.Input.set_edit_text(self.hobbies)
+                if type(self.hobbies) is unicode:
+                    self.Input.set_edit_text(self.hobbies)
+                else:
+                    self.Input.set_edit_text(str(self.hobbies))
                 self.integer+=1
         elif self.integer==3:
             self.newHobbies=self.Input.get_edit_text()
             self.addLine(self.newHobbies+"\nFreitext: ")
-            self.Input.set_edit_text(self.signature)
+            if type(self.signature) is unicode:
+                self.Input.set_edit_text(self.signature)
+            else:
+                self.Input.set_edit_text(str(self.signature))
             self.integer+=1
         elif self.integer==4:
             self.newSignature=self.Input.get_edit_text()
-            self.addLine(self.newSignature+"\nPasswort zum bestätigen: ")
+            self.addLine(str(self.newSignature)+"\nPasswort zum bestätigen: ")
             self.Input.set_edit_text("")
             self.blind=True
             self.integer+=1
