@@ -21,7 +21,7 @@ copyright = """
 """
 
 import urwid
-from urwid import curses_display
+from urwid import raw_display
 
 class TabManager:
     def __init__(self):
@@ -29,7 +29,7 @@ class TabManager:
         self.sortTabs=False
         self.ShownRoom = None
         self.name,self.version="",""
-        self.tui = curses_display.Screen()
+        self.tui = raw_display.Screen()
         self.tui.set_input_timeouts(0.1)
 
     def redisplay(self):

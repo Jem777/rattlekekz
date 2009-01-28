@@ -27,7 +27,7 @@ from tabmanagement import TabManager
 
 # Urwid
 import urwid
-from urwid import curses_display
+from urwid import raw_display
 
 # Twisted imports
 from twisted.internet import reactor
