@@ -441,7 +441,7 @@ class Kekzcontroller():
 
     def changedUserdata(self,room,nick,away,state):
         for i in self.Userlist[room]:
-            if i[0]==nick:
+            if i[0].lower()==nick.lower():
                 i[1],i[2]=away,state
         self.view.listUser(room,self.Userlist[room])
 
