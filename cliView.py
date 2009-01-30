@@ -384,8 +384,9 @@ class View(TabManager):
         self.getTab(self.ShownRoom).addLine(msg)
 
     def quit(self):
-        self.controller.quitConnection()  #TODO: afterwarts either the login screen must be shown or the application exit
-        
+        self.controller.quitConnection()
+        reactor.stop()
+        sys.exit()
 
     def fubar(self):
         """This function sends bullshit to the controller for debugging purposes"""
@@ -397,6 +398,9 @@ class View(TabManager):
         self.redisplay()
 
     def connectionLost(self, failure): # TODO: Better handling for closed Connections
+        #reactor.stop()
+        #print "Verbindung verloren"
+        #sys.exit()
         try:
             self.getTab(self.ShownRoom).addLine("Verbindung verloren")
         except:
