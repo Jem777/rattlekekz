@@ -37,10 +37,7 @@ class TabManager:
             based on internal list of lines """
         self.size = self.tui.get_cols_rows()
         canvas = self.getTab(self.ShownRoom).render(self.size, focus = True)
-        try:
-            self.tui.draw_screen(self.size, canvas)
-        except:
-            pass
+        self.tui.draw_screen(self.size, canvas)
 
     def sort(self):
         if self.sortTabs:
