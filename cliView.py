@@ -102,7 +102,6 @@ class View(TabManager):
                  "s13":":-G"}
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
-        self.readhistory,self.writehistory=5000,200
 
 
     def fileno(self):
@@ -114,16 +113,8 @@ class View(TabManager):
 
     def init(self):
         self.size = self.tui.get_cols_rows()
-        if self.controller.configfile.has_key("readhistory"):
-            try:
-                self.readhistory=int(self.controller.configfile["readhistory"])
-            except:
-                pass
-        if self.controller.configfile.has_key("writehistory"):
-            try:
-                self.writehistory=int(self.controller.configfile["writehistory"])
-            except:
-                pass
+        self.writehistory=self.controller.writehistory
+        self.readhistory=self.controller.readhistory
         if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
             self.sortTabs=True
 
@@ -201,7 +192,6 @@ class View(TabManager):
         self.ShownRoom=room
         sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.addTab(room,KeckzMsgTab)
-        #self.getTab(room).addLine("Logged successful in as "+nick+"\nJoined room "+room)
         try:
             self.delTab("$login")
         except:

@@ -377,8 +377,7 @@ class Kekzcontroller():
     def botMsg(self,nick,msg):
         self.printMsg(nick,msg,"",4)
 
-    def printMsg(self,nick,message,room,state): # TODO: Change Terminal-Titel on received Message and back then they were read
-        #msg=[("timestamp",time.strftime(self.timestamp,time.localtime(reactor.seconds())))]
+    def printMsg(self,nick,message,room,state): 
         msg=[]
         msg.append(self.view.timestamp(time.strftime(self.timestamp,time.localtime(time.time()))))
         if state==0 or state==2 or state==4:
