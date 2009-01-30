@@ -45,7 +45,7 @@ class View(TabManager):
         sys.stdout.write('\033]0;KECKz - Evil Client for KekZ\007') #Set Terminal-Title
         self.revision=rev
         self.ShownRoom=None
-        self.Ping="Ping: inf. ms"
+        self.Ping=""
         self.nickname=""
         self.controller=controller
         self.vargs = args
@@ -672,7 +672,6 @@ class KeckzLoginTab(KeckzBaseIOTab):
 
 class KeckzPrivTab(KeckzBaseIOTab):
     def buildOutputWidgets(self):
-        #self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider'  ))])
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))])
         self.header.set_text("KECKz (Beta: "+rev+") - Private Unterhaltung "+self.room)
         self.completion=[self.room[1:]]
@@ -735,7 +734,6 @@ class KeckzMsgTab(KeckzPrivTab):
         self.Topic=urwid.Text(("dividerstate",""), "left", "clip")
         self.upperCol=urwid.Columns([("weight",4,self.Topic), self.upperDivider])
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
-        #self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.hsizer,("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' ))])
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperCol, 'divider' )), self.hsizer,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
         self.header.set_text("KECKz (Beta: "+rev+") - Raum: "+self.room)
 
@@ -1082,7 +1080,6 @@ class KeckzEditTab(KeckzBaseIOTab):
         elif self.integer==5:
             self.addLine("*"*len(self.passwd)+"\nÄndere Profil...")
             self.parent.controller.updateProfile(self.newName,self.newLocation,self.newHomepage,self.newHobbies,self.newSignature,self.passwd)
-            #self.parent.controller.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
             self.Input.set_edit_text("")
             self.passwd=""
             self.integer=-1

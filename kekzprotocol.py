@@ -77,6 +77,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.failConnection(reason)
 
     def clientConnectionLost(self, connector, reason):
+        self.sendingPings.stop()
         self.controller.lostConnection(reason)
 
     def sendHandshake(self,hash):
@@ -120,8 +121,8 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def startPing(self):
         """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
-        self.timeout = False
-        reactor.callLater(10, lambda: task.LoopingCall(self.sendPing).start(60))
+        self.sendingPings=task.LoopingCall(self.sendPing)
+        reactor.callLater(10, lambda: self.sendingPings.start(60))
 
     def sendPing(self):
         """Sends the ping, this needn't to be called by the controller, just startPing"""
@@ -130,9 +131,8 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
             self.lastPing = time()
             self.pingAnswer = True
         else:
-            if self.timeout is False: # TODO: review this and may just stop the loopingCall of ping
-                self.controller.pingTimeout()
-                self.timeout = True
+            self.controller.pingTimeout()
+            self.sendingPings.stop()
 
     def sendMsg(self, channel, msg):
         """Send a message to a channel"""
@@ -143,7 +143,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def sendSlashCommand(self,command,channel,msg):
         """Msg starting with a Slash / """
         if msg.isspace(): pass
-        elif command=="/exit": pass #self.exit()
+        elif command=="/exit": pass
         elif command=="/sendm": pass
         elif command=="/msg" or command=="/p":
             msg=msg.split(" ")
