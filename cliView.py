@@ -933,7 +933,10 @@ class KeckzEditTab(KeckzBaseIOTab):
         self.editPassword=False
         self.blind=False
         self.addLine("\n(Drücken Sie Strg + A um ihr Passwort zu ändern)\nName: ")
-        self.Input.set_edit_text(str(self.name))
+        if self.name is unicode:
+            self.Input.set_edit_text(self.name.encode("utf_8"))
+        else:
+            self.Input.set_edit_text(self.name)
         self.passwd=""
 
     def receivedPassword(self):
@@ -1000,9 +1003,9 @@ class KeckzEditTab(KeckzBaseIOTab):
                 self.newName=self.Input.get_edit_text()
                 self.addLine(self.newName+"\nOrt: ")
                 if type(self.location) is unicode:
-                    self.Input.set_edit_text(self.location)
+                    self.Input.set_edit_text(self.location.encode("utf_8"))
                 else:
-                    self.Input.set_edit_text(str(self.location))
+                    self.Input.set_edit_text(self.location)
             self.integer+=1
         elif self.integer==1:
             if self.editPassword:
@@ -1017,9 +1020,9 @@ class KeckzEditTab(KeckzBaseIOTab):
                 else:
                     self.addLine(str(self.newLocation)+"\nHomepage: ")
                 if type(self.homepage) is unicode:
-                    self.Input.set_edit_text(self.homepage)
+                    self.Input.set_edit_text(self.homepage.encode("utf_8"))
                 else:
-                    self.Input.set_edit_text(str(self.homepage))
+                    self.Input.set_edit_text(self.homepage)
             self.integer+=1
         elif self.integer==2:
             if self.editPassword:
@@ -1042,9 +1045,9 @@ class KeckzEditTab(KeckzBaseIOTab):
                 else:
                     self.addLine(str(self.newHomepage)+"\nHobbies: ")
                 if type(self.hobbies) is unicode:
-                    self.Input.set_edit_text(self.hobbies)
+                    self.Input.set_edit_text(self.hobbies.encode("utf_8"))
                 else:
-                    self.Input.set_edit_text(str(self.hobbies))
+                    self.Input.set_edit_text(self.hobbies)
                 self.integer+=1
         elif self.integer==3:
             self.newHobbies=self.Input.get_edit_text()
@@ -1053,9 +1056,9 @@ class KeckzEditTab(KeckzBaseIOTab):
             else:
                 self.addLine(str(self.newHobbies)+"\nFreitext: ")
             if type(self.signature) is unicode:
-                self.Input.set_edit_text(self.signature)
+                self.Input.set_edit_text(self.signature.encode("utf_8"))
             else:
-                self.Input.set_edit_text(str(self.signature))
+                self.Input.set_edit_text(self.signature)
             self.integer+=1
         elif self.integer==4:
             self.newSignature=self.Input.get_edit_text()
