@@ -198,7 +198,7 @@ class View(TabManager):
             pass
 
     def successRegister(self):
-        if len(self.lookupRooms)==0:
+        if len(self.lookupRooms)==1:
             self.addTab("$login",KeckzLoginTab)
             self.ShownRoom="$login"
         self.getTab(self.ShownRoom).addLine("Nick erfolgreich registriert!")
@@ -393,17 +393,14 @@ class View(TabManager):
     def closeActiveWindow(self,window):
         self.delTab(window)
         self.updateTabs()
-        self.redisplay()
 
     def connectionLost(self, failure): # TODO: Better handling for closed Connections
-        #reactor.stop()
-        #print "Verbindung verloren"
-        #sys.exit()
-        try:
-            self.getTab(self.ShownRoom).addLine("Verbindung verloren")
-        except:
-            pass
-        #reactor.callLater(3, lambda: self.tui.stop())
+        self.addTab("$infos",KeckzInfoTab)
+        self.changeTab("$infos")
+        #for i in self.lookupRooms:
+        #    if not (i[0] == None or i[0] == "$infos"):
+        #        self.delTab(i[0])
+        self.getTab(self.ShownRoom).addLine(("divider","\nVerbindung verloren\n"))
 
 class KeckzBaseTab(urwid.Frame):
     def __init__(self, room, parent):
