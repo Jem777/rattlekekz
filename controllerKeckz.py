@@ -404,7 +404,10 @@ class Kekzcontroller():
             else:
                 importance=2
             self.view.highlightTab(room,importance)
-        msg.extend(self.view.deparse(message))
+        if state==5:
+            msg.append(("blue",message))
+        else:
+            msg.extend(self.view.deparse(message))
         self.view.printMsg(room,msg)
 
     def gotHandshakeException(self, message):
