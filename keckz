@@ -53,7 +53,7 @@ Program, unless a warranty or assumption of liability accompanies a
 copy of the Program in return for a fee.
 """
 
-import sys, getopt
+import sys, getopt, types
 
 letters = 'H:v:?hlnt:cw'
 keywords = ['host=','view=','help','copyright','warranty','localhost','nousercolors','timestamp=']
@@ -112,7 +112,7 @@ class main():
         except:
             print "No View found"
             sys.exit()
-        if str(type(View))=="""<type 'classobj'>""": #TODO: We'll have to have a check whether foo.View exists
+        if type(View) == types.ClassType: #TODO: We'll have to have a check whether foo.View exists; Done by this?
             import controllerKeckz
             kekzControl=controllerKeckz.Kekzcontroller(View, *args, **kwds)
             kekzControl.view.startConnection(host,23002)

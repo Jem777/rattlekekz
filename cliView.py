@@ -288,6 +288,12 @@ class View(TabManager):
             #self.lookupRooms[room].addLine(text[i])
         return msg
 
+    def stringHandler(self,string):
+        if type(string) is unicode:
+            return string.encode("utf_8")
+        else:
+            return str(string)
+
     def timestamp(self,string):
         return ("timestamp",string)
 
@@ -356,7 +362,7 @@ class View(TabManager):
         self.changeTab("$infos")
         self.getTab(self.ShownRoom).addLine(("divider","Whois von "+nick))
         for i in array:
-            self.getTab(self.ShownRoom).addLine(self.deparse(i))
+            self.getTab(self.ShownRoom).addLine(i)#self.deparse(i))
         self.getTab(self.ShownRoom).addLine(("divider","Ende des Whois"))
 
     def openMailTab(self):
@@ -933,10 +939,7 @@ class KeckzEditTab(KeckzBaseIOTab):
         self.editPassword=False
         self.blind=False
         self.addLine("\n(Drücken Sie Strg + A um ihr Passwort zu ändern)\nName: ")
-        if type(self.name) is unicode:
-            self.Input.set_edit_text(self.name.encode("utf_8"))
-        else:
-            self.Input.set_edit_text(str(self.name))
+        self.Input.set_edit_text(self.parent.stringHandler(self.name))
         self.passwd=""
 
     def receivedPassword(self):
@@ -1002,27 +1005,19 @@ class KeckzEditTab(KeckzBaseIOTab):
             else:
                 self.newName=self.Input.get_edit_text()
                 self.addLine(self.newName+"\nOrt: ")
-                if type(self.location) is unicode:
-                    self.Input.set_edit_text(self.location.encode("utf_8"))
-                else:
-                    self.Input.set_edit_text(str(self.location))
+                self.Input.set_edit_text(self.parent.stringHandler(self.location))
             self.integer+=1
         elif self.integer==1:
             if self.editPassword:
-                self.newPassword = self.passwd
-                self.addLine('*'*len(self.newPassword)+"\nWiederholen Sie Ihr neues Passwort: ")
-                self.Input.set_edit_text("")
-                self.passwd=""
+                if self.passwd is not "":
+                    self.newPassword = self.passwd
+                    self.addLine('*'*len(self.newPassword)+"\nWiederholen Sie Ihr neues Passwort: ")
+                    self.Input.set_edit_text("")
+                    self.passwd=""
             else:
                 self.newLocation=self.Input.get_edit_text()
-                if type(self.newLocation) is unicode:
-                    self.addLine(self.newLocation+u"\nHomepage: ")
-                else:
-                    self.addLine(str(self.newLocation)+"\nHomepage: ")
-                if type(self.homepage) is unicode:
-                    self.Input.set_edit_text(self.homepage.encode("utf_8"))
-                else:
-                    self.Input.set_edit_text(str(self.homepage))
+                self.addLine(self.parent.stringHandler(self.newLocation)+"\nHomepage: ")
+                self.Input.set_edit_text(self.parent.stringHandler(self.homepage))
             self.integer+=1
         elif self.integer==2:
             if self.editPassword:
@@ -1040,32 +1035,17 @@ class KeckzEditTab(KeckzBaseIOTab):
                     self.blind=False
             else:
                 self.newHomepage=self.Input.get_edit_text()
-                if type(self.newHomepage) is unicode:
-                    self.addLine(self.newHomepage+u"\nHobbies: ")
-                else:
-                    self.addLine(str(self.newHomepage)+"\nHobbies: ")
-                if type(self.hobbies) is unicode:
-                    self.Input.set_edit_text(self.hobbies.encode("utf_8"))
-                else:
-                    self.Input.set_edit_text(str(self.hobbies))
+                self.addLine(self.parent.stringHandler(self.newHomepage)+"\nHobbies: ")
+                self.Input.set_edit_text(self.parent.stringHandler(self.hobbies))
                 self.integer+=1
         elif self.integer==3:
             self.newHobbies=self.Input.get_edit_text()
-            if type(self.newHobbies) is unicode:
-                self.addLine(self.newHobbies+u"\nFreitext: ")
-            else:
-                self.addLine(str(self.newHobbies)+"\nFreitext: ")
-            if type(self.signature) is unicode:
-                self.Input.set_edit_text(self.signature.encode("utf_8"))
-            else:
-                self.Input.set_edit_text(str(self.signature))
+            self.addLine(self.parent.stringHandler(self.newHobbies)+"\nFreitext: ")
+            self.Input.set_edit_text(self.parent.stringHandler(self.signature))
             self.integer+=1
         elif self.integer==4:
             self.newSignature=self.Input.get_edit_text()
-            if type(self.newSignature) is unicode:
-                self.addLine(self.newSignature+u"\nPasswort zum bestätigen: ")
-            else:
-                self.addLine(str(self.newSignature)+"\nPasswort zum bestätigen: ")
+            self.addLine(self.parent.stringHandler(self.newSignature)+"\nPasswort zum bestätigen: ")
             self.Input.set_edit_text("")
             self.blind=True
             self.integer+=1
