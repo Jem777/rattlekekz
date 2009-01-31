@@ -432,14 +432,14 @@ class Kekzcontroller():
                 self.Userlist[room].insert(0,i)
                 del self.Userlist[room][index+1] 
         self.view.listUser(room,self.Userlist[room])
-        self.printMsg("",nick+" betritt den Raum ("+self.joinInfo[int(joinmsg)]+")",room,5)
+        self.printMsg("","(>>>) "+nick+" betritt den Raum ("+self.joinInfo[int(joinmsg)]+")",room,5)
 
     def quitUser(self,room,nick,partmsg):
         for i in self.Userlist[room]:
             if i[0]==nick:
                 self.Userlist[room].remove(i)
         self.view.listUser(room,self.Userlist[room])
-        self.printMsg("",nick+" hat den Raum verlassen ("+self.partInfo[int(partmsg)]+")",room,5)
+        self.printMsg("","(<<<) "+nick+" hat den Raum verlassen ("+self.partInfo[int(partmsg)]+")",room,5)
 
     def changedUserdata(self,room,nick,away,state):
         for i in self.Userlist[room]:
