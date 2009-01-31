@@ -933,7 +933,7 @@ class KeckzEditTab(KeckzBaseIOTab):
         self.editPassword=False
         self.blind=False
         self.addLine("\n(Drücken Sie Strg + A um ihr Passwort zu ändern)\nName: ")
-        if self.name is unicode:
+        if type(self.name) is unicode:
             self.Input.set_edit_text(self.name.encode("utf_8"))
         else:
             self.Input.set_edit_text(str(self.name))
