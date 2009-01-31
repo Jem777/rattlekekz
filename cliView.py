@@ -322,14 +322,12 @@ class View(TabManager):
     def mePart(self,room):
         self.delTab(room)
         self.updateTabs()
-        self.redisplay()
         self.setTitle()
 
     def meGo(self,oldroom,newroom):
         self.addTab(newroom,KeckzMsgTab)
-        self.delTab(oldroom)
-        self.updateTabs()
         self.changeTab(newroom)
+        self.delTab(oldroom)
         self.setTitle()
 
     def newTopic(self,room,topic):
