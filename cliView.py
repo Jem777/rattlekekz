@@ -936,7 +936,7 @@ class KeckzEditTab(KeckzBaseIOTab):
         if self.name is unicode:
             self.Input.set_edit_text(self.name.encode("utf_8"))
         else:
-            self.Input.set_edit_text(self.name)
+            self.Input.set_edit_text(str(self.name))
         self.passwd=""
 
     def receivedPassword(self):
@@ -1005,7 +1005,7 @@ class KeckzEditTab(KeckzBaseIOTab):
                 if type(self.location) is unicode:
                     self.Input.set_edit_text(self.location.encode("utf_8"))
                 else:
-                    self.Input.set_edit_text(self.location)
+                    self.Input.set_edit_text(str(self.location))
             self.integer+=1
         elif self.integer==1:
             if self.editPassword:
@@ -1022,7 +1022,7 @@ class KeckzEditTab(KeckzBaseIOTab):
                 if type(self.homepage) is unicode:
                     self.Input.set_edit_text(self.homepage.encode("utf_8"))
                 else:
-                    self.Input.set_edit_text(self.homepage)
+                    self.Input.set_edit_text(str(self.homepage))
             self.integer+=1
         elif self.integer==2:
             if self.editPassword:
@@ -1047,7 +1047,7 @@ class KeckzEditTab(KeckzBaseIOTab):
                 if type(self.hobbies) is unicode:
                     self.Input.set_edit_text(self.hobbies.encode("utf_8"))
                 else:
-                    self.Input.set_edit_text(self.hobbies)
+                    self.Input.set_edit_text(str(self.hobbies))
                 self.integer+=1
         elif self.integer==3:
             self.newHobbies=self.Input.get_edit_text()
@@ -1058,7 +1058,7 @@ class KeckzEditTab(KeckzBaseIOTab):
             if type(self.signature) is unicode:
                 self.Input.set_edit_text(self.signature.encode("utf_8"))
             else:
-                self.Input.set_edit_text(self.signature)
+                self.Input.set_edit_text(str(self.signature))
             self.integer+=1
         elif self.integer==4:
             self.newSignature=self.Input.get_edit_text()
