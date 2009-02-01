@@ -31,6 +31,7 @@ class Kekzcontroller():
         self.view = interface(self, *args, **kwds)
         self.readConfigfile()
         self.nickname=""
+        self.nickpattern = re.compile("",re.IGNORECASE)
         
         self.joinInfo=["Join","Login","Einladung"]
         self.partInfo=["Part","Logout","Lost Connection","Nick-Kollision","Ping Timeout","Kick"]

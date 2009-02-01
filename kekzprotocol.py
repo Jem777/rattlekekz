@@ -77,7 +77,10 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.failConnection(reason)
 
     def clientConnectionLost(self, connector, reason):
-        self.sendingPings.stop()
+        try:
+            self.sendingPings.stop()
+        except:
+            pass
         self.controller.lostConnection(reason)
 
     def sendHandshake(self,hash):
