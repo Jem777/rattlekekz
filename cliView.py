@@ -494,7 +494,7 @@ class KeckzBaseIOTab(KeckzBaseTab):
         if key == 'enter': 
             text = self.Input.get_edit_text()
             if text=="":
-               pass
+                return
             elif text.lower().startswith("/m") and not text.lower().startswith("/me"):
                 self.parent.openMailTab()
             elif text.startswith("/ctcp"):
