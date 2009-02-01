@@ -1034,11 +1034,11 @@ class KeckzEditTab(KeckzBaseIOTab):
                 self.integer+=1
         elif self.integer==3:
             self.newHobbies=self.Input.get_edit_text()
-            self.addLine(self.parent.stringHandler(self.newHobbies)+"\nFreitext: ")
+            self.addLine(self.parent.stringHandler(self.newHobbies)+"\nFreitext: (~n~ für Zeilenumbrüche)")
             self.Input.set_edit_text(self.parent.stringHandler(self.signature))
             self.integer+=1
         elif self.integer==4:
-            self.newSignature=self.Input.get_edit_text()
+            self.newSignature=re.subn("~n~","\\n",self.Input.get_edit_text())[0]
             self.addLine(self.parent.stringHandler(self.newSignature)+"\nPasswort zum bestätigen: ")
             self.Input.set_edit_text("")
             self.blind=True
