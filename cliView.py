@@ -51,10 +51,10 @@ class View(TabManager):
         self.vargs = args
         self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
         self.name,self.version="KECKz","0.1 Beta 'Nullpointer-Exception'"
-        colors =[('normal','default','default','standout'),
-            ('divider', 'white', 'dark blue', 'standout'),
-            ('dividerstate', 'light gray', 'dark blue', 'standout'),
-            ('dividerme', 'light red', 'dark blue', 'standout'),
+        colors =[('normal','default','default'),
+            ('divider', 'white', 'dark blue'),
+            ('dividerstate', 'light gray', 'dark blue'),
+            ('dividerme', 'light red', 'dark blue'),
 
             ('red','light red','default'),  #admin
             ('yellow','yellow','default'),  #chatop
@@ -401,11 +401,6 @@ class View(TabManager):
         self.updateTabs()
 
     def connectionLost(self, failure): # TODO: Better handling for closed Connections
-        self.addTab("$infos",KeckzInfoTab)
-        self.changeTab("$infos")
-        #for i in self.lookupRooms:
-        #    if not (i[0] == None or i[0] == "$infos"):
-        #        self.delTab(i[0])
         self.getTab(self.ShownRoom).addLine(("divider","\nVerbindung verloren\n"))
 
 class KeckzBaseTab(urwid.Frame):
