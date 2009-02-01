@@ -1009,11 +1009,10 @@ class KeckzEditTab(KeckzBaseIOTab):
             self.integer+=1
         elif self.integer==1:
             if self.editPassword:
-                if self.passwd is not "":
-                    self.newPassword = self.passwd
-                    self.addLine('*'*len(self.newPassword)+"\nWiederholen Sie Ihr neues Passwort: ")
-                    self.Input.set_edit_text("")
-                    self.passwd=""
+                self.newPassword = self.passwd
+                self.addLine('*'*len(self.newPassword)+"\nWiederholen Sie Ihr neues Passwort: ")
+                self.Input.set_edit_text("")
+                self.passwd=""
             else:
                 self.newLocation=self.Input.get_edit_text()
                 self.addLine(self.parent.stringHandler(self.newLocation)+"\nHomepage: ")

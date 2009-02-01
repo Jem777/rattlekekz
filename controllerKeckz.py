@@ -217,6 +217,11 @@ class Kekzcontroller():
         self.view.setClock(self.time)
         callLater(1,self.setClock)
 
+    def checkPassword(self,password):
+        if len(password)>4:
+            return True
+        else:
+            return False
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
@@ -228,10 +233,16 @@ class Kekzcontroller():
         self.model.sendLogin(self.nick, self.passwd, self.rooms)
 
     def registerNick(self,nick,passwd,email):
-        self.model.registerNick(nick,sha1(passwd).hexdigest(),email)
+        if not self.checkPassword(passwd):
+            self.view.gotException("Ungüliges Passwort")
+        else:
+            self.model.registerNick(nick,sha1(passwd).hexdigest(),email)
 
     def changePassword(self,passwd,passwdnew):
-        self.model.changePassword(sha1(passwd).hexdigest(),sha1(passwdnew).hexdigest())
+        if not self.checkPassword(passwdnew):
+            self.view.gotException("Ungüliges Passwort")
+        else:
+            self.model.changePassword(sha1(passwd).hexdigest(),sha1(passwdnew).hexdigest())
         
     def updateProfile(self,name,location,homepage,hobbies,signature,passwd):
         self.model.updateProfile(name,location,homepage,hobbies,signature,sha1(passwd).hexdigest())
