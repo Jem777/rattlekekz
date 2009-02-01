@@ -362,7 +362,7 @@ class View(TabManager):
         self.changeTab("$infos")
         self.getTab(self.ShownRoom).addLine(("divider","Whois von "+nick))
         for i in array:
-            self.getTab(self.ShownRoom).addLine(i)#self.deparse(i))
+            self.getTab(self.ShownRoom).addLine(self.deparse(i))
         self.getTab(self.ShownRoom).addLine(("divider","Ende des Whois"))
 
     def openMailTab(self):
