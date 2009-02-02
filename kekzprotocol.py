@@ -56,6 +56,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         self.pwhash=None
         self.nickname=""
         self.delimiter='\n'
+        self.isConnected=False
 
     def getContext(self):
         ctx = Context(SSLv3_METHOD)
@@ -70,10 +71,18 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def buildProtocol(self, addr):
         return self
 
+    def sendLine(self,line):
+        if self.isConnected:
+            basic.LineOnlyReceiver.sendLine(self,line)
+        else:
+            self.controller.gotException("Nicht verbunden")
+
     def startedConnecting(self, connector):
+        self.isConnected=True
         self.controller.startedConnection()
 
     def clientConnectionFailed(self, connector, reason):
+        self.isConnected=False
         self.controller.failConnection(reason)
 
     def clientConnectionLost(self, connector, reason):
@@ -81,6 +90,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
             self.sendingPings.stop()
         except:
             pass
+        self.isConnected=False
         self.controller.lostConnection(reason)
 
     def sendHandshake(self,hash):
