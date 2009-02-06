@@ -20,7 +20,8 @@ copyright = """
     along with KECKz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import kekzprotocol, os, sys, re, time
+import keckz.core.protocol as kekzprotocol
+import os, sys, re, time
 from hashlib import sha1, md5
 
 class Kekzcontroller():

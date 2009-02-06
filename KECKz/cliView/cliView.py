@@ -20,9 +20,10 @@ copyright = """
     along with KECKz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-revision = "$Revision$"
+revision = "$Revision: 369 $"
 
-import controllerKeckz, re, sys, subprocess, time
+import keckz.core.controller as controllerKeckz
+import re, sys, subprocess, time
 from tabmanagement import TabManager
 
 # Urwid
