@@ -27,7 +27,7 @@ from OpenSSL.SSL import SSLv3_METHOD, Context
 from twisted.internet import reactor, protocol, task, ssl
 from twisted.protocols import basic
 
-class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
+class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
     """
     This is the main part of the Kekz.net protocol
     This class expects the controller instance as parameter.
@@ -46,6 +46,7 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
             self.decoder=lambda y: cjson.decode(y)
         except:
             import json
+            #if sys.version < 2.6.0: #TODO test it on python 2.6
             if sys.version.startswith("2.5"):
                 self.encoder=lambda x: json.JsonWriter().write(x)
                 self.decoder=lambda y: json.JsonReader().read(y)
@@ -106,31 +107,9 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         """Request the List of Rooms for Login. You will receive a receivedRooms()"""
         reactor.callLater(1, lambda: self.sendLine('010'))
 
-    def sendLogin(self,nick,passhash,room):
-        """Logs on to the Kekz.net server and joins room "room" """
-        self.sendLine('020 %s#%s#%s' % (nick,passhash,room))
-
     def sendMailLogin(self,nick,passhash):
         """Logs on to the Kekz.net mailsystem"""
         self.sendLine('021 %s#%s' % (nick,passhash))
-
-    def registerNick(self,nick,pwhash,email):
-        """Register a new Nick"""
-        Daten={"nick":nick,"passwd":pwhash,"email":email}
-        self.sendLine("030 "+self.encoder(Daten))
-
-    def changePassword(self,passwd,passwdnew):
-        """Change passwd to passwdnew - Both have to be a hash; no hashing in the model"""
-        Data={"passwd":passwd,"passwdnew":passwdnew}
-        self.sendLine("031 "+self.encoder(Data))
-        
-    def updateProfile(self,name,location,homepage,hobbies,signature,passwd):
-        """Update the Profile - passwd has to be hashed"""
-        Data={"name":name,"ort":location,"homepage":homepage,"hobbies":hobbies,"freitext":signature,"passwd":passwd}
-        self.sendLine("041 "+self.encoder(Data))
-
-    def sendIdentify(self, data):
-        self.sendLine("070 "+data)
 
     def startPing(self):
         """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
@@ -146,38 +125,6 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         else:
             self.controller.pingTimeout()
             self.sendingPings.stop()
-
-    def sendMsg(self, channel, msg):
-        """Send a message to a channel"""
-        if msg.isspace(): pass
-        else:
-            self.sendLine("100 %s %s" % (channel,msg))
-
-    def sendSlashCommand(self,command,channel,msg):
-        """Msg starting with a Slash / """
-        if msg.isspace(): pass
-        elif command=="/exit": pass
-        elif command=="/sendm": pass
-        elif command=="/msg" or command=="/p":
-            msg=msg.split(" ")
-            if not len(msg)<2:
-                user=msg[0]
-                msg=" ".join(msg[1:])
-                self.sendPrivMsg(user,msg)
-        else: self.sendLine("101 %s %s %s" % (channel,command,msg))
-
-    def sendPrivMsg(self,nick,msg):
-        """Private Msgs, they call be send with /p or in another window like a room"""
-        self.sendLine('102 %s %s' % (nick,msg))
-
-    def sendJoin(self,room):
-        self.sendLine("223 "+room)
-
-    def sendCPMsg(self,user,msg):
-        self.sendLine("310 "+user+" "+msg)
-
-    def sendCPAnswer(self,user,msg):
-        self.sendLine("311 "+user+" "+msg)
 
     def sendMail(self,nick,msg,id):
         mail={"id":id,"tonick":nick,"msg":msg}
@@ -218,7 +165,6 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
             string=data
         attribut(string)
 
-
     def kekzCode000(self,data):
         self.pwhash=data
         self.controller.receivedHandshake()
@@ -228,15 +174,135 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         """Creates an array of rooms received """
         rooms=self.decoder(data)
         self.controller.receivedRooms(rooms)
-    
+
+    def kekzCode021(self,data):
+        self.controller.successMailLogin()
+
+    def kekzCode088(self,data):
+        self.controller.receivedPing(int((time()-self.lastPing)*1000))
+        self.pingAnswer=False
+
+    def kekzCode229(self,data):
+        self.controller.loggedOut()
+
+    def kekzCode440(self,data):
+        self.controller.sendMailsuccessful(data)
+
+    def kekzCode450(self,data):
+        dic=self.decoder(data)
+        userid=dic["quota"]
+        mailcount=dic["int"]
+        mails=dic["list"]
+        self.controller.receivedMails(userid,mailcount,mails)
+
+    def kekzCode460(self,data):
+        mails=data.split("#")
+        unreadmails,allmails=int(mails[0]),int(mails[1])
+        self.controller.receivedMailcount(unreadmails,allmails)
+
+    def kekzCode461(self,data):
+        mail=self.decoder(data)
+        if mail["type"]=="Error":
+            self.controller.requestMailfailed(mail["Error"])
+        else:
+            self.controller.requestMailsuccessful(mail["from"],mail["date"],mail["body"])
+
+    def kekzCode470(self,data):
+        mails=data.split("#")
+        nick,header=str(mails[0]),str("#".join(mails[1:]))
+        self.controller.receivedNewMail(nick,header)
+
+    def kekzCode901(self,data):
+        self.controller.gotHandshakeException(data)
+
+    def kekzCode921(self,data):
+        self.controller.gotLoginException(data)
+
+    def kekzCode940(self,data):
+        self.controller.gotException(data)
+
+    def kekzCode941(self,data):
+        dic=self.decoder(data)
+        id,msg=dic["id"],dic["msg"]
+        self.controller.sendMailfailed(id,msg)
+
+    def kekzCode988(self,data):
+        self.controller.gotException(data)
+
+    def kekzCodeUnknown(self,data):
+        self.controller.gotException(data)
+
+
+class KekzClient(KekzMailClient):
+    """
+    This is the main part of the Kekz.net protocol
+    This class expects the controller instance as parameter.
+    The class establishes an SSL/TLS connection to the server, and
+    sends occurring events to the controller, by saying controller.someEvent().
+    """
+
+    def sendLogin(self,nick,passhash,room):
+        """Logs on to the Kekz.net server and joins room "room" """
+        self.sendLine('020 %s#%s#%s' % (nick,passhash,room))
+
+    def registerNick(self,nick,pwhash,email):
+        """Register a new Nick"""
+        Daten={"nick":nick,"passwd":pwhash,"email":email}
+        self.sendLine("030 "+self.encoder(Daten))
+
+    def changePassword(self,passwd,passwdnew):
+        """Change passwd to passwdnew - Both have to be a hash; no hashing in the model"""
+        Data={"passwd":passwd,"passwdnew":passwdnew}
+        self.sendLine("031 "+self.encoder(Data))
+        
+    def updateProfile(self,name,location,homepage,hobbies,signature,passwd):
+        """Update the Profile - passwd has to be hashed"""
+        Data={"name":name,"ort":location,"homepage":homepage,"hobbies":hobbies,"freitext":signature,"passwd":passwd}
+        self.sendLine("041 "+self.encoder(Data))
+
+    def sendIdentify(self, data):
+        self.sendLine("070 "+data)
+
+    def sendMsg(self, channel, msg):
+        """Send a message to a channel"""
+        if msg.isspace(): pass
+        else:
+            self.sendLine("100 %s %s" % (channel,msg))
+
+    def sendSlashCommand(self,command,channel,msg):
+        """Msg starting with a Slash / """
+        if msg.isspace(): pass
+        elif command=="/exit": pass
+        elif command=="/sendm": pass
+        elif command=="/msg" or command=="/p":
+            msg=msg.split(" ")
+            if not len(msg)<2:
+                user=msg[0]
+                msg=" ".join(msg[1:])
+                self.sendPrivMsg(user,msg)
+        else: self.sendLine("101 %s %s %s" % (channel,command,msg))
+
+    def sendPrivMsg(self,nick,msg):
+        """Private Msgs, they call be send with /p or in another window like a room"""
+        self.sendLine('102 %s %s' % (nick,msg))
+
+    def sendJoin(self,room):
+        self.sendLine("223 "+room)
+
+    def sendCPMsg(self,user,msg):
+        self.sendLine("310 "+user+" "+msg)
+
+    def sendCPAnswer(self,user,msg):
+        self.sendLine("311 "+user+" "+msg)
+
+
+
+# Following Methods are called if the server sends something
     def kekzCode020(self,data):
         userdata=self.decoder(data)
         nick,status,room=userdata["nick"],userdata["status"],userdata["room"]
         self.nickname=nick
         self.controller.successLogin(nick,status,room)
-
-    def kekzCode021(self,data):
-        self.controller.successMailLogin()
 
     def kekzCode030(self,data):
         self.controller.successRegister()
@@ -260,10 +326,6 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
 
     def kekzCode070(self,data):
         self.controller.securityCheck(data)
-
-    def kekzCode088(self,data):
-        self.controller.receivedPing(int((time()-self.lastPing)*1000))
-        self.pingAnswer=False
 
     def kekzCode100(self,data):
         foo=data.split(" ")
@@ -365,9 +427,6 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
     def kekzCode226(self,data):
         self.controller.newTopic(data,"")
 
-    def kekzCode229(self,data):
-        self.controller.loggedOut()
-    
     def kekzCode300(self,data):
         self.controller.receivedInformation(data)
 
@@ -389,55 +448,14 @@ class KekzClient(basic.LineOnlyReceiver, protocol.Factory):
         cpanswer=cpanswer
         self.controller.receivedCPAnswer(user,cpanswer)
 
-    def kekzCode440(self,data):
-        self.controller.sendMailsuccessful(data)
-
-    def kekzCode450(self,data):
-        dic=self.decoder(data)
-        userid=dic["quota"]
-        mailcount=dic["int"]
-        mails=dic["list"]
-        self.controller.receivedMails(userid,mailcount,mails)
-
-    def kekzCode460(self,data):
-        mails=data.split("#")
-        unreadmails,allmails=int(mails[0]),int(mails[1])
-        self.controller.receivedMailcount(unreadmails,allmails)
-
-    def kekzCode461(self,data):
-        mail=self.decoder(data)
-        if mail["type"]=="Error":
-            self.controller.requestMailfailed(mail["Error"])
-        else:
-            self.controller.requestMailsuccessful(mail["from"],mail["date"],mail["body"])
-
-    def kekzCode470(self,data):
-        mails=data.split("#")
-        nick,header=str(mails[0]),str("#".join(mails[1:]))
-        self.controller.receivedNewMail(nick,header)
-
     def kekzCode901(self,data):
         self.controller.gotHandshakeException(data)
 
     def kekzCode920(self,data):
         self.controller.gotLoginException(data)
 
-    def kekzCode921(self,data):
-        self.controller.gotException(data)
-
     def kekzCode930(self,data):
         self.controller.gotException(data)
 
-    def kekzCode940(self,data):
-        self.controller.gotException(data)
-
-    def kekzCode941(self,data):
-        dic=self.decoder(data)
-        id,msg=dic["id"],dic["msg"]
-        self.controller.sendMailfailed(id,msg)
-
     def kekzCode988(self,data):
-        self.controller.gotException(data)
-
-    def kekzCodeUnknown(self,data):
         self.controller.gotException(data)

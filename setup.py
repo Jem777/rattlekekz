@@ -9,5 +9,6 @@ setup(name='Keckz',
       packages=['KECKz','KECKz.core','KECKz.cliView'],
       scripts=['bin/keckz'],
       requires=['twisted(>=8.1.0)','urwid','json','OpenSSL'],
-      url="http://kekz.net/"
+      url="http://kekz.net/",
+      license="GPL v3 or higher"
      )

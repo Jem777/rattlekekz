@@ -27,7 +27,7 @@ from hashlib import sha1, md5
 class Kekzcontroller():
     def __init__(self, interface, *args, **kwds):
         self.kwds=kwds
-        self.model = kekzprotocol.KekzClient(self)
+        self.model = kekzprotocol.KekzChatClient(self)
         self.view = interface(self, *args, **kwds)
         self.readConfigfile()
         self.nickname=""
