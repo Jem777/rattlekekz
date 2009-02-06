@@ -58,6 +58,9 @@ class TabManager:
         self.updateTabs()
         self.redisplay()
 
+    def getActiveTab(self):
+        return self.ShownRoom
+
     def getTab(self,argument):
         for i in self.lookupRooms:
             if i[0]==argument: Tab=i[1]

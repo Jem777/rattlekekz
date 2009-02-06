@@ -22,7 +22,6 @@ copyright = """
 
 import kekzprotocol, os, sys, re, time
 from hashlib import sha1, md5
-from twisted.internet.reactor import callLater
 
 class Kekzcontroller():
     def __init__(self, interface, *args, **kwds):
@@ -180,10 +179,6 @@ class Kekzcontroller():
                 a=i.split("=")
                 a=a[:2]
                 self.configfile.update({a[0].strip():a[1].strip()})
-        if self.configfile.has_key("ok") and self.configfile["ok"]=="1":
-            pass
-        else:
-            self.configfile={}
             
         if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
         elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
@@ -208,15 +203,8 @@ class Kekzcontroller():
             self.clockformat=self.configfile["clock"]+" "
         else:
             self.clockformat="[%H:%M:%S] "
-        self.oldtime=""
-        self.running = False
-        self.time=""
-        self.setClock()
+        self.view.setClock()
 
-    def setClock(self):
-        self.time=("dividerstate",time.strftime(self.clockformat,time.localtime(time.time())))
-        self.view.setClock(self.time)
-        callLater(1,self.setClock)
 
     def checkPassword(self,password):
         if len(password)>4:
@@ -389,7 +377,8 @@ class Kekzcontroller():
     def botMsg(self,nick,msg):
         self.printMsg(nick,msg,"",4)
 
-    def printMsg(self,nick,message,room,state): 
+    def printMsg(self,nick,message,room,state):
+        activeTab=self.view.getActiveTab()
         msg=[]
         msg.append(self.view.timestamp(time.strftime(self.timestamp,time.localtime(time.time()))))
         if state==0 or state==2 or state==4:
@@ -405,9 +394,10 @@ class Kekzcontroller():
         if state==4:
             if len(self.view.lookupRooms)==1:
                 self.view.addRoom("$info","InfoRoom")
-                self.view.ShownRoom="$info"
-            room=self.view.ShownRoom
-        if not (self.view.ShownRoom == "$login" or room == self.view.ShownRoom):
+                self.view.changeTab="$info"
+                activeTab="$info"
+            room=activeTab
+        if not (activeTab == "$login" or room == self.view.ShownRoom):
             importance=2
             if (self.nickpattern.search(message) is not None) or state==2:
                 importance=3 

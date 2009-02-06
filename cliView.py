@@ -22,7 +22,7 @@ copyright = """
 
 revision = "$Revision$"
 
-import controllerKeckz, re, sys, subprocess
+import controllerKeckz, re, sys, subprocess, time
 from tabmanagement import TabManager
 
 # Urwid
@@ -102,6 +102,7 @@ class View(TabManager):
                  "s13":":-G"}
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
+        self.oldtime=""
 
 
     def fileno(self):
@@ -117,6 +118,8 @@ class View(TabManager):
         self.readhistory=self.controller.readhistory
         if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
             self.sortTabs=True
+        self.addTab("$login",KeckzLoginTab)
+        self.changeTab("$login")
 
     def suspendView(self):
         self.tui.stop()
@@ -148,7 +151,7 @@ class View(TabManager):
         TabManager.changeTab(self,tabname)
         self.setTitle()
         if not self.ShownRoom == None:
-            self.getTab(self.ShownRoom).clock(self.controller.time)
+            self.getTab(self.ShownRoom).clock(self.time)
             self.redisplay()
 
     def doRead(self):
@@ -183,15 +186,15 @@ class View(TabManager):
             self.redisplay()
 
     def receivedPreLoginData(self,rooms,array):
-        self.ShownRoom="$login"
-        self.addTab("$login",KeckzLoginTab)
+        #self.ShownRoom="$login"
         self.getTab(self.ShownRoom).receivedPreLoginData(rooms,array)
 
     def successLogin(self,nick,status,room):
         self.nickname=nick
         self.ShownRoom=room
-        sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
+        #sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.addTab(room,KeckzMsgTab)
+        self.changeTab(room)
         try:
             self.delTab("$login")
         except:
@@ -223,10 +226,14 @@ class View(TabManager):
         self.getTab(self.ShownRoom).addLine(("divider","Info: "))
         self.getTab(self.ShownRoom).addLine(msg)
 
-    def setClock(self, clock):
-        if not self.ShownRoom==None:
-            self.getTab(self.ShownRoom).clock(clock)
+    def setClock(self):
+        self.clockformat=self.controller.clockformat
+        self.time=("dividerstate",time.strftime(self.clockformat,time.localtime(time.time())))
+        if not self.ShownRoom==None and self.oldtime != self.time:
+            self.getTab(self.ShownRoom).clock(self.time)
             self.redisplay()
+        self.oldtime=self.time
+        reactor.callLater(1,self.setClock)
 
     def receivedPing(self,deltaPing):
         self.Ping="Ping: "+str(deltaPing)+"ms"
@@ -562,8 +569,9 @@ class KeckzLoginTab(KeckzBaseIOTab):
                 self.addLine(("red",i["name"]+"("+str(i["users"])+")"))
             else:
                 self.addLine(i["name"]+"("+str(i["users"])+")")
-        self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
         self.Input.set_edit_text(self.nick)
+        self.Input.set_edit_pos(len(self.nick))
+        self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
 
     def onKeyPressed(self, size, key):
         KeckzBaseTab.onKeyPressed(self, size, key)
@@ -584,7 +592,7 @@ class KeckzLoginTab(KeckzBaseIOTab):
             if self.Input.edit_pos != len(self.Input.get_edit_text()):
                 self.Input.set_edit_pos(self.Input.edit_pos+1)
         elif key == 'end':
-            self.Input.set_edit_pos(len(self.parent))
+            self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         elif key == 'home':
             self.Input.set_edit_pos(0)
         elif key in ['enter','tab','shift tab']:
