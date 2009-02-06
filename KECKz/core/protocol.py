@@ -233,7 +233,7 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller.gotException(data)
 
 
-class KekzClient(KekzMailClient):
+class KekzChatClient(KekzMailClient):
     """
     This is the main part of the Kekz.net protocol
     This class expects the controller instance as parameter.
