@@ -22,15 +22,16 @@ copyright = """
 
 revision = "$Revision: 369 $"
 
-import KECKz.core.controller as controllerKeckz
+# KECKz
+from KECKz.cliView.tabmanagement import TabManager
+
+# System
 import re, sys, subprocess, time
-from tabmanagement import TabManager
 
 # Urwid
 import urwid
-from urwid import raw_display
 
-# Twisted imports
+# Twisted
 from twisted.internet import reactor
 from twisted.internet.ssl import ClientContextFactory
 from twisted.internet.task import LoopingCall
@@ -1066,5 +1067,6 @@ class KeckzEditTab(KeckzBaseIOTab):
             self.blind=False
 
 if __name__ == '__main__':
-    kekzControl=controllerKeckz.Kekzcontroller(View,usercolors=True,timestamp=1)
+    from KECKz.core import controller
+    kekzControl=controller.KekzController(View,usercolors=True,timestamp=1)
     kekzControl.view.startConnection("kekz.net",23002)

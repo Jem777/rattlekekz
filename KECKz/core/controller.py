@@ -20,14 +20,14 @@ copyright = """
     along with KECKz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import KECKz.core.protocol as kekzprotocol
+from KECKz.core import protocol
 import os, sys, re, time
 from hashlib import sha1, md5
 
-class Kekzcontroller():
+class KekzController():
     def __init__(self, interface, *args, **kwds):
         self.kwds=kwds
-        self.model = kekzprotocol.KekzChatClient(self)
+        self.model = protocol.KekzChatClient(self)
         self.view = interface(self, *args, **kwds)
         self.readConfigfile()
         self.nickname=""
