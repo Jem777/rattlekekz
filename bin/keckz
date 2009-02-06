@@ -108,12 +108,12 @@ class main():
 
     def startKeckz(self, host, view="cliView", *args, **kwds):
         try:
-            exec("from keckz."+view+"."+view+" import *")
+            exec("from KECKz."+view+"."+view+" import *")
         except:
             print "No View found"
             sys.exit()
         if "View" in dir() and type(View) == types.ClassType:
-            import keckz.core.controller as controllerKeckz
+            import KECKz.core.controller as controllerKeckz
             kekzControl=controllerKeckz.Kekzcontroller(View, *args, **kwds)
             kekzControl.view.startConnection(host,23002)
         else:

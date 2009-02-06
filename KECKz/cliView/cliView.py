@@ -22,7 +22,7 @@ copyright = """
 
 revision = "$Revision: 369 $"
 
-import keckz.core.controller as controllerKeckz
+import KECKz.core.controller as controllerKeckz
 import re, sys, subprocess, time
 from tabmanagement import TabManager
 
