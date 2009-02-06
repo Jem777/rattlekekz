@@ -103,6 +103,7 @@ class View(TabManager):
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
         self.oldtime=""
+        self.isConnected=False
 
 
     def fileno(self):
@@ -186,7 +187,7 @@ class View(TabManager):
             self.redisplay()
 
     def receivedPreLoginData(self,rooms,array):
-        #self.ShownRoom="$login"
+        self.isConnected=True
         self.getTab(self.ShownRoom).receivedPreLoginData(rooms,array)
 
     def successLogin(self,nick,status,room):
@@ -195,10 +196,8 @@ class View(TabManager):
         #sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.addTab(room,KeckzMsgTab)
         self.changeTab(room)
-        try:
-            self.delTab("$login")
-        except:
-            pass
+        self.delTab("$login")
+
 
     def successRegister(self):
         if len(self.lookupRooms)==1:
@@ -574,6 +573,12 @@ class KeckzLoginTab(KeckzBaseIOTab):
         self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
 
     def onKeyPressed(self, size, key):
+        if self.parent.isConnected:
+            self.onReallyKeyPressed(size, key)
+        else:
+            pass
+
+    def onReallyKeyPressed(self, size, key):
         KeckzBaseTab.onKeyPressed(self, size, key)
         if key == 'backspace' and self.integer == 0:
             if self.Input.edit_pos != 0:
