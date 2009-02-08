@@ -20,7 +20,7 @@ copyright = """
     along with KECKz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-revision = "$Revision: 369 $"
+revision = "$Revision$"
 
 # KECKz
 from KECKz.cliView.tabmanagement import TabManager
@@ -264,7 +264,7 @@ class View(TabManager):
                     msg.append((color,text[i]))
                     continue
             #if text[i].isspace() or text[i]=="":   # NOTE: If there are any bugs with new rooms and the roomop-message THIS could be is the reason ;)
-            #    continue                           #
+            #    continue                           # 
             if text[i] == "":                       #
                 continue                            #
             form=format[i].split(",")
