@@ -197,7 +197,6 @@ class View(TabManager):
     def successLogin(self,nick,status,room):
         self.nickname=nick
         self.ShownRoom=room
-        #sys.stdout.write('\033]0;'+self.name+' - '+self.ShownRoom+' \007') # Set Terminal-Title
         self.addTab(room,KeckzMsgTab)
         self.changeTab(room)
         self.delTab("$login")
