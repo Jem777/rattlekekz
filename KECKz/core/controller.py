@@ -278,7 +278,7 @@ class KekzController():
                 user=string.pop(0)
                 string=" ".join(string)
                 self.model.sendPrivMsg(user,string)
-        else:
+        elif not channel.startswith("#"):
             liste=string.split(" ")
             self.model.sendSlashCommand(liste[0],channel," ".join(liste[1:]))
 
