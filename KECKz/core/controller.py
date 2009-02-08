@@ -242,23 +242,51 @@ class KekzController():
         md5_hash= md5.new(sha1_hash).hexdigest()
         self.model.sendIdentify(md5_hash)
 
-    def sendMsg(self, channel, msg):
-        if channel.startswith("#"):
-            self.model.sendPrivMsg(channel[1:],msg)
-        elif msg.startswith("/"):
-            liste=msg.split(" ")
-            self.model.sendSlashCommand(liste[0],channel," ".join(liste[1:]))
+    def sendStr(self,channel, string):
+        if string.startswith("/"):
+            self.sendSlashCommand(channel,string)
+        elif channel.startswith("#"):
+            self.model.sendPrivMsg(channel[1:],string)
         else:     
-            self.model.sendMsg(channel,msg)
+            self.model.sendMsg(channel,string)
 
-    def sendPrivMsg(self,nick,msg):
-        self.model.sendPrivMsg(nick,msg)
+    def sendSlashCommand(self,channel,string):
+        if string.lower().startswith("/m") and not string.lower().startswith("/me"):
+            self.view.addRoom("$mail","MailRoom")
+            self.refreshMaillist()
+            self.view.changeTab("$mail")
+        elif string.lower().startswith("/quit"):
+            self.view.quit()
+        elif string.lower().startswith("/showtopic"):
+            if not channel.startswith("#"):
+                self.view.showTopic(channel)
+        elif string.lower().startswith("/ctcp"):
+            cpmsg=string.split(' ')[1:]
+            if len(cpmsg) > 1:
+                user=cpmsg.pop(0)
+                cpmsg=" ".join(cpmsg)
+                self.sendCPMsg(user,cpmsg)
+        elif string.lower().startswith("/sendm"):
+            mail=string.split(' ')[1:]
+            if len(mail) > 1:
+                user=mail.pop(0)
+                mail=" ".join(mail)
+                self.sendMail(user,mail)
+        elif string.lower().startswith("/p"):
+            string=string.split(' ')[1:]
+            if len(string) > 1:
+                user=string.pop(0)
+                string=" ".join(string)
+                self.model.sendPrivMsg(user,string)
+        else:
+            liste=string.split(" ")
+            self.model.sendSlashCommand(liste[0],channel," ".join(liste[1:]))
 
     def sendJoin(self,room):
         self.model.sendJoin(room)
 
     def sendMail(self,nick,msg):
-        self.sendMailCount=self.sendMailCount+1
+        self.sendMailCount+=1
         id="Mail_"+str(self.sendMailCount)
         self.lookupSendId.update({id:nick})
         self.model.sendMail(nick,msg,id)
@@ -302,7 +330,7 @@ class KekzController():
 
     def failConnection(self, reason):
         """the try to connect failed. Here should be a call to the view later on"""
-        pass
+        self.view.connectionFailed()
 
     def receivedHandshake(self):
         pythonversion=sys.version.split(" ")
