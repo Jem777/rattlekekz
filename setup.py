@@ -8,6 +8,7 @@ setup(name='Keckz',
       author_email="egg@spam.de",
       packages=['KECKz','KECKz.core','KECKz.cliView'],
       scripts=['bin/keckz'],
+      data_files=[('/bin',['bin/keckz'])],
       requires=['twisted(>=8.1.0)','urwid','json','OpenSSL'],
       url="http://kekz.net/",
       license="GPL v3 or higher"
