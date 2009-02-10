@@ -511,22 +511,22 @@ class KekzController():
             elif key == "lastseen": key="Ausgeloggt seit "
             if key == "state":
                 key = "<raw>"
-                if value == "off": value="Der User ist derzeit °fb°°cr°Offline°fx°.°nn°".decode("utf_8")
-                elif value == "on": value="Der User ist derzeit °fb°°cg°Online°fx°.°nn°".decode("utf_8")
-                elif value == "mail": value="Der User ist derzeit °fb°°cr%Offline°fx°, empfängt aber °fb°°cb°Mails°fx°.°nn°".decode("utf_8")
+                if value == "off": value=u"Der User ist derzeit °fb°°cr°Offline°fx°.°nn°"
+                elif value == "on": value=u"Der User ist derzeit °fb°°cg°Online°fx°.°nn°"
+                elif value == "mail": value=u"Der User ist derzeit °fb°°cr%Offline°fx°, empfängt aber °fb°°cb°Mails°fx°.°nn°"
                 else:
-                    value="Der Status ist unbekannt.°nn°".decode("utf_8")
+                    value=u"Der Status ist unbekannt.°nn°"
             if key == "kekz":
                 key="<raw>"
-                value="°cb° %s kann noch °fb°%sx°fb° kekzen.".decode("utf_8") % (nick,str(value))
+                value=u"°cb° %s kann noch °fb°%sx°fb° kekzen." % (nick,value)
             if key == "usertext":
                 key="<raw>"
             if key == "<h1>":
                 key="<raw>"
-                value="°nn°°nn°°cb°°fb°%s°fb°°cb°".decode("utf_8") % (value.capitalize())
+                value=u"°nn°°nn°°cb°°fb°%s°fb°°cb°" % (value.capitalize())
             if not key == "<raw>":
-                value="°fb°%s:°fb° %s".decode("utf_8") % (key.capitalize(),value)
-            Output.append(value.encode("utf_8"))
+                value=u"°fb°%s:°fb° %s" % (key.capitalize(),value)
+            Output.append(value)
         self.view.receivedWhois(nick, Output)
 
     def receivedCPMsg(self,user,cpmsg):
