@@ -24,7 +24,7 @@ import urwid, re
 
 class KeckzBaseTab(urwid.Frame):
     def __init__(self, room, parent):
-        self.room=room
+        self.room=str(room)
         self.parent=parent
         self.hasOutput=True
         self.hasInput=False

@@ -247,7 +247,7 @@ class KekzController():
             self.sendSlashCommand(channel,string)
         elif channel.startswith("#"):
             self.model.sendPrivMsg(channel[1:],string)
-        else:     
+        else:
             self.model.sendMsg(channel,string)
 
     def sendSlashCommand(self,channel,string):
