@@ -375,10 +375,10 @@ class View(TabManager):
     def receivedWhois(self,nick,array):
         self.addTab("$infos",KeckzInfoTab)
         self.changeTab("$infos")
-        self.getTab(self.ShownRoom).addLine(("divider","Whois von "+nick))
+        out=[]
         for i in array:
-            self.getTab(self.ShownRoom).addLine(self.deparse(i))
-        self.getTab(self.ShownRoom).addLine(("divider","Ende des Whois"))
+            out.append(self.deparse(i))
+        self.getTab("$infos").addWhois(nick, out)
 
     def openMailTab(self):
         self.addTab("$mail",KeckzMailTab)

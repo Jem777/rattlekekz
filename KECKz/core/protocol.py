@@ -40,19 +40,14 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
         self.controller=controller
         # this should be checked properly, with a numerical version number comparisation, or something like that.
         # check how to check and compare version numbers in python.
-        try:
-            import cjson
-            self.encoder=lambda x: cjson.encode(x)
-            self.decoder=lambda y: cjson.decode(y)
-        except:
-            import json
-            #if sys.version < 2.6.0: #TODO test it on python 2.6
-            if sys.version.startswith("2.5"):
-                self.encoder=lambda x: json.JsonWriter().write(x)
-                self.decoder=lambda y: json.JsonReader().read(y)
-            else:
-                self.encoder=lambda x: json.JSONEncoder().encode(x)
-                self.decoder=lambda y: json.JSONDecoder().decode(y)
+        import json
+        #if sys.version < 2.6.0: #TODO test it on python 2.6
+        if sys.version.startswith("2.5"):
+            self.encoder=lambda x: json.JsonWriter().write(x)
+            self.decoder=lambda y: json.JsonReader().read(y)
+        else:
+            self.encoder=lambda x: json.JSONEncoder().encode(x)
+            self.decoder=lambda y: json.JSONDecoder().decode(y)
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""

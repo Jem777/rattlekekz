@@ -475,6 +475,18 @@ class KeckzInfoTab(KeckzBaseTab):
         elif key=="q":
             self.onClose()
 
+    def addWhois(self, nick, whois):
+        """ add a line to the internal list of lines"""
+        while len(self.Output) > self.parent.readhistory:
+            del self.Output[0]
+        whois.insert(0,("divider","Whois von "+nick))
+        whois.append(("divider","Ende des Whois"))
+        self.getTab(self.ShownRoom).addLine()
+        for i in whois:
+            self.Output.append(urwid.Text(whois))
+        self.MainView.set_focus(len(self.Output) - 1)
+        self.parent.redisplay()
+
 class KeckzSecureTab(KeckzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
