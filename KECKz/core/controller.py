@@ -251,7 +251,7 @@ class KekzController():
             self.model.sendMsg(channel,string)
 
     def sendSlashCommand(self,channel,string):
-        if string.lower().startswith("/m") and not string.lower().startswith("/me"):
+        if string.lower().startswith("/m ") or string.lower() is "/m":
             self.view.addRoom("$mail","MailRoom")
             self.refreshMaillist()
             self.view.changeTab("$mail")
@@ -272,7 +272,7 @@ class KekzController():
                 user=mail.pop(0)
                 mail=" ".join(mail)
                 self.sendMail(user,mail)
-        elif string.lower().startswith("/p"):
+        elif string.lower().startswith("/p") or string.lower().startswith("/msg"):
             string=string.split(' ')[1:]
             if len(string) > 1:
                 user=string.pop(0)
