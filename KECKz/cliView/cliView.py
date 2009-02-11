@@ -76,8 +76,9 @@ class View(TabManager):
             ("pink","light magenta","default"),
             ("white","white","default"),
             ('gray','light gray','default'),
+            ('smilie','black','brown')]
 
-            ('normalbold','default,bold','default'),#,'bold'),
+        bold=[('normalbold','default,bold','default'),#,'bold'),
             ('redbold','light red,bold','default','bold'),  #admin
             ('yellowbold','yellow,bold','default','bold'),  #chatop
             ('bluebold','light blue,bold','default','bold'), #roomop
@@ -87,9 +88,22 @@ class View(TabManager):
             ("orangebold","brown,bold","default",'bold'),
             ("pinkbold","light magenta,bold","default",'bold'),
             ("whitebold","white,bold","default",'bold'),
-            ('graybold','light gray,bold','default',"bold"),
-            ('smilie','black','brown')]
-        self.tui.register_palette(colors)
+            ('graybold','light gray,bold','default',"bold")]
+        nobold=[('normalbold','default','default'),
+            ('redbold','light red','default'),
+            ('yellowbold','yellow','default'),
+            ('bluebold','light blue','default'),
+            ('greenbold','light green','default'),
+            ("magentabold","light magenta","default"),
+            ("cyanbold","light cyan","default"),
+            ("orangebold","brown","default"),
+            ("pinkbold","light magenta","default"),
+            ("whitebold","white","default"),
+            ('graybold','light gray','default')]
+        try:
+            self.tui.register_palette(colors+bold)
+        except:
+            self.tui.register_palette(colors+nobold)
         self.smilies={"s6":":-)",
                  "s4":":-(",
                  "s1":":-/",
