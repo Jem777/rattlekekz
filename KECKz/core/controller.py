@@ -513,7 +513,7 @@ class KekzController():
                 key = "<raw>"
                 if value == "off": value=u"Der User ist derzeit °fb°°cr°Offline°fx°.°nn°"
                 elif value == "on": value=u"Der User ist derzeit °fb°°cg°Online°fx°.°nn°"
-                elif value == "mail": value=u"Der User ist derzeit °fb°°cr%Offline°fx°, empfängt aber °fb°°cb°Mails°fx°.°nn°"
+                elif value == "mail": value=u"Der User ist derzeit °fb°°cr°Offline°fx°, empfängt aber °fb°°cb°Mails°fx°.°nn°"
                 else:
                     value=u"Der Status ist unbekannt.°nn°"
             if key == "kekz":
