@@ -77,17 +77,17 @@ class View(TabManager):
             ("white","white","default"),
             ('gray','light gray','default'),
 
-            ('normalbold','default','default','bold'),
-            ('redbold','light red','default','bold'),  #admin
-            ('yellowbold','yellow','default','bold'),  #chatop
-            ('bluebold','light blue','default','bold'), #roomop
-            ('greenbold','light green','default','bold'), #special
-            ("magentabold","light magenta","default",'bold'),
-            ("cyanbold","light cyan","default",'bold'),
-            ("orangebold","brown","default",'bold'),
-            ("pinkbold","light magenta","default",'bold'),
-            ("whitebold","white","default",'bold'),
-            ('graybold','light gray','default',"bold"),
+            ('normalbold','default,bold','default'),#,'bold'),
+            ('redbold','light red,bold','default','bold'),  #admin
+            ('yellowbold','yellow,bold','default','bold'),  #chatop
+            ('bluebold','light blue,bold','default','bold'), #roomop
+            ('greenbold','light green,bold','default','bold'), #special
+            ("magentabold","light magenta,bold","default",'bold'),
+            ("cyanbold","light cyan,bold","default",'bold'),
+            ("orangebold","brown,bold","default",'bold'),
+            ("pinkbold","light magenta,bold","default",'bold'),
+            ("whitebold","white,bold","default",'bold'),
+            ('graybold','light gray,bold','default',"bold"),
             ('smilie','black','brown')]
         self.tui.register_palette(colors)
         self.smilies={"s6":":-)",
