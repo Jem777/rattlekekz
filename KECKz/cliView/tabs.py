@@ -481,7 +481,6 @@ class KeckzInfoTab(KeckzBaseTab):
             del self.Output[0]
         whois.insert(0,("divider","Whois von "+nick))
         whois.append(("divider","Ende des Whois"))
-        self.getTab(self.ShownRoom).addLine()
         for i in whois:
             self.Output.append(urwid.Text(whois))
         self.MainView.set_focus(len(self.Output) - 1)
