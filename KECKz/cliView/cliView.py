@@ -389,9 +389,9 @@ class View(TabManager):
     def receivedWhois(self,nick,array):
         self.addTab("$infos",KeckzInfoTab)
         self.changeTab("$infos")
-        out=[]
-        for i in array:
-            out.append(self.deparse(i))
+        out=map(self.deparse, array)
+        #for i in array:
+        #    out.append(self.deparse(i))
         self.getTab("$infos").addWhois(nick, out)
 
     def openMailTab(self):

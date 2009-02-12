@@ -500,6 +500,12 @@ class KekzController():
     def receivedInformation(self,info):
         self.view.receivedInformation(info)
 
+    def stringHandler(self,string):
+        if type(string) is unicode:
+            return string.encode("utf_8")
+        else:
+            return str(string)
+
     def receivedWhois(self,data):
         Output=[]
         for i in range(0,len(data),2):
@@ -523,9 +529,9 @@ class KekzController():
                 key="<raw>"
             if key == "<h1>":
                 key="<raw>"
-                value=u"°nn°°nn°°cb°°fb°%s°fb°°cb°" % (value.capitalize())
+                value=self.stringHandler("°nn°°nn°°cb°°fb°%s°fb°°cb°" % (value.capitalize()))
             if not key == "<raw>":
-                value=u"°fb°%s:°fb° %s" % (key.capitalize(),value)
+                value=self.stringHandler("°fb°%s:°fb° %s" % (key.capitalize(),value))
             Output.append(value)
         self.view.receivedWhois(nick, Output)
 

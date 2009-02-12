@@ -482,7 +482,7 @@ class KeckzInfoTab(KeckzBaseTab):
         whois.insert(0,("divider","Whois von "+nick))
         whois.append(("divider","Ende des Whois"))
         for i in whois:
-            self.Output.append(urwid.Text(whois))
+            self.Output.append(urwid.Text(i))
         self.MainView.set_focus(len(self.Output) - 1)
         self.parent.redisplay()
 
