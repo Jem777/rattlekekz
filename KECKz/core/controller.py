@@ -30,6 +30,7 @@ class KekzController():
         self.model = protocol.KekzChatClient(self)
         self.view = interface(self, *args, **kwds)
         self.readConfigfile()
+        self.revision=self.view.revision
         self.nickname=""
         self.nickpattern = re.compile("",re.IGNORECASE)
         
@@ -537,13 +538,14 @@ class KekzController():
 
     def receivedCPMsg(self,user,cpmsg):
         self.printMsg(user+' [CTCP]',cpmsg,self.view.ShownRoom,0)
-        if cpmsg.lower() not in ('version','ping'):
-            self.sendCPAnswer(user,cpmsg+' (unknown)')
+        if cpmsg.lower() == 'version':
+            self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
+        elif cpmsg.lower() == 'ping':
+            self.sendCPAnswer(user,cpmsg+' ping')
+        elif cpmsg.lower() in ('rev','revision'):
+            self.sendCPAnswer(user,cpmsg+' '+self.revision)
         else:
-            if cpmsg.lower() in 'version':
-                self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
-            elif cpmsg.lower() in 'ping':
-                self.sendCPAnswer(user,cpmsg+' ping')
+            self.sendCPAnswer(user,cpmsg+' (unknown)')
 
     def sendCPAnswer(self,user,cpmsg):
         self.model.sendCPAnswer(user,cpmsg)
