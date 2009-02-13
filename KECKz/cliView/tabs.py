@@ -24,6 +24,10 @@ import urwid, re
 
 class KeckzBaseTab(urwid.Frame):
     def __init__(self, room, parent):
+        """The Base Tab for KECKz
+        all other tabs are derived by this one
+        it takes two arguments:
+            room (string) and parent (object) """
         self.room=str(room)
         self.parent=parent
         self.hasOutput=True
@@ -47,11 +51,13 @@ class KeckzBaseTab(urwid.Frame):
     def connectWidgets(self):
         """This should be overwritten by derived classes"""
 
-    def clock(self, string):
-        self.statelist[0]=string
+    def clock(self, time):
+        """Displays the current time"""
+        self.statelist[0]=time
         self.lowerDivider.set_text(self.statelist)
 
     def updateTabstates(self, tablist):
+        """Updates the list of active tabs"""
         ranking=["","dividerstate","divideryellow","dividerme"]
         newtablist=[]
         for i in range(len(tablist)):
@@ -98,6 +104,7 @@ class KeckzBaseTab(urwid.Frame):
                 pass
 
     def onClose(self):
+        """Closes the Room"""
         self.parent.closeActiveWindow(self.room)
 
 
@@ -325,6 +332,7 @@ class KeckzPrivTab(KeckzBaseTab):
             self.keypress(size, key)
 
     def sendStr(self,string):
+        """sends the string to the controller"""
         self.parent.controller.sendStr(self.room,string)
 
 
@@ -340,6 +348,7 @@ class KeckzMsgTab(KeckzPrivTab):
         self.header.set_text("KECKz (Beta: "+self.parent.revision+") - Raum: "+self.room)
 
     def listUser(self,users,color=True):
+        """takes a list of users and updates the Userlist of the room"""
         self.completion=[]
         for i in range(0,len(self.Userlistarray)):
             del(self.Userlistarray[0])
@@ -382,6 +391,7 @@ class KeckzMsgTab(KeckzPrivTab):
         self.parent.redisplay()
 
     def newTopic(self, topic):
+        """displays the topic in the upper Divider"""
         self.Topictext=topic
         self.Topic.set_text(("dividerstate",str("Topic: "+topic)))
 
@@ -391,6 +401,7 @@ class KeckzMsgTab(KeckzPrivTab):
             self.Userlist.keypress(size, key.split()[1])
 
     def onClose(self):
+        """sends a /part to the controller"""
         self.sendStr("/part")
 
 class KeckzMailTab(KeckzBaseTab):

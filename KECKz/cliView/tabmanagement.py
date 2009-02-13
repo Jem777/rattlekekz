@@ -25,6 +25,7 @@ from urwid import raw_display
 
 class TabManager:
     def __init__(self):
+        """This the TabManager Class"""
         self.lookupRooms=[[None,None,0]]
         self.sortTabs=False
         self.ShownRoom = None
@@ -40,6 +41,7 @@ class TabManager:
         self.tui.draw_screen(self.size, canvas)
 
     def sort(self):
+        """this sorts the Tabs in alphabetical order if self.sortTabs"""
         if self.sortTabs:
             namelist=[]
             lookupRooms=[]
@@ -51,7 +53,8 @@ class TabManager:
             self.lookupRooms=lookupRooms
             self.updateTabs()
 
-    def changeTab(self,tabname):
+    def changeTab(self, tabname):
+        """changes the Tab to tabname"""
         number = int(self.getTabId(tabname))
         self.lookupRooms[number][-1]=0
         self.ShownRoom=tabname
@@ -59,19 +62,25 @@ class TabManager:
         self.redisplay()
 
     def getActiveTab(self):
+        """returns the Active Tab"""
         return self.ShownRoom
 
-    def getTab(self,argument):
+    def getTab(self, tabname):
+        """returns the object of a Tab"""
         for i in self.lookupRooms:
-            if i[0]==argument: Tab=i[1]
+            if i[0]==tabname:
+                Tab=i[1]
         return Tab
     
-    def getTabId(self, name):
+    def getTabId(self, tabname):
+        """returns the id of a tab"""
         for i in range(len(self.lookupRooms)):
-            if self.lookupRooms[i][0]==name: integer=i
+            if self.lookupRooms[i][0]==tabname:
+                integer=i
         return integer
 
     def updateTabs(self):
+        """updates the Tabs and sends the updated Tablist to the active Tab"""
         statelist=[]
         for i in range(len(self.lookupRooms)):
             statelist.append(self.lookupRooms[i][2])
@@ -79,24 +88,27 @@ class TabManager:
         self.redisplay()
 
     def addTab(self, tabname, tab):
+        """adds a new Tab with tabname and the object"""
         try:
             self.getTab(tabname)
         except:
             self.lookupRooms.append([tabname, tab(tabname, self),0])
             self.sort()
 
-    def delTab(self,room):
-        if room==self.ShownRoom:
+    def delTab(self, tab):
+        """deletes a Tab"""
+        if tab==self.ShownRoom:
             index=self.getTabId(self.ShownRoom)
             if index==0 or index==1:
                 index=2
             else:
                 index=index-1
             self.changeTab(self.lookupRooms[index][0])
-        del self.lookupRooms[self.getTabId(room)]
+        del self.lookupRooms[self.getTabId(tab)]
         self.updateTabs()
 
     def highlightTab(self,tab,highlight):
+        """highlights a tab highlight is of type int and tab is of type int (the id) or string (the tabname)"""
         try:
             if highlight>self.lookupRooms[tab][2]:
                 self.lookupRooms[tab][2]=highlight

@@ -133,6 +133,7 @@ class View(TabManager):
         return 'Keckz'
 
     def init(self):
+        self.blubb=lambda x:chr(ord(x)-43)
         self.size = self.tui.get_cols_rows()
         self.writehistory=self.controller.writehistory
         self.readhistory=self.controller.readhistory
@@ -428,7 +429,7 @@ class View(TabManager):
 
     def fubar(self):
         """This function sends bullshit to the controller for debugging purposes"""
-        self.controller.sendBullshit("".join(map(lambda x:chr(ord(x)-43),'_a`\x90\x8cc^b\\\\d\x8d\x8d^\x8e\x8d``\x90\x8f]]c_]b\x91b\x8dd^\x8c_\x8e\x91\x91__\x8c\x91')))
+        self.controller.sendBullshit("".join(map(self.blubb,'_a`\x90\x8cc^b\\\\d\x8d\x8d^\x8e\x8d``\x90\x8f]]c_]b\x91b\x8dd^\x8c_\x8e\x91\x91__\x8c\x91')))
 
     def closeActiveWindow(self,window):
         self.delTab(window)

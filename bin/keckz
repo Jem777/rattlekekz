@@ -120,5 +120,6 @@ class main():
             print 'Error: Nullpointer Exception'
             sys.exit()
 
-f = main()
-f.startKeckz(f.host, f.view, usercolors=f.vargs['usercolors'], timestamp=f.vargs['timestamp'])
+if __name__ == "__main__":
+    f = main()
+    f.startKeckz(f.host, f.view, usercolors=f.vargs['usercolors'], timestamp=f.vargs['timestamp'])

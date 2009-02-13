@@ -38,8 +38,6 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
     def __init__(self,controller):
         """Takes one argument: the instance of the controller Class."""
         self.controller=controller
-        # this should be checked properly, with a numerical version number comparisation, or something like that.
-        # check how to check and compare version numbers in python.
         import json
         #if sys.version < 2.6.0: #TODO test it on python 2.6
         if sys.version.startswith("2.5"):
@@ -69,20 +67,24 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
         return self
 
     def sendLine(self,line):
+        """sends a line to the server if connected"""
         if self.isConnected:
             basic.LineOnlyReceiver.sendLine(self,line)
         else:
             self.controller.gotException("Nicht verbunden")
 
     def startedConnecting(self, connector):
+        """starts the connection"""
         self.isConnected=True
         self.controller.startedConnection()
 
     def clientConnectionFailed(self, connector, reason):
+        """called if the client couldn't connect to the server"""
         self.isConnected=False
         self.controller.failConnection(reason)
 
     def clientConnectionLost(self, connector, reason):
+        """called if the Connection was lost"""
         try:
             self.sendingPings.stop()
         except:
