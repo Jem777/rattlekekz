@@ -552,7 +552,7 @@ class KekzController():
                 value=u"°fb°%s:°fb° %s" % (key.capitalize(),value)
             if type(value) is unicode:
                 value = value.encode("utf_8")
-            elif type(value) is not string:
+            elif type(value) is not str:
                 value = str(value)
             Output.append(value)
         self.view.receivedWhois(nick.encode("utf_8"), Output)
