@@ -75,8 +75,9 @@ class KeckzBaseTab(urwid.Frame):
         if self.MainView.get_focus()[1]>=len(self.Output) - 3:
             self.MainView.set_focus(len(self.Output) - 1)
         else:
-            """Do something that informs the user that new text is there"""
+            #"""Do something that informs the user that new text is there"""
             self.statelist[2]=("dividerstate","[*]")
+            self.lowerDivider.set_text(self.statelist)
         self.parent.redisplay()
 
     def onKeyPressed(self, size, key):
@@ -88,6 +89,8 @@ class KeckzBaseTab(urwid.Frame):
                 self.MainView.keypress(size, key)
             if self.MainView.get_focus()[1]>=len(self.Output) - 1:
                 self.statelist[2]=("dividerstate"," ")
+                self.lowerDivider.set_text(self.statelist)
+                self.parent.redisplay()
         elif key in altkeys:
             try:
                 self.parent.changeTab(self.parent.lookupRooms[altkeys.index(key)][0])
