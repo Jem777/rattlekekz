@@ -549,6 +549,8 @@ class KekzController():
                 key=u"<raw>"
                 value=u"°nn°°nn°°cb°°fb°%s°fb°°cb°" % (value.capitalize())
             if not key == u"<raw>":
+                if type(key) is not (unicode or int):
+                    key=key.decode("utf_8")
                 value=u"°fb°%s:°fb° %s" % (key.capitalize(),value)
             if type(value) is unicode:
                 value = value.encode("utf_8")
