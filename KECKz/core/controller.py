@@ -222,12 +222,12 @@ class KekzController():
         except:
             self.view.gotException("Error due loading of %s. May it doesn't exist or is damaged?" % plugin)
         try:
-            exec(plugin+"(*kwds)")
+            exec(plugin+"(self.model,self.view,*kwds)")
         except:
-            exec("del"+plugin)
+            exec("del "+plugin)
             self.view.gotException("Error executing %s." % plugin)
         finally:
-            exec("del"+plugin)
+            exec("del "+plugin)
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
@@ -516,18 +516,23 @@ class KekzController():
     def receivedInformation(self,info):
         self.view.receivedInformation(info)
 
-    def stringHandler(self,string):
-        if type(string) is unicode:
-            return string.encode("utf_8")
+    def stringHandler(self,string,returnunicode=False):
+        if type(string) is not unicode:
+            if returnunicode:
+                return str(string).decode("utf_8")
+            else:
+                return str(string)
         else:
-            return str(string)
+            if returnunicode:
+                return string
+            else:
+                return string.encode("utf_8")
 
     def receivedWhois(self,data):
         Output=[]
         for i in range(0,len(data),2):
             key,value = data[i],data[i+1]
-            if type(value) is not unicode and not int:
-                value=value.decode("utf_8")
+            value=self.stringHandler(value,True)
             if key=="nick":
                 nick=value
             if key == "regdata": key=u"Registriert seit "
@@ -549,16 +554,11 @@ class KekzController():
                 key=u"<raw>"
                 value=u"°nn°°nn°°cb°°fb°%s°fb°°cb°" % (value.capitalize())
             if not key == u"<raw>":
-                key = key.capitalize()
-                if type(key) is not unicode and not int:
-                    key=key.decode("utf_8")
+                key = self.stringHandler(key.capitalize(),True)
                 value=u"°fb°%s:°fb° %s" % (key,value)
-            if type(value) is unicode:
-                value = value.encode("utf_8")
-            elif type(value) is not str:
-                value = str(value)
+            value = self.stringHandler(value)
             Output.append(value)
-        self.view.receivedWhois(nick.encode("utf_8"), Output)
+        self.view.receivedWhois(self.stringHandler(nick), Output)
 
     def receivedCPMsg(self,user,cpmsg):
         self.printMsg(user+' [CTCP]',cpmsg,self.view.ShownRoom,0)
