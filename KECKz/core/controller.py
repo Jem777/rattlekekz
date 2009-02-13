@@ -551,7 +551,7 @@ class KekzController():
             if not key == u"<raw>":
                 value=u"°fb°%s:°fb° %s" % (key.capitalize(),value)
             if type(value) is unicode:
-                value = value.encode("uft_8")
+                value = value.encode("utf_8")
             elif type(value) is not string:
                 value = str(value)
             Output.append(value)
