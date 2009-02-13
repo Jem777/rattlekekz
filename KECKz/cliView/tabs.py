@@ -34,7 +34,7 @@ class KeckzBaseTab(urwid.Frame):
         self.Output = []
         self.MainView = urwid.ListBox(self.Output)
         self.upperDivider=urwid.Text(("divider",self.parent.Ping), "right")
-        self.statelist=[("dividerstate",self.time),("dividerstate",self.nickname)]
+        self.statelist=[("dividerstate",self.time),("dividerstate",self.nickname),("dividerstate"," ")]
         self.lowerDivider=urwid.Text(self.statelist, "left")
         self.header=urwid.Text("KECKz","center")
         
@@ -52,12 +52,12 @@ class KeckzBaseTab(urwid.Frame):
         self.lowerDivider.set_text(self.statelist)
 
     def updateTabstates(self, tablist):
-        ranking=["","dividerstate","divider","dividerme"]
+        ranking=["","dividerstate","divideryellow","dividerme"]
         newtablist=[]
         for i in range(len(tablist)):
             if not tablist[i] == 0:
                 newtablist.append((ranking[tablist[i]]," "+str(i)))
-        del self.statelist[2:]
+        del self.statelist[3:]
         if not newtablist==[]:
             self.statelist.append(("dividerstate"," (Act:"))
             self.statelist.extend(newtablist)
@@ -72,7 +72,11 @@ class KeckzBaseTab(urwid.Frame):
         while len(self.Output) > self.parent.readhistory:
             del self.Output[0]
         self.Output.append(urwid.Text(text))
-        self.MainView.set_focus(len(self.Output) - 1)
+        if self.MainView.get_focus()[1]>=len(self.Output) - 3:
+            self.MainView.set_focus(len(self.Output) - 1)
+        else:
+            """Do something that informs the user that new text is there"""
+            self.statelist[2]=("dividerstate","[*]")
         self.parent.redisplay()
 
     def onKeyPressed(self, size, key):
@@ -82,6 +86,8 @@ class KeckzBaseTab(urwid.Frame):
                 self.MainView.keypress(size, key.split()[1])
             else:
                 self.MainView.keypress(size, key)
+            if self.MainView.get_focus()[1]>=len(self.Output) - 1:
+                self.statelist[2]=("dividerstate"," ")
         elif key in altkeys:
             try:
                 self.parent.changeTab(self.parent.lookupRooms[altkeys.index(key)][0])

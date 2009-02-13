@@ -57,6 +57,7 @@ class View(TabManager):
         self.name,self.version="KECKz","0.1 Beta 'Nullpointer-Exception'"
         colors =[('normal','default','default'),
             ('divider', 'white', 'dark blue'),
+            ('divideryellow', 'yellow', 'dark blue'),
             ('dividerstate', 'light gray', 'dark blue'),
             ('dividerme', 'light red', 'dark blue'),
 
