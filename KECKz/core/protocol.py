@@ -48,6 +48,7 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
         else:
             self.encoder=lambda x: json.JSONEncoder().encode(x)
             self.decoder=lambda y: json.JSONDecoder().decode(y)
+        self.plugins=[]
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
@@ -120,6 +121,10 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
         else:
             self.controller.pingTimeout()
             self.sendingPings.stop()
+
+    def hiThere(self,plugin):
+        """method for plugins to say "hi there" :D"""
+        self.plugins.append(plugin) #TODO: work this out
 
     def sendMail(self,nick,msg,id):
         mail={"id":id,"tonick":nick,"msg":msg}

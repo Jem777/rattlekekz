@@ -214,6 +214,21 @@ class KekzController():
         else:
             return False
 
+    def loadPlugin(self,plugin,*kwds):
+        """this option is called by the view to load any plugins."""
+        try:
+            plugins.append(plugin)
+            exec("import KECKz.plugins.%s as %s" % plugin) #TODO: May do something about this structure
+        except:
+            self.view.gotException("Error due loading of %s. May it doesn't exist or is damaged?" % plugin)
+        try:
+            exec(plugin+"(*kwds)")
+        except:
+            exec("del"+plugin)
+            self.view.gotException("Error executing %s." % plugin)
+        finally:
+            exec("del"+plugin)
+
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
         self.nick,self.rooms=nick, rooms
@@ -511,30 +526,32 @@ class KekzController():
         Output=[]
         for i in range(0,len(data),2):
             key,value = data[i],data[i+1]
+            if type(value) is not unicode and not int:
+                value=value.decode("utf_8")
             if key=="nick":
                 nick=value
-            if key == "regdata": key="Registriert seit "
-            elif key == "logindate": key="Eingeloggt seit "
-            elif key == "lastseen": key="Ausgeloggt seit "
+            if key == "regdata": key=u"Registriert seit "
+            elif key == "logindate": key=u"Eingeloggt seit "
+            elif key == "lastseen": key=u"Ausgeloggt seit "
             if key == "state":
-                key = "<raw>"
-                if value == "off": value=u"Der User ist derzeit °fb°°cr°Offline°fx°.°nn°"
-                elif value == "on": value=u"Der User ist derzeit °fb°°cg°Online°fx°.°nn°"
-                elif value == "mail": value=u"Der User ist derzeit °fb°°cr°Offline°fx°, empfängt aber °fb°°cb°Mails°fx°.°nn°"
+                key = u"<raw>"
+                if value == u"off": value=u"Der User ist derzeit °fb°°cr°Offline°fx°.°nn°"
+                elif value == u"on": value=u"Der User ist derzeit °fb°°cg°Online°fx°.°nn°"
+                elif value == u"mail": value=u"Der User ist derzeit °fb°°cr°Offline°fx°, empfängt aber °fb°°cb°Mails°fx°.°nn°"
                 else:
                     value=u"Der Status ist unbekannt.°nn°"
             if key == "kekz":
-                key="<raw>"
+                key=u"<raw>"
                 value=u"°cb° %s kann noch °fb°%sx°fb° kekzen." % (nick,value)
             if key == "usertext":
-                key="<raw>"
+                key=u"<raw>"
             if key == "<h1>":
-                key="<raw>"
-                value=self.stringHandler("°nn°°nn°°cb°°fb°%s°fb°°cb°" % (value.capitalize()))
-            if not key == "<raw>":
-                value=self.stringHandler("°fb°%s:°fb° %s" % (key.capitalize(),value))
-            Output.append(value)
-        self.view.receivedWhois(nick, Output)
+                key=u"<raw>"
+                value=u"°nn°°nn°°cb°°fb°%s°fb°°cb°" % (value.capitalize())
+            if not key == u"<raw>":
+                value=u"°fb°%s:°fb° %s" % (key.capitalize(),value)
+            Output.append(value.encode("utf_8"))
+        self.view.receivedWhois(nick.encode("utf_8"), Output)
 
     def receivedCPMsg(self,user,cpmsg):
         self.printMsg(user+' [CTCP]',cpmsg,self.view.ShownRoom,0)

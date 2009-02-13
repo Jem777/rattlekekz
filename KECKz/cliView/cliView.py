@@ -204,6 +204,10 @@ class View(TabManager):
                     self.getTab(self.ShownRoom).onKeyPressed(self.size, key)
             self.redisplay()
 
+    def hiThere(self,plugin):
+        """method for plugins to say "hi there" :D"""
+        self.plugins.append(plugin) #TODO: work this out
+
     def receivedPreLoginData(self,rooms,array):
         self.isConnected=True
         self.getTab(self.ShownRoom).receivedPreLoginData(rooms,array)
