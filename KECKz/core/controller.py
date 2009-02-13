@@ -550,7 +550,11 @@ class KekzController():
                 value=u"°nn°°nn°°cb°°fb°%s°fb°°cb°" % (value.capitalize())
             if not key == u"<raw>":
                 value=u"°fb°%s:°fb° %s" % (key.capitalize(),value)
-            Output.append(value.encode("utf_8"))
+            if type(value) is unicode:
+                value = value.encode("uft_8")
+            elif type(value) is not string:
+                value = str(value)
+            Output.append(value)
         self.view.receivedWhois(nick.encode("utf_8"), Output)
 
     def receivedCPMsg(self,user,cpmsg):
