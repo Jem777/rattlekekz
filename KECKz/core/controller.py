@@ -288,7 +288,7 @@ class KekzController():
                 user=mail.pop(0)
                 mail=" ".join(mail)
                 self.sendMail(user,mail)
-        elif string.lower().startswith("/p") or string.lower().startswith("/msg"):
+        elif string.lower().startswith("/p ") or string.lower() is "/p" or string.lower().startswith("/msg"):
             string=string.split(' ')[1:]
             if len(string) > 1:
                 user=string.pop(0)
