@@ -333,6 +333,7 @@ class KeckzPrivTab(KeckzBaseTab):
 
     def sendStr(self,string):
         """sends the string to the controller"""
+        self.MainView.set_focus(len(self.Output) - 1)
         self.parent.controller.sendStr(self.room,string)
 
 
@@ -448,7 +449,8 @@ class KeckzMailTab(KeckzBaseTab):
 
     def onKeyPressed(self, size, key):
         KeckzBaseTab.onKeyPressed(self, size, key)
-        if key == 'enter': 
+        if key == 'enter':
+            self.MainView.set_focus(len(self.Output) - 1)
             text = self.Input.get_edit_text()
             if text=="":
                 return
@@ -545,6 +547,7 @@ class KeckzSecureTab(KeckzBaseTab):
         elif key == 'home':
             self.Input.set_edit_pos(0)
         elif key == 'enter':
+            self.MainView.set_focus(len(self.Output) - 1)
             self.parent.controller.sendIdentify(self.passwd)
         else:
             if key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'):
@@ -641,6 +644,7 @@ class KeckzEditTab(KeckzBaseTab):
             self.keypress(size, key)
 
     def onEnter(self):
+        self.MainView.set_focus(len(self.Output) - 1)
         if self.integer==0:
             if self.editPassword:
                 self.oldPassword = self.passwd
