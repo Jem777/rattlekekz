@@ -22,6 +22,7 @@ copyright = """
 import sys
 from time import time
 from OpenSSL.SSL import SSLv3_METHOD, Context
+import json
 
 # Modules for twisted
 from twisted.internet import reactor, protocol, task, ssl
@@ -38,9 +39,7 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
     def __init__(self,controller):
         """Takes one argument: the instance of the controller Class."""
         self.controller=controller
-        import json
-        #if sys.version < 2.6.0: #TODO test it on python 2.6
-        if sys.version.startswith("2.5"):
+        if sys.version < "2.6.0": #TODO test it on python 2.6
             self.encoder=lambda x: json.JsonWriter().write(x)
             self.decoder=lambda y: json.JsonReader().read(y)
         else:

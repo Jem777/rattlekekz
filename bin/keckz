@@ -106,15 +106,20 @@ class main():
                 print '3 ... [HHMM]'
                 sys.exit()
 
-    def startKeckz(self, host, view="cliView", *args, **kwds):
+    def startKeckz(self, host, view="cliView", *args, **kwds): 
+        viewPath=view+"."+view
         try:
-            exec("from KECKz."+view+"."+view+" import *")
-        except:
-            print "No View found"
+            viewModule=__import__("KECKz."+viewPath,fromlist=viewPath) #TODO find a better way
+        except ImportError, arg:
+            print arg
             sys.exit()
-        if "View" in dir() and type(View) == types.ClassType:
-            from KECKz.core import controller
-            kekzControl=controller.KekzController(View, *args, **kwds)
+        if "View" in dir(viewModule) and type(viewModule.View) == types.ClassType:
+            try:
+                from KECKz.core import controller
+            except ImportError, arg:
+                print arg
+                sys.exit()
+            kekzControl=controller.KekzController(viewModule.View, *args, **kwds)
             kekzControl.view.startConnection(host,23002)
         else:
             print 'Error: Nullpointer Exception'
