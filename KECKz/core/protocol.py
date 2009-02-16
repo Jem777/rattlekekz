@@ -46,12 +46,15 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
         else:
             self.encoder=lambda x: json.JSONEncoder().encode(x)
             self.decoder=lambda y: json.JSONDecoder().decode(y)
-        self.plugins=[]
+        self.plugins={}
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
         self.delimiter='\n'
         self.isConnected=False
+
+    def getPlugin(self):
+        pass
 
     def getContext(self):
         ctx = Context(SSLv3_METHOD)
@@ -124,9 +127,29 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
             self.controller.pingTimeout()
             self.sendingPings.stop()
 
-    def hiThere(self,plugin):
+    def hiThere(self,name,instance):
         """method for plugins to say "hi there" :D"""
-        self.plugins.append(plugin) #TODO: work this out
+        if not self.plugins.has_key(name):
+            self.plugins[name]=instance
+            return (self,"plugin registered")
+        else:
+            return (self,"the plugin or another instance of it is allready registered")
+
+    def iterPlugins(self,method,*kwds):
+        taken,handled=False,False
+        for i in self.plugins:
+            try:
+                value = getattr(self.plugins[i], method)(self,*kwds)
+                if value is 'handled':
+                    handled=True
+                    break
+                elif value is 'taken':
+                    taken=True
+                    continue
+            except AttributeError:
+                pass # TODO: May add some message or so.
+        if not handled:
+            getattr(self.controller, method)(*kwds)
 
     def sendMail(self,nick,msg,id):
         mail={"id":id,"tonick":nick,"msg":msg}

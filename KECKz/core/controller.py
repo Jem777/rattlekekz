@@ -36,6 +36,7 @@ class KekzController():
         
         self.joinInfo=["Join","Login","Einladung"]
         self.partInfo=["Part","Logout","Lost Connection","Nick-Kollision","Ping Timeout","Kick"]
+        self.plugins = {}
 
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
@@ -217,17 +218,17 @@ class KekzController():
     def loadPlugin(self,plugin,*kwds):
         """this option is called by the view to load any plugins."""
         try:
-            plugins.append(plugin)
-            exec("import KECKz.plugins.%s as %s" % plugin) #TODO: May do something about this structure
+            if not self.plugins.has_key(plugin):
+                self.plugins[plugin]=__import__("KECKz.plugins.%s" % plugin) #TODO: May do something about this structure
+            else:
+                self.view.gotException("%s is allready loaded" % plugin)
         except:
-            self.view.gotException("Error due loading of %s. May it doesn't exist or is damaged?" % plugin)
+            self.view.gotException("Error due loading of %s. May it doesn't exist, is damaged or some depencies aren't installed?" % plugin)
         try:
-            exec(plugin+"(self.model,self.view,*kwds)")
+            self.plugins[plugin]=self.plugins[plugin](self.model,self.view,*kwds)
         except:
-            exec("del "+plugin)
+            del self.plugins[plugin]
             self.view.gotException("Error executing %s." % plugin)
-        finally:
-            exec("del "+plugin)
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):

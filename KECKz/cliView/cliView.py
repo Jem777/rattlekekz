@@ -206,9 +206,29 @@ class View(TabManager):
                     self.getTab(self.ShownRoom).onKeyPressed(self.size, key)
             self.redisplay()
 
-    def hiThere(self,plugin):
+    def hiThere(self,name,instance):
         """method for plugins to say "hi there" :D"""
-        self.plugins.append(plugin) #TODO: work this out
+        if not self.plugins.has_key(name):
+            self.plugins[name]=instance
+            return (self,"plugin registered")
+        else:
+            return (self,"the plugin or another instance of it is allready registered")
+
+    def iterPlugins(self,method,*kwds):
+        taken,handled=False,False
+        for i in self.plugins:
+            try:
+                value = getattr(self.plugins[i], method)(self,*kwds)
+                if value is 'handled':
+                    handled=True
+                    break
+                elif value is 'taken':
+                    taken=True
+                    continue
+            except AttributeError:
+                pass # TODO: May add some message or so.
+        if not handled:
+            getattr(self.controller, method)(*kwds)
 
     def receivedPreLoginData(self,rooms,array):
         self.isConnected=True
