@@ -68,7 +68,7 @@ class TabManager:
     def getTab(self, tabname):
         """returns the object of a Tab"""
         for i in self.lookupRooms:
-            if i[0]==tabname:
+            if i[0].lower()==tabname.lower(): # TODO: May find a better way to circumvent multiple /p-tabs for the same Nick
                 Tab=i[1]
         return Tab
     
