@@ -277,6 +277,8 @@ class KeckzPrivTab(KeckzBaseTab):
 
     def onKeyPressed(self, size, key):
         KeckzBaseTab.onKeyPressed(self, size, key)
+        if key == 'ctrl d' and self.Input.get_edit_text() is "": # TODO: Find a good way to do this for all tabs
+            self.onClose()
         if key == 'enter': 
             text = self.Input.get_edit_text()
             if text=="":
