@@ -68,14 +68,14 @@ class TabManager:
     def getTab(self, tabname):
         """returns the object of a Tab"""
         for i in self.lookupRooms:
-            if i[0].lower()==tabname.lower(): # TODO: May find a better way to circumvent multiple /p-tabs for the same Nick
+            if i[0]==tabname.lower():
                 Tab=i[1]
         return Tab
     
     def getTabId(self, tabname):
         """returns the id of a tab"""
         for i in range(len(self.lookupRooms)):
-            if self.lookupRooms[i][0]==tabname:
+            if self.lookupRooms[i][0]==tabname.lower():
                 integer=i
         return integer
 
@@ -90,9 +90,9 @@ class TabManager:
     def addTab(self, tabname, tab):
         """adds a new Tab with tabname and the object"""
         try:
-            self.getTab(tabname)
+            self.getTab(tabname.lower())
         except:
-            self.lookupRooms.append([tabname, tab(tabname, self),0])
+            self.lookupRooms.append([tabname.lower(), tab(tabname, self),0])
             self.sort()
 
     def delTab(self, tab):
