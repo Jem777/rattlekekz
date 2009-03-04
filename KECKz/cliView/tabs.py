@@ -317,6 +317,8 @@ class KeckzPrivTab(KeckzBaseTab):
             input,crap=input[:self.Input.edit_pos].split(),input[self.Input.edit_pos:]
             if len(input) is not 0:
                 nick = input.pop().lower()
+                if nick.startswith("@"):
+                    nick = nick[1:]
                 solutions=[]
                 for i in self.completion:
                     if nick in str(i[:len(nick)]).lower():
