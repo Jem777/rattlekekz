@@ -570,7 +570,7 @@ class rattlekekzSecureTab(rattlekekzBaseTab):
 class rattlekekzEditTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
-        KeckzBaseTab.__init__(self,room, parent)
+        rattlekekzBaseTab.__init__(self,room, parent)
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])

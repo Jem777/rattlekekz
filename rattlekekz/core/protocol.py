@@ -341,16 +341,16 @@ class KekzChatClient(KekzMailClient):
     def kekzCode040(self,data):
         dic=self.decoder(data)
         name,ort,homepage,hobbies,signature=dic["name"],dic["ort"],dic["homepage"],dic["hobbies"],dic["freitext"]
-        self.iterPlugins('receivedProfile'[name,ort,homepage,hobbies,signature])
+        self.iterPlugins('receivedProfile',[name,ort,homepage,hobbies,signature])
 
     def kekzCode041(self,data):
         if data.startswith("!ERROR "):
-            self.iterPlugins('gotException'[data[7:]])
+            self.iterPlugins('gotException',[data[7:]])
         else:
             self.iterPlugins('successNewProfile')
 
     def kekzCode070(self,data):
-        self.iterPlugins('securityCheck'[data])
+        self.iterPlugins('securityCheck',[data])
 
     def kekzCode100(self,data):
         foo=data.split(" ")

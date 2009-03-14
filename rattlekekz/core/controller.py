@@ -219,7 +219,7 @@ class KekzController():
         """this option is called by the view to load any plugins."""
         try:
             if not self.plugins.has_key(plugin):
-                self.plugins[plugin]=__import__("KECKz.plugins.%s" % plugin) #TODO: May do something about this structure
+                self.plugins[plugin]=__import__("rattlekekz.plugins.%s" % plugin) #TODO: May do something about this structure
             else:
                 self.view.gotException("%s is allready loaded" % plugin)
         except:
