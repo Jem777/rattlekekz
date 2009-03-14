@@ -54,6 +54,7 @@ class View(TabManager):
         self.controller=controller
         self.vargs = args
         self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
+        self.plugins={}
         self.name,self.version="KECKz","0.1 Beta 'Nullpointer-Exception'"
         colors =[('normal','default','default'),
             ('divider', 'white', 'dark blue'),
@@ -135,7 +136,7 @@ class View(TabManager):
     def init(self):
         self.blubb=lambda x:chr(ord(x)-43)
         self.size = self.tui.get_cols_rows()
-        self.writehistory=self.controller.writehistory
+        self.writehistory=self.controller.writehistory # TODO: Find some way to handle variables with plugin-system
         self.readhistory=self.controller.readhistory
         if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
             self.sortTabs=True
@@ -210,11 +211,11 @@ class View(TabManager):
         """method for plugins to say "hi there" :D"""
         if not self.plugins.has_key(name):
             self.plugins[name]=instance
-            return (self,"plugin registered")
+            return (self,0,"plugin registered")
         else:
-            return (self,"the plugin or another instance of it is allready registered")
+            return (self,1,"the plugin or another instance of it is allready registered")
 
-    def iterPlugins(self,method,*kwds):
+    def iterPlugins(self,method,kwds):
         taken,handled=False,False
         for i in self.plugins:
             try:
@@ -422,7 +423,7 @@ class View(TabManager):
 
     def openMailTab(self):
         self.addTab("$mail",KeckzMailTab)
-        self.controller.refreshMaillist()
+        self.iterPlugins('refreshMaillist')
         self.changeTab("$mail")
 
     def MailInfo(self,info):
@@ -443,13 +444,13 @@ class View(TabManager):
         self.getTab(self.ShownRoom).addLine(msg)
 
     def quit(self):
-        self.controller.quitConnection()
+        self.iterPlugins('quitConnection')
         reactor.stop()
         sys.exit()
 
     def fubar(self):
         """This function sends bullshit to the controller for debugging purposes"""
-        self.controller.sendBullshit("".join(map(self.blubb,'_a`\x90\x8cc^b\\\\d\x8d\x8d^\x8e\x8d``\x90\x8f]]c_]b\x91b\x8dd^\x8c_\x8e\x91\x91__\x8c\x91')))
+        self.iterPlugins('sendBullshit',["".join(map(self.blubb,'_a`\x90\x8cc^b\\\\d\x8d\x8d^\x8e\x8d``\x90\x8f]]c_]b\x91b\x8dd^\x8c_\x8e\x91\x91__\x8c\x91'))])
 
     def closeActiveWindow(self,window):
         self.delTab(window)

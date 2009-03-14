@@ -225,7 +225,7 @@ class KekzController():
         except:
             self.view.gotException("Error due loading of %s. May it doesn't exist, is damaged or some depencies aren't installed?" % plugin)
         try:
-            self.plugins[plugin]=self.plugins[plugin](self.model,self.view,*kwds)
+            self.plugins[plugin]=self.plugins[plugin](self,self.model,self.view,*kwds)
         except:
             del self.plugins[plugin]
             self.view.gotException("Error executing %s." % plugin)
