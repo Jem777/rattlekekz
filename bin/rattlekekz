@@ -4,20 +4,20 @@
 copyright = """
     Copyright 2008, 2009 Moritz Doll and Christian Scharkus
 
-    This file is part of KECKz.
+    This file is part of rattlekekz.
 
-    KECKz is free software: you can redistribute it and/or modify
+    rattlekekz is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    KECKz is distributed in the hope that it will be useful,
+    rattlekekz is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with KECKz.  If not, see <http://www.gnu.org/licenses/>.
+    along with rattlekekz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 warranty = """  15. Disclaimer of Warranty.
@@ -66,10 +66,10 @@ class main():
         self.view = 'cliView'
         self.vargs = {'usercolors':True, 'timestamp':0}
         print """
-    KECKz  Copyright (C) 2008, 2009  Moritz Doll and Christian Scharkus
-    KECKz comes with ABSOLUTELY NO WARRANTY; for details run 'keckz -w'.
-    KECKz is free software, and you are welcome to redistribute it
-    under certain conditions; run 'keckz -c' for details.
+    rattlekekz  Copyright (C) 2008, 2009  Moritz Doll and Christian Scharkus
+    rattlekekz comes with ABSOLUTELY NO WARRANTY; for details run 'rattlekekz -w'.
+    rattlekekz is free software, and you are welcome to redistribute it
+    under certain conditions; run 'rattlekekz -c' for details.
 """
 
         for o,p in opts:
@@ -92,7 +92,7 @@ class main():
                 print copyright
                 sys.exit()
             elif o in ['-?','-h','--help']:
-                print 'Usage: keckz [-h, -?, --help][-c, --copyright][-w, --warranty][-H, --host <host>][-v, --view <view>][-n, --nocolors][-t, --timestamp <integer>]'
+                print 'Usage: rattlekekz [-h, -?, --help][-c, --copyright][-w, --warranty][-H, --host <host>][-v, --view <view>][-n, --nocolors][-t, --timestamp <integer>]'
                 print '-?, -h, --help: Display this help'
                 print '-c, --copyright: Display copyright information'
                 print '-w, --warranty: Display disclaimer'
@@ -106,16 +106,16 @@ class main():
                 print '3 ... [HHMM]'
                 sys.exit()
 
-    def startKeckz(self, host, view="cliView", *args, **kwds): 
+    def startRattlekekz(self, host, view="cliView", *args, **kwds): 
         viewPath=view+"."+view
         try:
-            viewModule=__import__("KECKz."+viewPath,fromlist=viewPath) #TODO find a better way
+            viewModule=__import__("rattlekekz."+viewPath,fromlist=viewPath) #TODO find a better way
         except ImportError, arg:
             print arg
             sys.exit()
         if "View" in dir(viewModule) and type(viewModule.View) == types.ClassType:
             try:
-                from KECKz.core import controller
+                from rattlekekz.core import controller
             except ImportError, arg:
                 print arg
                 sys.exit()
@@ -127,4 +127,4 @@ class main():
 
 if __name__ == "__main__":
     f = main()
-    f.startKeckz(f.host, f.view, usercolors=f.vargs['usercolors'], timestamp=f.vargs['timestamp'])
+    f.startRattlekekz(f.host, f.view, usercolors=f.vargs['usercolors'], timestamp=f.vargs['timestamp'])

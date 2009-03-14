@@ -24,7 +24,7 @@ from rattlekekz.core import protocol
 import os, sys, re, time
 from hashlib import sha1, md5
 
-class rattlekekzController():
+class KekzController():
     def __init__(self, interface, *args, **kwds):
         self.kwds=kwds
         self.model = protocol.KekzChatClient(self)
