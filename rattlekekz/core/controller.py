@@ -4,27 +4,27 @@
 copyright = """
     Copyright 2008, 2009 Moritz Doll and Christian Scharkus
 
-    This file is part of KECKz.
+    This file is part of rattleKekz.
 
-    KECKz is free software: you can redistribute it and/or modify
+    rattleKekz is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    KECKz is distributed in the hope that it will be useful,
+    rattleKekz is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with KECKz.  If not, see <http://www.gnu.org/licenses/>.
+    along with rattleKekz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from KECKz.core import protocol
+from rattleKekz.core import protocol
 import os, sys, re, time
 from hashlib import sha1, md5
 
-class KekzController():
+class rattleKekzController():
     def __init__(self, interface, *args, **kwds):
         self.kwds=kwds
         self.model = protocol.KekzChatClient(self)
@@ -171,7 +171,7 @@ class KekzController():
         #filepath=os.environ["HOME"]+os.sep+".kekznet.conf"
         filepath=os.environ["HOME"]+os.sep+"debug.conf"
         if os.path.exists(filepath) == False:
-            dotkeckz=open(filepath, "w")
+            dotkeckz=open(filepath, "w") # TODO: new name
             dotkeckz.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
             dotkeckz.flush()
         dotkeckz=open(filepath)
@@ -459,7 +459,7 @@ class KekzController():
         self.view.printMsg(room,msg)
 
     def gotHandshakeException(self, message):
-        self.view.gotException("KECKz muss geupdatet werden")
+        self.view.gotException("rattleKekz muss geupdatet werden")
 
     def gotLoginException(self, message):
         self.view.gotLoginException(message)

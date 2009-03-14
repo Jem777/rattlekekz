@@ -117,20 +117,20 @@ Part Msg 	 Bedeutung
 ||    VIEW      ||
 ------------------
 
-KECKz ist nach MVC aufgebaut, daher kann man das View relativ einfach durch ein völlig anderes ersetzen.
+rattleKekz ist nach MVC aufgebaut, daher kann man das View relativ einfach durch ein völlig anderes ersetzen.
 Der Controller bearbeitet die vom Model eingehenden Daten soweit, dass sich die Arbeit des Views darauf
 beschränkt, die Daten in das Gui-spezifische Format unzuwandeln und darzustellen. Dies macht es unglaublich
-einfach ein View für KECKz zu schreiben.
+einfach ein View für rattleKekz zu schreiben.
 
 Wichtige Voraussetzungen:
-KECKz benutzt twisted als Netzwerkbibliothek, daher ist es erforderlich für Guis, das twisted einen reactor
+rattleKekz benutzt twisted als Netzwerkbibliothek, daher ist es erforderlich für Guis, das twisted einen reactor
 für sie bereitstellt, siehe http://twistedmatrix.com/projects/core/documentation/howto/choosing-reactor.html
 bei Textinterfaces ist es unerlässlich, dass der Input nonblocking ist, sonst müsste man ihn in einem thread
 laufen lassen und threads sind moppelkotze. Für die die es trotzdem probieren wollen bietet twisted auch
 threads an, siehe: http://twistedmatrix.com/projects/core/documentation/howto/threading.html
 
 Die Klasse View:
-Wenn man das Programm mit der keckz.py starten will muss die Datei, ich empfehle sie guiView.py (und statt
+Wenn man das Programm mit der rattleKeckz.py starten will muss die Datei, ich empfehle sie guiView.py (und statt
 gui dann qt, gtk etc einzusetzen) oder so zu nennen, eine Klasse View besitzen. An diese Klasse werden dann
 alle methoden gesendet. Damit man sich am Anfang nicht mit zu vielen fehlenden Methoden herumschlagen muss,
 ist es praktisch so zu beginnen:
@@ -147,8 +147,8 @@ class View:
 
 if __name__=="__main__":
     server="kekz.net"
-    import controllerKeckz
-    controllerKeckz.Kekzcontroller(View).startConnection(server,23002)
+    import controllerRattleKekz
+    controllerRattleKekz.Kekzcontroller(View).startConnection(server,23002)
 
 das ist natürlich nicht genug, um einen richtiges View zu schreiben, daher kommt jetzt eine Auflistung von
 allen Methoden, die immplementiert werden können und allen Methoden des Controllers, die das View rufen kann:
@@ -156,7 +156,7 @@ allen Methoden, die immplementiert werden können und allen Methoden des Control
 
 class View:
     def __init__(self,controller):
-        self.name,self.version="qtKECKz","0.1"  # Diese Variablen werden vom View abgefragt
+        self.name,self.version="rattle-qt","0.1"  # Diese Variablen werden vom View abgefragt
         self.kekzControl=controller
 
     def receivedPreLoginData(self,rooms,array):
@@ -231,8 +231,8 @@ class View:
 
 if __name__=="__main__":
     server="kekz.net"
-    import controllerKeckz
-    controllerKeckz.Kekzcontroller(View).startConnection(server,23002)
+    import controllerRattleKekz
+    controllerRattleKekz.Kekzcontroller(View).startConnection(server,23002)
 
 
 

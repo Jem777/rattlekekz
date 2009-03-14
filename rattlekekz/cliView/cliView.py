@@ -4,27 +4,27 @@
 copyright = """
     Copyright 2008, 2009 Moritz Doll and Christian Scharkus
 
-    This file is part of KECKz.
+    This file is part of rattleKeckz.
 
-    KECKz is free software: you can redistribute it and/or modify
+    rattlekekz is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    KECKz is distributed in the hope that it will be useful,
+    rattlekekz is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with KECKz.  If not, see <http://www.gnu.org/licenses/>.
+    along with rattlekekz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 revision = "$Revision$"
 
-# KECKz
-from KECKz.cliView.tabmanagement import TabManager
-from KECKz.cliView.tabs import *
+# rattlekekz
+from rattlekekz.cliView.tabmanagement import TabManager
+from rattlekekz.cliView.tabs import *
 
 # System
 import sys, subprocess, time
@@ -46,7 +46,7 @@ class TextTooLongError(Exception):
 class View(TabManager):
     def __init__(self, controller, *args, **kwds):
         TabManager.__init__(self)
-        sys.stdout.write('\033]0;KECKz - Evil Client for KekZ\007') #Set Terminal-Title
+        sys.stdout.write('\033]0;rattlekekz\007') # TODO: some more maybe?
         self.revision=rev
         self.ShownRoom=None
         self.Ping=""
@@ -55,7 +55,7 @@ class View(TabManager):
         self.vargs = args
         self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
         self.plugins={}
-        self.name,self.version="KECKz","0.1 Beta 'Nullpointer-Exception'"
+        self.name,self.version="rattlekekz","0.1 Beta 'Nullpointer-Exception'"
         colors =[('normal','default','default'),
             ('divider', 'white', 'dark blue'),
             ('divideryellow', 'yellow', 'dark blue'),
@@ -130,8 +130,8 @@ class View(TabManager):
         """ We want to select on FD 0 """
         return 0
 
-    def logPrefix(self):
-        return 'Keckz'
+    def logPrefix(self): # TODO: is this needed?
+        return 'rattlekekz'
 
     def init(self):
         self.blubb=lambda x:chr(ord(x)-43)
@@ -140,7 +140,7 @@ class View(TabManager):
         self.readhistory=self.controller.readhistory
         if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
             self.sortTabs=True
-        self.addTab("$login",KeckzLoginTab)
+        self.addTab("$login",rattlekekzLoginTab)
         self.changeTab("$login")
 
     def suspendView(self):
@@ -153,7 +153,7 @@ class View(TabManager):
         self.tui.run_wrapper(reactor.run)
 
     def addRoom(self,room,tab):
-        tablist={"ChatRoom":KeckzMsgTab,"PrivRoom":KeckzPrivTab,"InfoRoom":KeckzInfoTab,"MailRoom":KeckzMailTab,"SecureRoom":KeckzSecureTab,"EditRoom":KeckzEditTab}
+        tablist={"ChatRoom":rattlekekzMsgTab,"PrivRoom":rattlekekzPrivTab,"InfoRoom":rattlekekzInfoTab,"MailRoom":rattlekekzMailTab,"SecureRoom":rattlekekzSecureTab,"EditRoom":rattlekekzEditTab}
         self.addTab(room,tablist[tab])
 
     def setTitle(self):
@@ -238,14 +238,14 @@ class View(TabManager):
     def successLogin(self,nick,status,room):
         self.nickname=nick
         self.ShownRoom=room
-        self.addTab(room,KeckzMsgTab)
+        self.addTab(room,rattlekekzMsgTab)
         self.changeTab(room)
         self.delTab("$login")
 
 
     def successRegister(self):
         if len(self.lookupRooms)==1:
-            self.addTab("$login",KeckzLoginTab)
+            self.addTab("$login",rattlekekzLoginTab)
             self.ShownRoom="$login"
         self.getTab(self.ShownRoom).addLine("Nick erfolgreich registriert!")
         self.getTab(self.ShownRoom).reLogin(True)
@@ -263,7 +263,7 @@ class View(TabManager):
         self.getTab("$edit").addLine("\ndrücken Sie Alt+Q zum beenden oder Strg+A um das Passwort zu ändern")
 
     def securityCheck(self,infotext):
-        self.addTab("$secure",KeckzSecureTab)
+        self.addTab("$secure",rattlekekzSecureTab)
         self.changeTab("$secure")
         msg=self.deparse(infotext)
         self.getTab(self.ShownRoom).addLine(("divider","Info: "))
@@ -355,13 +355,13 @@ class View(TabManager):
 
     def gotException(self, message):
         if len(self.lookupRooms)==1:
-            self.addTab("$infos",KeckzInfoTab)
+            self.addTab("$infos",rattlekekzInfoTab)
             self.ShownRoom="$infos"
         self.getTab(self.ShownRoom).addLine("Fehler: "+message)
 
     def gotLoginException(self, message):
         if len(self.lookupRooms)==0:
-            self.addTab("$login",KeckzInfoTab)
+            self.addTab("$login",rattlekekzInfoTab)
             self.ShownRoom="$login"
         self.getTab(self.ShownRoom).addLine("Fehler: "+message)
         self.getTab(self.ShownRoom).reLogin()
@@ -370,7 +370,7 @@ class View(TabManager):
         self.getTab(room).listUser(users,self.kwds['usercolors'])
 
     def meJoin(self,room,background):
-        self.addTab(room,KeckzMsgTab)
+        self.addTab(room,rattlekekzMsgTab)
         if not background:
             self.changeTab(room)
         self.setTitle()
@@ -381,7 +381,7 @@ class View(TabManager):
         self.setTitle()
 
     def meGo(self,oldroom,newroom):
-        self.addTab(newroom,KeckzMsgTab)
+        self.addTab(newroom,rattlekekzMsgTab)
         self.changeTab(newroom)
         self.delTab(oldroom)
         self.setTitle()
@@ -401,7 +401,7 @@ class View(TabManager):
         reactor.stop()
 
     def receivedInformation(self,info):
-        self.addTab("$infos",KeckzInfoTab)
+        self.addTab("$infos",rattlekekzInfoTab)
         self.changeTab("$infos")
         msg=self.deparse(info)
         self.getTab(self.ShownRoom).addLine(("divider","Infos: "))
@@ -409,12 +409,12 @@ class View(TabManager):
 
     def minorInfo(self, message):
         if len(self.lookupRooms)==0:
-            self.addTab("$infos",KeckzInfoTab)
+            self.addTab("$infos",rattlekekzInfoTab)
             self.changeTab("$infos")
         self.lookupRooms[self.ShownRoom].addLine([("divider","Info: "),message])
 
     def receivedWhois(self,nick,array):
-        self.addTab("$infos",KeckzInfoTab)
+        self.addTab("$infos",rattlekekzInfoTab)
         self.changeTab("$infos")
         out=map(self.deparse, array)
         #for i in array:
@@ -422,7 +422,7 @@ class View(TabManager):
         self.getTab("$infos").addWhois(nick, out)
 
     def openMailTab(self):
-        self.addTab("$mail",KeckzMailTab)
+        self.addTab("$mail",rattlekekzMailTab)
         self.iterPlugins('refreshMaillist')
         self.changeTab("$mail")
 
@@ -464,6 +464,6 @@ class View(TabManager):
 
 
 if __name__ == '__main__':
-    from KECKz.core import controller
+    from rattlekekz.core import controller
     kekzControl=controller.KekzController(View,usercolors=True,timestamp=1)
     kekzControl.view.startConnection("kekz.net",23002)

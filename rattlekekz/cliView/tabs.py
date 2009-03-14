@@ -4,27 +4,27 @@
 copyright = """
     Copyright 2008, 2009 Moritz Doll and Christian Scharkus
 
-    This file is part of KECKz.
+    This file is part of rattlekekz.
 
-    KECKz is free software: you can redistribute it and/or modify
+    rattlekekz is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    KECKz is distributed in the hope that it will be useful,
+    rattlekekz is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with KECKz.  If not, see <http://www.gnu.org/licenses/>.
+    along with rattlekekz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import urwid, re
 
-class KeckzBaseTab(urwid.Frame):
+class rattlekekzBaseTab(urwid.Frame):
     def __init__(self, room, parent):
-        """The Base Tab for KECKz
+        """The Base Tab for rattlekekz
         all other tabs are derived by this one
         it takes two arguments:
             room (string) and parent (object) """
@@ -40,7 +40,7 @@ class KeckzBaseTab(urwid.Frame):
         self.upperDivider=urwid.Text(("divider",self.parent.Ping), "right")
         self.statelist=[("dividerstate",self.time),("dividerstate",self.nickname),("dividerstate"," ")]
         self.lowerDivider=urwid.Text(self.statelist, "left")
-        self.header=urwid.Text("KECKz","center")
+        self.header=urwid.Text("rattlekekz","center")
         
         self.buildOutputWidgets()
         self.connectWidgets()
@@ -108,16 +108,16 @@ class KeckzBaseTab(urwid.Frame):
         self.parent.closeActiveWindow(self.room)
 
 
-class KeckzLoginTab(KeckzBaseTab):
+class rattlekekzLoginTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
-        KeckzBaseTab.__init__(self,room, parent)
+        rattlekekzBaseTab.__init__(self,room, parent)
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))])
         self.hasOutput=False
         self.hasInput=True
-        self.header.set_text("KECKz (Beta: "+self.parent.revision+") - Willkommen im Kekznet | "+self.room)
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Willkommen im Kekznet | "+self.room)
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -163,7 +163,7 @@ class KeckzLoginTab(KeckzBaseTab):
             pass
 
     def onReallyKeyPressed(self, size, key):
-        KeckzBaseTab.onKeyPressed(self, size, key)
+        rattlekekzBaseTab.onKeyPressed(self, size, key)
         if key == 'backspace' and self.integer == 0:
             if self.Input.edit_pos != 0:
                 self.passwd = self.passwd[:self.Input.edit_pos-1]+self.passwd[self.Input.edit_pos:]
@@ -257,16 +257,16 @@ class KeckzLoginTab(KeckzBaseTab):
             else:
                 self.keypress(size, key)
 
-class KeckzPrivTab(KeckzBaseTab):
+class rattlekekzPrivTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
-        KeckzBaseTab.__init__(self,room, parent)
+        rattlekekzBaseTab.__init__(self,room, parent)
         self.history=[""]
         self.count = -1
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))])
-        self.header.set_text("KECKz (Beta: "+self.parent.revision+") - Private Unterhaltung "+self.room)
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Private Unterhaltung "+self.room)
         self.completion=[self.room[1:]]
 
     def connectWidgets(self):
@@ -276,7 +276,7 @@ class KeckzPrivTab(KeckzBaseTab):
         self.set_focus('footer')
 
     def onKeyPressed(self, size, key):
-        KeckzBaseTab.onKeyPressed(self, size, key)
+        rattlekekzBaseTab.onKeyPressed(self, size, key)
         if key == 'ctrl d' and self.Input.get_edit_text() is "": # TODO: Find a good way to do this for all tabs
             self.onClose()
         if key == 'enter': 
@@ -341,7 +341,7 @@ class KeckzPrivTab(KeckzBaseTab):
         self.parent.controller.sendStr(self.room,string)
 
 
-class KeckzMsgTab(KeckzPrivTab):
+class rattlekekzMsgTab(rattlekekzPrivTab):
     def buildOutputWidgets(self):
         self.Userlistarray=[urwid.Text('Userliste: ')]
         self.Userlist = urwid.ListBox(self.Userlistarray)
@@ -350,7 +350,7 @@ class KeckzMsgTab(KeckzPrivTab):
         self.upperCol=urwid.Columns([("weight",4,self.Topic), self.upperDivider])
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperCol, 'divider' )), self.hsizer,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
-        self.header.set_text("KECKz (Beta: "+self.parent.revision+") - Raum: "+self.room)
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Raum: "+self.room)
 
     def listUser(self,users,color=True):
         """takes a list of users and updates the Userlist of the room"""
@@ -401,7 +401,7 @@ class KeckzMsgTab(KeckzPrivTab):
         self.Topic.set_text(("dividerstate",str("Topic: "+topic)))
 
     def onKeyPressed(self, size, key):
-        KeckzPrivTab.onKeyPressed(self, size, key)
+        rattlekekzPrivTab.onKeyPressed(self, size, key)
         if key in ('meta up', 'meta down'):
             self.Userlist.keypress(size, key.split()[1])
 
@@ -409,14 +409,14 @@ class KeckzMsgTab(KeckzPrivTab):
         """sends a /part to the controller"""
         self.sendStr("/part")
 
-class KeckzMailTab(KeckzBaseTab):
+class rattlekekzMailTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
-        KeckzBaseTab.__init__(self,room, parent)
+        rattlekekzBaseTab.__init__(self,room, parent)
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))])
-        self.header.set_text("KECKz  (Beta: "+self.parent.revision+") - KekzMail")
+        self.header.set_text("rattlekekz  (Beta: "+self.parent.revision+") - KekzMail")
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -452,7 +452,7 @@ class KeckzMailTab(KeckzBaseTab):
             self.addLine("Sie haben keinen gültigen Befehl eingegeben")
 
     def onKeyPressed(self, size, key):
-        KeckzBaseTab.onKeyPressed(self, size, key)
+        rattlekekzBaseTab.onKeyPressed(self, size, key)
         if key == 'enter':
             self.MainView.set_focus(len(self.Output) - 1)
             text = self.Input.get_edit_text()
@@ -483,10 +483,10 @@ class KeckzMailTab(KeckzBaseTab):
         if not key in ('page up', 'page down', 'enter'): 
             self.keypress(size, key)
 
-class KeckzInfoTab(KeckzBaseTab):
+class rattlekekzInfoTab(rattlekekzBaseTab):
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView, ("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
-        self.header.set_text("KECKz (Beta: "+self.parent.revision+") - Nachrichtenanzeige")
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Nachrichtenanzeige")
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -495,7 +495,7 @@ class KeckzInfoTab(KeckzBaseTab):
         self.set_focus('body')
 
     def onKeyPressed(self, size, key):
-        KeckzBaseTab.onKeyPressed(self, size, key)
+        rattlekekzBaseTab.onKeyPressed(self, size, key)
         if key in ('page up', 'page down'):
             self.MainView.keypress(size, key)
         elif key=="q":
@@ -512,14 +512,14 @@ class KeckzInfoTab(KeckzBaseTab):
         self.MainView.set_focus(len(self.Output) - 1)
         self.parent.redisplay()
 
-class KeckzSecureTab(KeckzBaseTab):
+class rattlekekzSecureTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
-        KeckzBaseTab.__init__(self,room, parent)
+        rattlekekzBaseTab.__init__(self,room, parent)
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView, ("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
-        self.header.set_text("KECKz (Beta: "+self.parent.revision+") - Nachrichtenanzeige")
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Nachrichtenanzeige")
         self.passwd=""
 
     def connectWidgets(self):
@@ -529,7 +529,7 @@ class KeckzSecureTab(KeckzBaseTab):
         self.set_focus('footer')
 
     def onKeyPressed(self, size, key):
-        KeckzBaseTab.onKeyPressed(self, size, key)
+        rattlekekzBaseTab.onKeyPressed(self, size, key)
         if key == 'backspace':
             if self.Input.edit_pos != 0:
                 self.passwd = self.passwd[:self.Input.edit_pos-1]+self.passwd[self.Input.edit_pos:]
@@ -567,7 +567,7 @@ class KeckzSecureTab(KeckzBaseTab):
             else:
                 self.keypress(size, key)
 
-class KeckzEditTab(KeckzBaseTab):
+class rattlekekzEditTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
         KeckzBaseTab.__init__(self,room, parent)
@@ -576,7 +576,7 @@ class KeckzEditTab(KeckzBaseTab):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
         self.hasOutput=False
         self.hasInput=True
-        self.header.set_text("KECKz (Beta: "+self.parent.revision+") - Profil editieren ")
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Profil editieren ")
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -603,7 +603,7 @@ class KeckzEditTab(KeckzBaseTab):
         self.passwd=""
 
     def onKeyPressed(self, size, key):
-        KeckzBaseTab.onKeyPressed(self, size, key)
+        rattlekekzBaseTab.onKeyPressed(self, size, key)
         if key == 'backspace' and self.blind:
             if self.Input.edit_pos != 0:
                 self.passwd = self.passwd[:self.Input.edit_pos-1]+self.passwd[self.Input.edit_pos:]
