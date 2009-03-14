@@ -274,7 +274,7 @@ class View(TabManager):
         self.time=("dividerstate",time.strftime(self.clockformat,time.localtime(time.time())))
         if not self.ShownRoom==None and self.oldtime != self.time:
             self.getTab(self.ShownRoom).clock(self.time)
-            #self.redisplay()
+            self.redisplay()
         self.oldtime=self.time
         reactor.callLater(1,self.setClock)
 
@@ -457,10 +457,10 @@ class View(TabManager):
         self.updateTabs()
 
     def connectionFailed(self):
-        pass#self.getTab(self.ShownRoom).addLine("Verbindung fehlgeschlagen")
+        self.getTab(self.ShownRoom).addLine("Verbindung fehlgeschlagen")
 
     def connectionLost(self, failure):
-        pass#self.getTab(self.ShownRoom).addLine(("divider","\nVerbindung verloren\n"))
+        self.getTab(self.ShownRoom).addLine(("divider","\nVerbindung verloren\n"))
 
 
 if __name__ == '__main__':
