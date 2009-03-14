@@ -117,13 +117,13 @@ Part Msg 	 Bedeutung
 ||    VIEW      ||
 ------------------
 
-rattleKekz ist nach MVC aufgebaut, daher kann man das View relativ einfach durch ein völlig anderes ersetzen.
+rattlekekz ist nach MVC aufgebaut, daher kann man das View relativ einfach durch ein völlig anderes ersetzen.
 Der Controller bearbeitet die vom Model eingehenden Daten soweit, dass sich die Arbeit des Views darauf
 beschränkt, die Daten in das Gui-spezifische Format unzuwandeln und darzustellen. Dies macht es unglaublich
-einfach ein View für rattleKekz zu schreiben.
+einfach ein View für rattlekekz zu schreiben.
 
 Wichtige Voraussetzungen:
-rattleKekz benutzt twisted als Netzwerkbibliothek, daher ist es erforderlich für Guis, das twisted einen reactor
+rattlekekz benutzt twisted als Netzwerkbibliothek, daher ist es erforderlich für Guis, das twisted einen reactor
 für sie bereitstellt, siehe http://twistedmatrix.com/projects/core/documentation/howto/choosing-reactor.html
 bei Textinterfaces ist es unerlässlich, dass der Input nonblocking ist, sonst müsste man ihn in einem thread
 laufen lassen und threads sind moppelkotze. Für die die es trotzdem probieren wollen bietet twisted auch

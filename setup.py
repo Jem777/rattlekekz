@@ -2,12 +2,12 @@
 
 from distutils.core import setup
 
-setup(name='rattleKekz',
+setup(name='rattlekekz',
       version='0.1',
-      author="KECKz Team",
+      author="rattlekekz Team",
       author_email="egg@spam.de",
-      packages=['rattleKekz','rattleKekz.core','rattleKekz.cliView'],
-      scripts=['bin/rattleKekz'],
+      packages=['rattlekekz','rattlekekz.core','rattlekekz.cliView'],
+      scripts=['bin/rattlekekz'],
       requires=['twisted(>=8.1.0)','urwid','json','OpenSSL'],
       url="http://kekz.net/",
       license="GPL v3 or higher"

@@ -4,27 +4,27 @@
 copyright = """
     Copyright 2008, 2009 Moritz Doll and Christian Scharkus
 
-    This file is part of rattleKekz.
+    This file is part of rattlekekz.
 
-    rattleKekz is free software: you can redistribute it and/or modify
+    rattlekekz is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    rattleKekz is distributed in the hope that it will be useful,
+    rattlekekz is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with rattleKekz.  If not, see <http://www.gnu.org/licenses/>.
+    along with rattlekekz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from rattleKekz.core import protocol
+from rattlekekz.core import protocol
 import os, sys, re, time
 from hashlib import sha1, md5
 
-class rattleKekzController():
+class rattlekekzController():
     def __init__(self, interface, *args, **kwds):
         self.kwds=kwds
         self.model = protocol.KekzChatClient(self)
@@ -459,7 +459,7 @@ class rattleKekzController():
         self.view.printMsg(room,msg)
 
     def gotHandshakeException(self, message):
-        self.view.gotException("rattleKekz muss geupdatet werden")
+        self.view.gotException("rattlekekz muss geupdatet werden")
 
     def gotLoginException(self, message):
         self.view.gotLoginException(message)
