@@ -55,8 +55,8 @@ copy of the Program in return for a fee.
 
 import sys, getopt, types
 
-letters = 'H:v:?hlnt:cw'
-keywords = ['host=','view=','help','copyright','warranty','localhost','nousercolors','timestamp=']
+letters = 'H:v:?hlnt:cwd'
+keywords = ['host=','view=','help','copyright','warranty','localhost','nousercolors','timestamp=','debug']
 opts, extraparams = getopt.getopt(sys.argv[1:],letters,keywords)
 
 
@@ -64,7 +64,7 @@ class main():
     def __init__(self):
         self.host = 'kekz.net'
         self.view = 'cliView'
-        self.vargs = {'usercolors':True, 'timestamp':0}
+        self.vargs = {'usercolors':True, 'debug':False, 'timestamp':0}
         print """
     rattlekekz  Copyright (C) 2008, 2009  Moritz Doll and Christian Scharkus
     rattlekekz comes with ABSOLUTELY NO WARRANTY; for details run 'rattlekekz -w'.
@@ -82,6 +82,8 @@ class main():
             elif o in ['-n','--nousercolors']:
                 if self.view in 'cliView':
                     self.vargs['usercolors'] = False
+            elif o in ['-d','--debug']:
+                self.vargs['debug'] = True
             elif o in ['-t','--timestamp']:
                 if self.view in 'cliView':
                     self.vargs['timestamp'] = int(p) # TODO: implement this into wxView
@@ -92,7 +94,7 @@ class main():
                 print copyright
                 sys.exit()
             elif o in ['-?','-h','--help']:
-                print 'Usage: rattlekekz [-h, -?, --help][-c, --copyright][-w, --warranty][-H, --host <host>][-v, --view <view>][-n, --nocolors][-t, --timestamp <integer>]'
+                print 'Usage: rattlekekz [-h, -?, --help][-c, --copyright][-w, --warranty][-H, --host <host>][-v, --view <view>][-n, --nocolors][-d, --debug][-t, --timestamp <integer>]'
                 print '-?, -h, --help: Display this help'
                 print '-c, --copyright: Display copyright information'
                 print '-w, --warranty: Display disclaimer'
@@ -100,6 +102,7 @@ class main():
                 print '-l, --localhost: Connects to localhost (127.0.0.1)'
                 print '-v, --view: View to use, Default: cliView'
                 print '-n, --nousercolors: This Option disables colors of the Userlist in cliView'
+                print '-d, --debug: Enables some various debug settings'
                 print '-t, --timestamp: Determines the timestampformat to be used:'
                 print '1 ... [HH:MM] (default, if not overridden by kekznet.conf)'
                 print '2 ... [HH:MM:SS]'
@@ -127,4 +130,4 @@ class main():
 
 if __name__ == "__main__":
     f = main()
-    f.startRattlekekz(f.host, f.view, usercolors=f.vargs['usercolors'], timestamp=f.vargs['timestamp'])
+    f.startRattlekekz(f.host, f.view, usercolors=f.vargs['usercolors'], debug=f.vargs['debug'], timestamp=f.vargs['timestamp'])
