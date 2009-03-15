@@ -215,20 +215,21 @@ class KekzController():
         else:
             return False
 
-    def loadPlugin(self,plugin,*kwds):
+    def loadPlugin(self,plugin,params=[]):
         """this option is called by the view to load any plugins."""
         try:
             if not self.plugins.has_key(plugin):
-                self.plugins[plugin]=__import__("rattlekekz.plugins.%s" % plugin) #TODO: May do something about this structure
+                self.plugins[plugin]=__import__('rattlekekz.plugins',fromlist=[plugin])
+                self.plugins[plugin]=getattr(self.plugins[plugin],plugin)
+                try:
+                    self.plugins[plugin]=self.plugins[plugin].plugin(self,self.model,self.view,*params)
+                except:
+                    del self.plugins[plugin]
+                    self.view.gotException("Error executing %s." % plugin)
             else:
                 self.view.gotException("%s is allready loaded" % plugin)
         except:
             self.view.gotException("Error due loading of %s. May it doesn't exist, is damaged or some depencies aren't installed?" % plugin)
-        try:
-            self.plugins[plugin]=self.plugins[plugin](self,self.model,self.view,*kwds)
-        except:
-            del self.plugins[plugin]
-            self.view.gotException("Error executing %s." % plugin)
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
@@ -272,6 +273,9 @@ class KekzController():
             self.view.addRoom("$mail","MailRoom")
             self.refreshMaillist()
             self.view.changeTab("$mail")
+        elif string.lower().startswith("/load"):
+            string = string[6:].split(' ')
+            self.loadPlugin(string.pop(0),string)
         elif string.lower().startswith("/quit"):
             self.view.quit()
         elif string.lower().startswith("/showtopic"):

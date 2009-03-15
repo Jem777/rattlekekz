@@ -215,7 +215,7 @@ class View(TabManager):
         else:
             return (self,1,"the plugin or another instance of it is allready registered")
 
-    def iterPlugins(self,method,kwds):
+    def iterPlugins(self,method,kwds=[]):
         taken,handled=False,False
         for i in self.plugins:
             try:
@@ -228,6 +228,8 @@ class View(TabManager):
                     continue
             except AttributeError:
                 pass # TODO: May add some message or so.
+            except:
+                pass # TODO: add message for error in plugin xy
         if not handled:
             getattr(self.controller, method)(*kwds)
 

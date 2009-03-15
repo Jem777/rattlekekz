@@ -148,6 +148,8 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
                     continue
             except AttributeError:
                 pass # TODO: May add some message or so.
+            except:
+                pass # TODO: add message for error in plugin xy
         if not handled:
             getattr(self.controller, method)(*kwds)
 
