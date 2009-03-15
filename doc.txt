@@ -281,8 +281,6 @@ On init the controller gives some arguments to them:
     - and finally some optional keywords
     
 After initiation the plugin should register itself to model and/or view to receive method-calls.
-Every Plugin receives method-calls from controller without registration.
-Because of that it's very important to controll from who a call comes to be sure nothing is done twice. For that the first argument transmitted by a method to a plugin is everytime the caller-instance.
 You register your plugin with calling the method hiThere(name,instance) of the controller or view.
 You have to give the name of the plugin as string and the instance to the method that will return a tupel of its own instance, a integer and a message.
 If the integer is 0 everything is just fine. Otherwise some problem occured (for now only 1 for 'plugin already registered').
