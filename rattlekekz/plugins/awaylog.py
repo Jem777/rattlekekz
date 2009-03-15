@@ -29,7 +29,7 @@ class plugin:
         self.model = model
         self.view = view
         self.model.hiThere(self.name,self)
-        self.controller.botMsg("rattleKekz",self.view.hiThere(self.name,self)[2])
+        self.controller.botMsg("rattlekekz",self.view.hiThere(self.name,self)[2])
         
         self.away=False
 
@@ -38,7 +38,7 @@ class plugin:
         self.model.outHere(self.name,self)
 
     def sendStr(self, channel, string):
-        if string.startswith("/away"):
+        if string.lower().startswith("/away"):
             self.view.addRoom("#AwayLog","InfoRoom")
             self.view.changeTab("#AwayLog")
             self.away=True
