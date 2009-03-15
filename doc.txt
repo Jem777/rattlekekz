@@ -273,6 +273,7 @@ Msgstatus       Erklärung
 ---------------------
 
 Plugins are initiated by the controller or maybe even by other plugins.
+They imported after filename and need a class named plugin that is inited by the controller.
 On init the controller gives some arguments to them:
     - the controller-instance
     - the model-instance
@@ -281,7 +282,7 @@ On init the controller gives some arguments to them:
     
 After initiation the plugin should register itself to model and/or view to receive method-calls.
 You register your plugin with calling the method hiThere(name,instance) of the controller or view.
-You have to give the name of the plugin as string and the instance to the method that will return a triple of its own instance, a integer and a message.
+You have to give the name of the plugin as string and the instance to the method that will return a tupel of its own instance, a integer and a message.
 If the integer is 0 everything is just fine. Otherwise some problem occured (for now only 1 for 'plugin already registered').
 The message is just a human readable description that should be stated as it is to the user.
 Now your plugin is registered and receives commands. This commands are sent by calling the same method as in controller.
@@ -290,3 +291,5 @@ Every method that is supposed to be called by model or view _have to_ return a s
     None       -  Plugin may do something but signal is given to other plugins and controller
     'handled'  -  Plugin handles the signal but calling instance shall give it to other plugins but not controller
     'taken'    -  Plugin take the signal and no follow plugins nor controller shall do anything.
+
+To unload a plugin it should have the method unload(). In this the plugin should terminate any references to himself and things like depencies (actually we lack of any depency handling).

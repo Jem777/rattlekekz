@@ -135,6 +135,14 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
         else:
             return (self,1,"the plugin or another instance of it is allready registered")
 
+    def outHere(self,name,instance):
+        """method for plugins to get the hell out of here"""
+        if self.plugins.has_key(name):
+            if self.plugins[name] is instance:
+                del self.plugins[name]
+            else:
+                self.controller.gotException("instance don't match registered plugin") # This should never occure ;)
+
     def iterPlugins(self,method,kwds=[]):
         taken,handled=False,False
         for i in self.plugins:

@@ -231,6 +231,18 @@ class KekzController():
         except:
             self.view.gotException("Error due loading of %s. May it doesn't exist, is damaged or some depencies aren't installed?" % plugin)
 
+    def unloadPlugin(self,plugin):
+        try:
+            self.plugins[plugin].unload()
+            del self.plugins[plugin]
+        except:
+            try:
+                del self.view.plugins[plugin]
+                del self.model.plugins[plugin]
+                del self.plugins[plugin]
+            except:
+                self.gotException('unable to unload plugin %s.' % plugin)
+
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
         self.nick,self.rooms=nick, rooms
