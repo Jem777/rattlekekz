@@ -39,7 +39,7 @@ class KekzController():
         self.plugins = {}
 
     def startConnection(self,server,port):
-        self.model.startConnection(server,port)
+        self.iterPlugins('startConnection',self.model,[server,port])
 
     def decode(self, string):
         if type(string) is str:
@@ -206,7 +206,7 @@ class KekzController():
             self.clockformat=self.configfile["clock"]+" "
         else:
             self.clockformat="[%H:%M:%S] "
-        self.view.setClock()
+        self.iterPlugins('setClock',self.view)
 
 
     def checkPassword(self,password):
@@ -225,11 +225,11 @@ class KekzController():
                     self.plugins[plugin]=self.plugins[plugin].plugin(self,self.model,self.view,*params)
                 except:
                     del self.plugins[plugin]
-                    self.view.gotException("Error executing %s." % plugin)
+                    self.iterPlugins('gotException',self.view,["Error executing %s." % plugin])
             else:
-                self.view.gotException("%s is already loaded" % plugin)
+                self.iterPlugins('gotException',self.view,["%s is already loaded" % plugin])
         except:
-            self.view.gotException("Error due loading of %s. May it doesn't exist, is damaged or some depencies aren't installed?" % plugin)
+            self.iterPlugins('gotException',self.view,["Error due loading of %s. May it doesn't exist, is damaged or some depencies aren't installed?" % plugin])
 
     def unloadPlugin(self,plugin):
         try:
@@ -243,6 +243,24 @@ class KekzController():
             except:
                 self.gotException('unable to unload plugin %s.' % plugin)
 
+    def iterPlugins(self,method,dest,kwds=[]):
+        taken,handled=False,False
+        for i in self.plugins:
+            try:
+                value = getattr(self.plugins[i], method)(self,*kwds) # TODO: May add dest-param. Just in case
+                if value is 'handled':
+                    handled=True
+                    break
+                elif value is 'taken':
+                    taken=True
+                    continue
+            except AttributeError:
+                pass # TODO: May add some message or so.
+            except:
+                pass # TODO: add message for error in plugin xy
+        if not handled:
+            getattr(dest, method)(*kwds)
+
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
         self.nick,self.rooms=nick, rooms
@@ -250,49 +268,52 @@ class KekzController():
         self.rooms.strip()
         re.sub("\s","",self.rooms)
         self.nick.strip()
-        self.model.sendLogin(self.nick, self.passwd, self.rooms)
+        self.iterPlugins('sendLogin',self.model,[self.nick, self.passwd, self.rooms])
 
     def registerNick(self,nick,passwd,email):
         if not self.checkPassword(passwd):
-            self.view.gotException("Ungüliges Passwort")
+            self.iterPlugins('gotException',self.view,["Ungüliges Passwort"])
         else:
-            self.model.registerNick(nick,sha1(passwd).hexdigest(),email)
+            self.iterPlugins('registerNick',self.model,[nick,sha1(passwd).hexdigest(),email])
 
     def changePassword(self,passwd,passwdnew):
         if not self.checkPassword(passwdnew):
-            self.view.gotException("Ungüliges Passwort")
+            self.iterPlugins('gotException',self.view,["Ungüliges Passwort"])
         else:
-            self.model.changePassword(sha1(passwd).hexdigest(),sha1(passwdnew).hexdigest())
+            self.iterPlugins('changePassword',self.model,[sha1(passwd).hexdigest(),sha1(passwdnew).hexdigest()])
         
     def updateProfile(self,name,location,homepage,hobbies,signature,passwd):
-        self.model.updateProfile(name,location,homepage,hobbies,signature,sha1(passwd).hexdigest())
+        self.iterPlugins('updateProfile',self.model,[name,location,homepage,hobbies,signature,sha1(passwd).hexdigest()])
 
     def sendIdentify(self,passwd):
         sha1_hash=sha1(passwd).hexdigest()
         md5_hash= md5.new(sha1_hash).hexdigest()
-        self.model.sendIdentify(md5_hash)
+        self.iterPlugins('sendIdentify',self.model,[md5_hash])
 
     def sendStr(self,channel, string):
         if string.startswith("/"):
             self.sendSlashCommand(channel,string)
         elif channel.startswith("#"):
-            self.model.sendPrivMsg(channel[1:],string)
+            self.iterPlugins('sendPrivMsg',self.model,[channel[1:],string])
         else:
-            self.model.sendMsg(channel,string)
+            self.iterPlugins('sendMsg',self.model,[channel,string])
 
     def sendSlashCommand(self,channel,string):
         if string.lower().startswith("/m ") or string.lower() is "/m":
-            self.view.addRoom("$mail","MailRoom")
+            self.iterPlugins('addRoom',self.view,["$mail","MailRoom"])
             self.refreshMaillist()
-            self.view.changeTab("$mail")
+            self.iterPlugins('changeTab',self.view,["$mail"])
         elif string.lower().startswith("/load"):
             string = string[6:].split(' ')
             self.loadPlugin(string.pop(0),string)
+        elif string.lower().startswith("/unload"):
+            string = string[8:].split(' ')
+            self.unloadPlugin(string.pop(0),string)
         elif string.lower().startswith("/quit"):
-            self.view.quit()
+            self.iterPlugins('quit',self.view)
         elif string.lower().startswith("/showtopic"):
             if not channel.startswith("#"):
-                self.view.showTopic(channel)
+                self.iterPlugins('showTopic',self.view,[channel])
         elif string.lower().startswith("/ctcp"):
             cpmsg=string.split(' ')[1:]
             if len(cpmsg) > 1:
@@ -310,65 +331,65 @@ class KekzController():
             if len(string) > 1:
                 user=string.pop(0)
                 string=" ".join(string)
-                self.model.sendPrivMsg(user,string)
+                self.model('sendPrivMsg',self.model,[user,string])
         elif not channel.startswith("#"):
             liste=string.split(" ")
-            self.model.sendSlashCommand(liste[0],channel," ".join(liste[1:]))
+            self.iterPlugins('sendSlashCommand',self.model,[liste[0],channel," ".join(liste[1:])])
 
     def sendJoin(self,room):
-        self.model.sendJoin(room)
+        self.iterPlugins('sendJoin',self.model,[room])
 
     def sendMail(self,nick,msg):
         self.sendMailCount+=1
         id="Mail_"+str(self.sendMailCount)
         self.lookupSendId.update({id:nick})
-        self.model.sendMail(nick,msg,id)
+        self.iterPlugins('sendMail',self.model,[nick,msg,id])
 
     def refreshMaillist(self):
-        self.model.getMailCount()
-        self.model.getMaillist()
+        self.iterPlugins('getMailCount',self.model)
+        self.iterPlugins('getMaillist')
 
     def getMail(self,index):
         try:
             id=self.lookupMailId[int(index)]
         except:
-            self.view.MailInfo("Mail Nr."+str(index)+" existiert nicht")
+            self.iterPlugins('MailInfo',self.view,["Mail Nr."+str(index)+" existiert nicht"])
         else:
-            self.model.getMail(str(id))
+            self.iterPlugins('getMail',self.model,[str(id)])
 
     def deleteMail(self,index):
         try:
             id=self.lookupMailId[int(index)]
         except:
-            self.view.MailInfo("Mail Nr."+str(index)+" existiert nicht")
+            self.iterPlugins('MailInfo',self.view,["Mail Nr."+str(index)+" existiert nicht"])
         else:
-            self.model.deleteMail(str(id))
+            self.iterPlugins('deleteMail',self.model,[str(id)])
 
     def deleteAllMails(self):
-        self.model.deleteAllMails()
+        self.iterPlugins('deleteAllMails',self.model)
 
     def quitConnection(self):
-        self.model.quitConnection()
+        self.iterPlugins('quitConnection',self.model)
 
     """the following methods are required by kekzprotocol"""
     def gotConnection(self):
-        self.view.fubar()
+        self.iterPlugins('fubar',self.view)
 
     def startedConnection(self):
         """indicates that the model is connecting. Here should be a call to the view later on"""
         pass
 
     def lostConnection(self, reason):
-        self.view.connectionLost(reason)
+        self.iterPlugins('connectionLost',self.view,[reason])
 
     def failConnection(self, reason):
         """the try to connect failed. Here should be a call to the view later on"""
-        self.view.connectionFailed()
+        self.iterPlugins('connectionFailed',self.view)
 
     def receivedHandshake(self):
         pythonversion=sys.version.split(" ")
-        self.model.sendDebugInfo(self.view.name, self.view.version, self.view.revision, sys.platform, "Python "+pythonversion[0])
-        self.model.getRooms()
+        self.iterPlugins('sendDebugInfo',self.model,[self.view.name, self.view.version, self.view.revision, sys.platform, "Python "+pythonversion[0]])
+        self.iterPlugins('getRooms',self.model)
 
     def receivedRooms(self,rooms):
         array=[]
@@ -378,9 +399,9 @@ class KekzController():
             except:
                 array.append("")
         if array[0]=="True" or array[0]=="1":
-            self.model.sendLogin(array[1],array[2],array[3])
+            self.iterPlugins('sendLogin',self.model,[array[1],array[2],array[3]])
         else:
-            self.view.receivedPreLoginData(rooms,array[1:])
+            self.iterPlugins('receivedPreLoginData',self.view,[rooms,array[1:]])
             # now the array is: [nick,passwd,room]
             # the view has to give back an array or has to send model.sendLogin by itself
 
@@ -394,7 +415,7 @@ class KekzController():
         self.lookupSendId={}
         self.sendMailCount=0
         self.Userlist={room:[]}
-        self.view.successLogin(nick,status,room)
+        self.iterPlugins('successLogin',self.view,[nick,status,room])
 
     def successMailLogin(self):
         self.sendMailCount=0
@@ -403,23 +424,23 @@ class KekzController():
         self.getMaillist()
 
     def successRegister(self):
-        self.view.successRegister()
+        self.iterPlugins('successRegister')
 
     def successNewPassword(self):
-        self.view.successNewPassword()
+        self.iterPlugins('successNewPassword',self.view)
 
     def receivedProfile(self,name,ort,homepage,hobbies,signature):
-        self.view.addRoom("$edit","EditRoom")
-        self.view.receivedProfile(name,ort,homepage,hobbies,signature)
+        self.iterPlugins('addRoom',self.view,["$edit","EditRoom"])
+        self.iterPlugins('receivedProfile',self.view,[name,ort,homepage,hobbies,signature])
 
     def successNewProfile(self):
-        self.view.successNewProfile()
+        self.iterPlugins('successNewProfile',self.view)
 
     def securityCheck(self, infotext):
-        self.view.securityCheck(infotext)
+        self.iterPlugins('securityCheck',self.view,[infotext])
 
     def receivedPing(self,deltaPing):
-        self.view.receivedPing(deltaPing)
+        self.iterPlugins('receivedPing',self.view,[deltaPing])
 
     def pingTimeout(self):
         self.lostConnection("PingTimeout")
@@ -440,9 +461,9 @@ class KekzController():
         self.printMsg(nick,msg,"",4)
 
     def printMsg(self,nick,message,room,state):
-        activeTab=self.view.getActiveTab()
+        activeTab=self.iterPlugins('getActiveTab',self.view)
         msg=[]
-        msg.append(self.view.timestamp(time.strftime(self.timestamp,time.localtime(time.time()))))
+        msg.append(self.iterPlugins('timestamp',self.view,[time.strftime(self.timestamp,time.localtime(time.time()))]))
         if state==0 or state==2 or state==4:
             if nick.lower()==self.nickname.lower():
                 msg.append(("green",nick+": "))
@@ -452,10 +473,10 @@ class KekzController():
             msg.append(("green",str(self.nickname)+": "))
         if state==2 or state==3:
             room="#"+nick
-            self.view.addRoom(room,"PrivRoom")
+            self.iterPlugins('addRoom',self.view,[room,"PrivRoom"])
         if state==4:
             if len(self.view.lookupRooms)==1:
-                self.view.addRoom("$info","InfoRoom")
+                self.iterPlugins('addRoom',self.view,["$info","InfoRoom"])
                 self.view.changeTab="$info"
                 activeTab="$info"
             room=activeTab
@@ -467,25 +488,25 @@ class KekzController():
                 importance=1
             else:
                 importance=2
-            self.view.highlightTab(room,importance)
+            self.iterPlugins('highlightTab',self.view,[room,importance])
         if state==5:
             msg.append(("blue",message))
         else:
-            msg.extend(self.view.deparse(message))
-        self.view.printMsg(room,msg)
+            msg.extend(self.iterPlugins('deparse',self.view,[message]))
+        self.iterPlugins('printMsg',self.view,[room,msg])
 
     def gotHandshakeException(self, message):
-        self.view.gotException("rattlekekz muss geupdatet werden")
+        self.iterPlugins('gotException',self.view,["rattlekekz muss geupdatet werden"])
 
     def gotLoginException(self, message):
-        self.view.gotLoginException(message)
+        self.iterPlugins('gotLoginException',self.view,[message])
 
     def gotException(self, message):
-        self.view.gotException(message)
+        self.iterPlugins('gotException',self.view,[message])
 
     def receivedUserlist(self,room,users):
         self.Userlist[room]=users
-        self.view.listUser(room,users)
+        self.iterPlugins('listUser',self.view,[room,users])
 
     def joinUser(self,room,nick,state,joinmsg):
         self.Userlist[room].append([nick,False,state])
@@ -495,43 +516,43 @@ class KekzController():
                 index=self.Userlist[room].index(i)
                 self.Userlist[room].insert(0,i)
                 del self.Userlist[room][index+1] 
-        self.view.listUser(room,self.Userlist[room])
+        self.iterPlugins('listUser',self.view,[room,self.Userlist[room]])
         self.printMsg("","(>>>) "+nick+" betritt den Raum ("+self.joinInfo[int(joinmsg)]+")",room,5)
 
     def quitUser(self,room,nick,partmsg):
         for i in self.Userlist[room]:
             if i[0]==nick:
                 self.Userlist[room].remove(i)
-        self.view.listUser(room,self.Userlist[room])
+        self.iterPlugins('listUser',self.view,[room,self.Userlist[room]])
         self.printMsg("","(<<<) "+nick+" hat den Raum verlassen ("+self.partInfo[int(partmsg)]+")",room,5)
 
     def changedUserdata(self,room,nick,away,state):
         for i in self.Userlist[room]:
             if i[0].lower()==nick.lower():
                 i[1],i[2]=away,state
-        self.view.listUser(room,self.Userlist[room])
+        self.iterPlugins('listUser',self.view,[room,self.Userlist[room]])
 
     def meJoin(self,room,background):
         self.Userlist.update({room:[]})
-        self.view.meJoin(room,background)
+        self.iterPlugins('meJoin',self.view,[room,background])
 
     def mePart(self,room):
         del self.Userlist[room]
-        self.view.mePart(room)
+        self.iterPlugins('mePart',self.view,[room])
 
     def meGo(self,oldroom,newroom):
         del self.Userlist[oldroom]
         self.Userlist.update({newroom:[]})
-        self.view.meGo(oldroom,newroom)
+        self.iterPlugins('meGo',self.view,[oldroom,newroom])
 
     def newTopic(self,room,topic):
-        self.view.newTopic(room,topic)
+        self.iterPlugins('newTopic',self.view,[room,topic])
 
     def loggedOut(self):
-        self.view.loggedOut()
+        self.iterPlugins('loggedOut',self.view)
 
     def receivedInformation(self,info):
-        self.view.receivedInformation(info)
+        self.iterPlugins('receivedInformation',self.view,[info])
 
     def stringHandler(self,string,returnunicode=False):
         if type(string) is not unicode:
@@ -575,7 +596,7 @@ class KekzController():
                 value=u"°fb°%s:°fb° %s" % (key,value)
             value = self.stringHandler(value)
             Output.append(value)
-        self.view.receivedWhois(self.stringHandler(nick), Output)
+        self.iterPlugins('receivedWhois',self.view,[self.stringHandler(nick), Output])
 
     def receivedCPMsg(self,user,cpmsg):
         self.printMsg(user+' [CTCP]',cpmsg,self.view.ShownRoom,0)
@@ -589,23 +610,23 @@ class KekzController():
             self.sendCPAnswer(user,cpmsg+' (unknown)')
 
     def sendCPAnswer(self,user,cpmsg):
-        self.model.sendCPAnswer(user,cpmsg)
+        self.iterPlugins('sendCPAnswer',self.model,[user,cpmsg])
 
     def sendCPMsg(self,user,cpmsg):
-        self.model.sendCPMsg(user,cpmsg)
+        self.iterPlugins('sendCPMsg',self.model,[user,cpmsg])
 
     def receivedCPAnswer(self,user,cpanswer):
         self.printMsg(user+' [CTCPAnswer]',cpanswer,self.view.ShownRoom,0)
 
     def sendMailsuccessful(self,id):
-        self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" wurde erfolgreich verschickt")
+        self.iterPlugins('MailInfo',self.view,["Die Mail an "+self.lookupSendId[id]+" wurde erfolgreich verschickt"])
         del self.lookupSendId[id]
 
     def sendBullshit(self,bullshit):
-        self.model.sendHandshake(bullshit)
+        self.iterPlugins('sendHandshake',self.model,[bullshit])
 
     def sendMailfailed(self,id,msg):
-        self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" konnte nicht verschickt werden: "+msg)
+        self.iterPlugins('MailInfo',self.view,["Die Mail an "+self.lookupSendId[id]+" konnte nicht verschickt werden: "+msg])
         del self.lookupSendId[id]
 
     def receivedMails(self,userid,mailcount,mails):
@@ -614,19 +635,19 @@ class KekzController():
             self.lookupMailId.append(mails[i]["mid"])
             del mails[i]["mid"]
             mails[i].update({"index":i})
-        self.view.receivedMails(userid,mailcount,mails)
+        self.iterPlugins('receivedMails',self.view,[userid,mailcount,mails])
 
     def receivedMailcount(self,unreadmails,allmails):
-        self.view.MailInfo(str(unreadmails)+" ungelesene Mails, insgesamt "+str(allmails)+" Mails")
+        self.iterPlugins('MailInfo',self.view,[str(unreadmails)+" ungelesene Mails, insgesamt "+str(allmails)+" Mails"])
 
     def requestMailfailed(self,error):
-        self.view.MailInfo("Die Mail konnte nicht gefunden werden: "+error)
+        self.iterPlugins('MailInfo',self.view,["Die Mail konnte nicht gefunden werden: "+error])
 
     def requestMailsuccessful(self,user,date,mail):
-        self.view.printMail(user,date,mail)
+        self.iterPlugins('printMail',self.view,[user,date,mail])
 
     def receivedNewMail(self,nick,header):
-        self.view.minorInfo("Sie haben eine eine Nachricht von "+nick+" bekommen: "+header)
+        self.iterPlugins('minorInfo',self.view,["Sie haben eine eine Nachricht von "+nick+" bekommen: "+header])
 
     def unknownMethod(self,name):
         pass
