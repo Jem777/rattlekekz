@@ -227,7 +227,7 @@ class KekzController():
                     del self.plugins[plugin]
                     self.view.gotException("Error executing %s." % plugin)
             else:
-                self.view.gotException("%s is allready loaded" % plugin)
+                self.view.gotException("%s is already loaded" % plugin)
         except:
             self.view.gotException("Error due loading of %s. May it doesn't exist, is damaged or some depencies aren't installed?" % plugin)
 

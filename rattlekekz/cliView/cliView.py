@@ -4,7 +4,7 @@
 copyright = """
     Copyright 2008, 2009 Moritz Doll and Christian Scharkus
 
-    This file is part of rattleKeckz.
+    This file is part of rattlekekz.
 
     rattlekekz is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
