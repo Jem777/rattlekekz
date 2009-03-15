@@ -97,7 +97,7 @@ class TabManager:
 
     def delTab(self, tab):
         """deletes a Tab"""
-        if tab==self.ShownRoom:
+        if tab.lower()==self.ShownRoom.lower():
             index=self.getTabId(self.ShownRoom)
             if index==0 or index==1:
                 index=2
