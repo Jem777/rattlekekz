@@ -288,6 +288,9 @@ class KekzController():
         elif string.lower().startswith("/load"):
             string = string[6:].split(' ')
             self.loadPlugin(string.pop(0),string)
+        elif string.lower().startswith("/unload"):
+            string = string[8:].split(' ')
+            self.unloadPlugin(string.pop(0))
         elif string.lower().startswith("/quit"):
             self.view.quit()
         elif string.lower().startswith("/showtopic"):
