@@ -109,6 +109,7 @@ class TabManager:
 
     def highlightTab(self,tab,highlight):
         """highlights a tab highlight is of type int and tab is of type int (the id) or string (the tabname)"""
+        tab = tab.lower()
         try:
             if highlight>self.lookupRooms[tab][2]:
                 self.lookupRooms[tab][2]=highlight
