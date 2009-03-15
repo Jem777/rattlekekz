@@ -459,7 +459,7 @@ class KekzController():
                 self.view.changeTab="$info"
                 activeTab="$info"
             room=activeTab
-        if not (activeTab == "$login" or room == self.view.ShownRoom):
+        if not (activeTab == "$login" or room.lower() == self.view.ShownRoom):
             importance=2
             if (self.nickpattern.search(message) is not None) or state==2:
                 importance=3 
