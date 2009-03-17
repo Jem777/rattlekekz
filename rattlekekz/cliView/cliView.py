@@ -143,9 +143,13 @@ class View(TabManager):
         self.addTab("$login",rattlekekzLoginTab)
         self.changeTab("$login")
 
-    def suspendView(self):
+    def suspendView(self,app):
         self.tui.stop()
-        fubar = subprocess.call("links www.google.de", shell=True)
+        if ""!=app!=" ":
+            try:
+                fubar = subprocess.call(app, shell=True)
+            except:
+                pass
         self.tui.start()
 
     def startConnection(self,server,port):

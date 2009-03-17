@@ -284,7 +284,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
             if text=="":
                 return
             elif text.lower().startswith("/suspend"):
-                self.parent.suspendView()
+                self.parent.suspendView(text.lower()[9:])
             elif text.lower().startswith("/close"):
                 self.onClose()
             else:
@@ -459,7 +459,7 @@ class rattlekekzMailTab(rattlekekzBaseTab):
             if text=="":
                 return
             elif text.lower().startswith("/suspend"):
-                self.parent.suspendView()
+                self.parent.suspendView(text.lower()[9:])
             elif text.lower().startswith("/close"):
                 self.onClose()
             else:
