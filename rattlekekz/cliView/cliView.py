@@ -477,7 +477,8 @@ class View(TabManager):
 
     def connectionLost(self, failure):
         if not self.kwds['debug']:
-            self.getTab(self.ShownRoom).addLine(("divider","\nVerbindung verloren\n"))
+            self.getTab(self.ShownRoom).addLine("divider",time.strftime('[%H:%M:%S]',time.localtime(time.time()))+" Verbindung verloren\n")
+            #self.getTab(self.ShownRoom).addLine(("divider","\nVerbindung verloren\n"))
 
 
 if __name__ == '__main__':
