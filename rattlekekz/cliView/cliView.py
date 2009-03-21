@@ -458,8 +458,30 @@ class View(TabManager):
         msg.append("\n---Ende der Mail---")
         self.getTab(self.ShownRoom).addLine(msg)
 
+
     def sendStr(self, channel, string):
         self.iterPlugins('sendStr', [channel, string])
+
+    def sendLogin(self, nick, passwd, room):
+        self.iterPlugins('sendLogin', [nick, passwd, room])
+
+    def registerNick(self, nick, passwd, email):
+        self.iterPlugins('registerNick', [nick, passwd, email])
+
+    def sendMail(self, nick, msg):
+        self.iterPlugins('sendMail', [nick, msg])
+
+    def refreshMaillist(self):
+        self.iterPlugins('refreshMaillist')
+
+    def getMail(self,index):
+        self.iterPlugins('getMail', [index])
+
+    def deleteMail(self,index):
+        self.iterPlugins('deleteMail', [index])
+
+    def deleteAllMails(self):
+        self.iterPlugins('deleteAllMails')
 
     def quit(self):
         self.iterPlugins('quitConnection')

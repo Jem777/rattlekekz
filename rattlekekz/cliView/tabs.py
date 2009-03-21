@@ -217,11 +217,11 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
                         self.room.strip()
                         re.sub("\s","",self.room)
                         self.nick.strip()
-                        self.parent.controller.sendLogin(self.nick,self.passwd,self.room)
+                        self.parent.sendLogin(self.nick,self.passwd,self.room)
                     else:
                         self.mail = self.Input.get_edit_text()
                         self.addLine("\nregister nick "+self.nick)
-                        self.parent.controller.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
+                        self.parent.registerNick(self.nick.strip(),self.passwd,self.mail.strip())
                     self.integer+=1
                     self.Input.set_edit_text("")
                 else:
@@ -427,20 +427,20 @@ class rattlekekzMailTab(rattlekekzBaseTab):
     def sendStr(self,string):
         stringlist=string.split(" ")
         if stringlist[0]==("/refresh"):
-            self.parent.controller.refreshMaillist()
+            self.parent.refreshMaillist()
         elif stringlist[0]==("/show"):
-            self.parent.controller.getMail(stringlist[1])
+            self.parent.getMail(stringlist[1])
         elif stringlist[0]==("/del"):
             if stringlist[1]=="all":
-                self.parent.controller.deleteAllMails()
+                self.parent.deleteAllMails()
             else:
-                self.parent.controller.deleteMail(stringlist[1])
-            self.parent.controller.refreshMaillist()
+                self.parent.deleteMail(stringlist[1])
+            self.parent.refreshMaillist()
         elif stringlist[0]==("/sendm"):
             if not len(stringlist)<3:
                 user=stringlist[1]
                 msg=" ".join(stringlist[2:])
-                self.parent.controller.sendMail(user,str(msg))
+                self.parent.sendMail(user,str(msg))
         elif stringlist[0]==("/help"):
             self.addLine("""Hilfe:
         Mails neu abrufen: /refresh
