@@ -338,7 +338,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
     def sendStr(self,string):
         """sends the string to the controller"""
         self.MainView.set_focus(len(self.Output) - 1)
-        self.parent.controller.sendStr(self.room,string)
+        self.parent.sendStr(self.room,string)
 
 
 class rattlekekzMsgTab(rattlekekzPrivTab):

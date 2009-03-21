@@ -37,7 +37,7 @@ class plugin:
         self.view.outHere(self.name,self)
         self.model.outHere(self.name,self)
 
-    def sendStr(self, channel, string):
+    def sendStr(self, caller, room, string):
         if string.lower().startswith("/away"):
             self.view.addRoom("#AwayLog","InfoRoom")
             self.view.changeTab("#AwayLog")
@@ -45,14 +45,29 @@ class plugin:
         elif self.away==True:
             self.away=False
 
-    def printMsg(self, nick,message,room,state):
-        if ((self.controller.nickpattern.search(message) is not None) or state==2) and self.away:
+    def receivedMsg(self, caller, nick, room, message):
+        if (self.controller.nickpattern.search(message) is not None) and self.away:
             msg=[]
             msg.append(self.view.timestamp(time.strftime(self.controller.timestamp,time.localtime(time.time()))))
             msg.append(("blue",nick+" in "+room+": "))
-            if state==5:
-                msg.append(("blue",message))
-            else:
-                msg.extend(self.view.deparse(message))
+            msg.extend(self.view.deparse(message))
+            self.view.addRoom("#AwayLog","InfoRoom")
+            self.view.printMsg("#AwayLog",msg)
+
+    def receivedRoomMsg(self, caller, room, message):
+        if (self.controller.nickpattern.search(message) is not None) and self.away:
+            msg=[]
+            msg.append(self.view.timestamp(time.strftime(self.controller.timestamp,time.localtime(time.time()))))
+            msg.append(("blue",nick+" in "+room+": "))
+            msg.extend(self.view.deparse(message))
+            self.view.addRoom("#AwayLog","InfoRoom")
+            self.view.printMsg("#AwayLog",msg)
+
+    def privMsg(self, caller, nick, message):
+        if self.away:
+            msg=[]
+            msg.append(self.view.timestamp(time.strftime(self.controller.timestamp,time.localtime(time.time()))))
+            msg.append(("blue",nick+" (privat): "))
+            msg.extend(self.view.deparse(message))
             self.view.addRoom("#AwayLog","InfoRoom")
             self.view.printMsg("#AwayLog",msg)

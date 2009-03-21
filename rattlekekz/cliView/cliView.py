@@ -458,6 +458,9 @@ class View(TabManager):
         msg.append("\n---Ende der Mail---")
         self.getTab(self.ShownRoom).addLine(msg)
 
+    def sendStr(self, channel, string):
+        self.iterPlugins('sendStr', [channel, string])
+
     def quit(self):
         self.iterPlugins('quitConnection')
         reactor.stop()
