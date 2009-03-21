@@ -53,7 +53,7 @@ Program, unless a warranty or assumption of liability accompanies a
 copy of the Program in return for a fee.
 """
 
-import sys, getopt, types
+import sys, os, getopt, types
 
 letters = 'H:v:?hlnt:cwd'
 keywords = ['host=','view=','help','copyright','warranty','localhost','nousercolors','timestamp=','debug']
@@ -62,6 +62,8 @@ opts, extraparams = getopt.getopt(sys.argv[1:],letters,keywords)
 
 class main():
     def __init__(self):
+        errlog = open(os.environ["HOME"]+os.sep+'.rattlekekz.log','w')
+        sys.stderr = errlog
         self.host = 'kekz.net'
         self.view = 'cliView'
         self.vargs = {'usercolors':True, 'debug':False, 'timestamp':0}
