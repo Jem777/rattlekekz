@@ -552,7 +552,7 @@ class rattlekekzSecureTab(rattlekekzBaseTab):
             self.Input.set_edit_pos(0)
         elif key == 'enter':
             self.MainView.set_focus(len(self.Output) - 1)
-            self.parent.controller.sendIdentify(self.passwd)
+            self.parent.sendIdentify(self.passwd)
         else:
             if key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'):
                 if len(key) is 2:
@@ -680,7 +680,7 @@ class rattlekekzEditTab(rattlekekzBaseTab):
                     self.addLine("Passwörter nicht identisch")
                     self.receivedPassword()
                 else:
-                    self.parent.controller.changePassword(self.oldPassword,self.newPassword)
+                    self.parent.changePassword(self.oldPassword,self.newPassword)
                     self.Input.set_edit_text("")
                     self.passwd=""
                     self.integer=-1
@@ -703,7 +703,7 @@ class rattlekekzEditTab(rattlekekzBaseTab):
             self.integer+=1
         elif self.integer==5:
             self.addLine("*"*len(self.passwd)+"\nÄndere Profil...")
-            self.parent.controller.updateProfile(self.newName,self.newLocation,self.newHomepage,self.newHobbies,self.newSignature,self.passwd)
+            self.parent.updateProfile(self.newName,self.newLocation,self.newHomepage,self.newHobbies,self.newSignature,self.passwd)
             self.Input.set_edit_text("")
             self.passwd=""
             self.integer=-1

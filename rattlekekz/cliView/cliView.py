@@ -468,6 +468,15 @@ class View(TabManager):
     def registerNick(self, nick, passwd, email):
         self.iterPlugins('registerNick', [nick, passwd, email])
 
+    def changePassword(self, oldPassword, newPassword):
+        self.iterPlugins('changePassword', [oldPassword, newPassword])
+
+    def updateProfile(self, newName, newLocation, newHomepage, newHobbies, newSignature, passwd):
+        self.iterPlugins('updateProfile', [newName, newLocation, newHomepage, newHobbies, newSignature, passwd])
+
+    def sendIdentify(self, passwd):
+        self.iterPlugins('sendIdentify', [passwd])
+
     def sendMail(self, nick, msg):
         self.iterPlugins('sendMail', [nick, msg])
 
@@ -477,7 +486,7 @@ class View(TabManager):
     def getMail(self,index):
         self.iterPlugins('getMail', [index])
 
-    def deleteMail(self,index):
+    def deleteMail(self, index):
         self.iterPlugins('deleteMail', [index])
 
     def deleteAllMails(self):
