@@ -282,9 +282,10 @@ class KekzController():
 
     def sendSlashCommand(self,channel,string):
         if string.lower().startswith("/m ") or string.lower() is "/m":
-            self.view.addRoom("$mail","MailRoom")
+            #self.view.addRoom("$mail","MailRoom")
+            #self.view.changeTab("$mail")
+            self.view.openMailTab()
             self.refreshMaillist()
-            self.view.changeTab("$mail")
         elif string.lower().startswith("/load"):
             string = string[6:].split(' ')
             self.loadPlugin(string.pop(0),string)

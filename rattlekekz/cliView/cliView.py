@@ -438,21 +438,21 @@ class View(TabManager):
 
     def openMailTab(self):
         self.addTab("$mail",rattlekekzMailTab)
-        self.iterPlugins('refreshMaillist')
+        #self.iterPlugins('refreshMaillist')
         self.changeTab("$mail")
 
     def MailInfo(self,info):
         self.getTab(self.ShownRoom).addLine([("divider","Info:\n"),info])
 
     def receivedMails(self,userid,mailcount,mails):
-        #self.openMailTab()
+        self.openMailTab()
         if not len(mails)==0:
             self.getTab(self.ShownRoom).addLine(("green","\nMails: "))
             for i in mails:
                 self.getTab(self.ShownRoom).addLine(str(i["index"])+".: von "+i["from"]+", um "+i["date"]+": \n"+i["stub"])
 
     def printMail(self,user,date,mail):
-        #self.openMailTab()
+        self.openMailTab()
         msg=["\nMail von ",("red",user)," vom ",("gray",date+": \n"),"---Anfang der Mail---\n"]
         msg.extend(self.deparse(mail))
         msg.append("\n---Ende der Mail---")
