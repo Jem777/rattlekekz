@@ -460,7 +460,7 @@ class KekzController():
         if state==4:
             if len(self.view.lookupRooms)==1:
                 self.view.addRoom("$info","InfoRoom")
-                self.view.changeTab="$info"
+                self.view.changeTab("$info")
                 activeTab="$info"
             room=activeTab
         if not (activeTab == "$login" or room.lower() == self.view.ShownRoom):
