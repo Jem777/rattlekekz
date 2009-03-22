@@ -29,7 +29,7 @@ class plugin:
         self.model = model
         self.view = view
         self.model.hiThere(self.name,self)
-        self.controller.botMsg("rattlekekz",self.view.hiThere(self.name,self)[2])
+        self.controller.botMsg("[awaylog-plugin]",self.view.hiThere(self.name,self)[2])
         
         self.away=False
 
