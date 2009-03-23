@@ -133,13 +133,16 @@ class View(TabManager):
     def logPrefix(self): # TODO: is this needed?
         return 'rattlekekz'
 
-    def init(self):
-        self.blubb=lambda x:chr(ord(x)-43)
-        self.size = self.tui.get_cols_rows()
+    def finishedReadingConfigfile(self):
+        self.setClock()
         self.writehistory=self.controller.writehistory # TODO: Find some way to handle variables with plugin-system
         self.readhistory=self.controller.readhistory
         if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
             self.sortTabs=True
+
+    def init(self):
+        self.blubb=lambda x:chr(ord(x)-43)
+        self.size = self.tui.get_cols_rows()
         self.addTab("$login",rattlekekzLoginTab)
         self.changeTab("$login")
 

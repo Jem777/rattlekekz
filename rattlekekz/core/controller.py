@@ -206,7 +206,7 @@ class KekzController():
             self.clockformat=self.configfile["clock"]+" "
         else:
             self.clockformat="[%H:%M:%S] "
-        self.view.setClock()
+        self.view.finishedReadingConfigfile()
 
 
     def checkPassword(self,password):
