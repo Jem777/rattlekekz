@@ -463,7 +463,7 @@ class KekzController():
                 self.view.changeTab("$info")
                 activeTab="$info"
             room=activeTab
-        if not (activeTab == "$login" or room.lower() == self.view.ShownRoom):
+        if not (activeTab == "$login" or room.lower() == self.view.getActiveTab()):
             importance=2
             if (self.nickpattern.search(message) is not None) or state==2:
                 importance=3 
@@ -582,7 +582,7 @@ class KekzController():
         self.view.receivedWhois(self.stringHandler(nick), Output)
 
     def receivedCPMsg(self,user,cpmsg):
-        self.printMsg(user+' [CTCP]',cpmsg,self.view.ShownRoom,0)
+        self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
         if cpmsg.lower() == 'version':
             self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
         elif cpmsg.lower() == 'ping':
@@ -599,7 +599,7 @@ class KekzController():
         self.model.sendCPMsg(user,cpmsg)
 
     def receivedCPAnswer(self,user,cpanswer):
-        self.printMsg(user+' [CTCPAnswer]',cpanswer,self.view.ShownRoom,0)
+        self.printMsg(user+' [CTCPAnswer]',cpanswer,self.view.getActiveTab(),0)
 
     def sendMailsuccessful(self,id):
         self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" wurde erfolgreich verschickt")
