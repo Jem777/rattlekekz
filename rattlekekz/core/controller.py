@@ -449,11 +449,11 @@ class KekzController():
         msg.append(self.view.timestamp(time.strftime(self.timestamp,time.localtime(time.time()))))
         if state==0 or state==2 or state==4:
             if nick.lower()==self.nickname.lower():
-                msg.append(("green",nick+": "))
+                msg.append(self.view.colorizeText("green",nick+": "))
             else:    
-                msg.append(("blue",nick+": "))
+                msg.append(self.view.colorizeText("blue",nick+": "))
         elif state==3:
-            msg.append(("green",str(self.nickname)+": "))
+            msg.append(self.view.colorizeText("green",str(self.nickname)+": "))
         if state==2 or state==3:
             room="#"+nick
             self.view.addRoom(room,"PrivRoom")
@@ -473,7 +473,7 @@ class KekzController():
                 importance=2
             self.view.highlightTab(room,importance)
         if state==5:
-            msg.append(("blue",message))
+            msg.append(self.view.colorizeText("blue",message))
         else:
             msg.extend(self.view.deparse(message))
         self.view.printMsg(room,msg)

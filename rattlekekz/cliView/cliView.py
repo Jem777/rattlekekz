@@ -362,8 +362,11 @@ class View(TabManager):
         else:
             return str(string)
 
-    def timestamp(self,string):
+    def timestamp(self, string):
         return ("timestamp",string)
+
+    def colorizeText(self, color, text):
+        return (color, text)
 
     def printMsg(self,room,msg): 
         self.getTab(room).addLine(msg)
