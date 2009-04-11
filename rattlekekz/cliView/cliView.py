@@ -25,6 +25,7 @@ revision = "$Revision$"
 # rattlekekz
 from rattlekekz.cliView.tabmanagement import TabManager
 from rattlekekz.cliView.tabs import *
+from rattlekekz.core import pluginmanager
 
 # System
 import sys, subprocess, time
@@ -43,7 +44,7 @@ rev=search("\d+",revision).group()
 class TextTooLongError(Exception):
     pass
 
-class View(TabManager):
+class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interhitance for pluginmanagement
     def __init__(self, controller, *args, **kwds):
         TabManager.__init__(self)
         sys.stdout.write('\033]0;rattlekekz\007') # TODO: some more maybe?
@@ -213,40 +214,6 @@ class View(TabManager):
                 else:
                     self.getTab(self.ShownRoom).onKeyPressed(self.size, key)
             self.redisplay()
-
-    def hiThere(self,name,instance):
-        """method for plugins to say "hi there" :D"""
-        if not self.plugins.has_key(name):
-            self.plugins[name]=instance
-            return (self,0,"plugin registered")
-        else:
-            return (self,1,"the plugin or another instance of it is allready registered")
-
-    def outHere(self,name,instance):
-        """method for plugins to get the hell out of here"""
-        if self.plugins.has_key(name):
-            if self.plugins[name] is instance:
-                del self.plugins[name]
-            else:
-                self.controller.gotException("instance don't match registered plugin") # This should never occure ;)
-
-    def iterPlugins(self,method,kwds=[]):
-        taken,handled=False,False
-        for i in self.plugins:
-            try:
-                value = getattr(self.plugins[i], method)(self,*kwds)
-                if value is 'handled':
-                    handled=True
-                    break
-                elif value is 'taken':
-                    taken=True
-                    continue
-            except AttributeError:
-                pass # TODO: May add some message or so.
-            except:
-                pass # TODO: add message for error in plugin xy
-        if not handled:
-            getattr(self.controller, method)(*kwds)
 
     def receivedPreLoginData(self,rooms,array):
         self.isConnected=True

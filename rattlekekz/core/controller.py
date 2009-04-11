@@ -20,11 +20,11 @@ copyright = """
     along with rattlekekz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from rattlekekz.core import protocol
+from rattlekekz.core import protocol, pluginmanager
 import os, sys, re, time
 from hashlib import sha1, md5
 
-class KekzController():
+class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhitance for pluginmanagement
     def __init__(self, interface, *args, **kwds):
         self.kwds=kwds
         self.model = protocol.KekzChatClient(self)
@@ -214,34 +214,6 @@ class KekzController():
             return True
         else:
             return False
-
-    def loadPlugin(self,plugin,params=[]):
-        """this option is called by the view to load any plugins."""
-        try:
-            if not self.plugins.has_key(plugin):
-                self.plugins[plugin]=__import__('rattlekekz.plugins',fromlist=[plugin])
-                self.plugins[plugin]=getattr(self.plugins[plugin],plugin)
-                try:
-                    self.plugins[plugin]=self.plugins[plugin].plugin(self,self.model,self.view,*params)
-                except:
-                    del self.plugins[plugin]
-                    self.view.gotException("Error executing %s." % plugin)
-            else:
-                self.view.gotException("%s is already loaded" % plugin)
-        except:
-            self.view.gotException("Error due loading of %s. May it doesn't exist, is damaged or some depencies aren't installed?" % plugin)
-
-    def unloadPlugin(self,plugin):
-        try:
-            self.plugins[plugin].unload()
-            del self.plugins[plugin]
-        except:
-            try:
-                del self.view.plugins[plugin]
-                del self.model.plugins[plugin]
-                del self.plugins[plugin]
-            except:
-                self.gotException('unable to unload plugin %s.' % plugin)
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):

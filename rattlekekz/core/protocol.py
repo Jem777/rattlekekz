@@ -23,12 +23,13 @@ import sys
 from time import time
 from OpenSSL.SSL import SSLv3_METHOD, Context
 import json
+from rattlekekz.core import pluginmanager
 
 # Modules for twisted
 from twisted.internet import reactor, protocol, task, ssl
 from twisted.protocols import basic
 
-class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
+class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.iterator): # TODO: Maybe don't use interhitance for pluginmanagement
     """
     This is the main part of the Kekz.net protocol
     This class expects the controller instance as parameter.
@@ -126,40 +127,6 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory):
         else:
             self.iterPlugins('pingTimeout')
             self.sendingPings.stop()
-
-    def hiThere(self,name,instance):
-        """method for plugins to say "hi there" :D"""
-        if not self.plugins.has_key(name):
-            self.plugins[name]=instance
-            return (self,0,"plugin registered")
-        else:
-            return (self,1,"the plugin or another instance of it is allready registered")
-
-    def outHere(self,name,instance):
-        """method for plugins to get the hell out of here"""
-        if self.plugins.has_key(name):
-            if self.plugins[name] is instance:
-                del self.plugins[name]
-            else:
-                self.controller.gotException("instance don't match registered plugin") # This should never occure ;)
-
-    def iterPlugins(self,method,kwds=[]):
-        taken,handled=False,False
-        for i in self.plugins:
-            try:
-                value = getattr(self.plugins[i], method)(self,*kwds)
-                if value is 'handled':
-                    handled=True
-                    break
-                elif value is 'taken':
-                    taken=True
-                    continue
-            except AttributeError:
-                pass # TODO: May add some message or so.
-            except:
-                pass # TODO: add message for error in plugin xy
-        if not handled:
-            getattr(self.controller, method)(*kwds)
 
     def sendMail(self,nick,msg,id):
         mail={"id":id,"tonick":nick,"msg":msg}
