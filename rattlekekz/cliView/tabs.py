@@ -313,25 +313,30 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
                     self.Input.set_edit_text(self.history[self.count])
             self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         elif key == 'tab':
+            at=False
             input = self.Input.get_edit_text()
             input,crap=input[:self.Input.edit_pos].split(),input[self.Input.edit_pos:]
             if len(input) is not 0:
                 nick = input.pop().lower()
                 if nick.startswith("@"):
                     nick = nick[1:]
+                    at=True
                 solutions=[]
-                for i in self.completion:
-                    if nick in str(i[:len(nick)]).lower():
-                        solutions.append(i)
-                if len(solutions) != 0 and len(solutions) != 1:
-                    self.addLine(" ".join(solutions))
-                elif len(solutions) is not 0:
-                    input.append(str(solutions[0]))
-                    if len(input) is not 1:
-                        self.Input.set_edit_text(" ".join(input)+" "+crap)
-                    else:
-                        self.Input.set_edit_text(" ".join(input)+", "+crap)
-                    self.Input.set_edit_pos(len(self.Input.get_edit_text())-len(crap))
+                if nick != "":
+                    for i in self.completion:
+                        if nick in str(i[:len(nick)]).lower():
+                            solutions.append(i)
+                    if len(solutions) != 0 and len(solutions) != 1:
+                        self.addLine(" ".join(solutions))
+                    elif len(solutions) is not 0:
+                        if at:
+                            solutions[0]="@"+solutions[0]
+                        input.append(str(solutions[0]))
+                        if len(input) is not 1:
+                            self.Input.set_edit_text(" ".join(input)+" "+crap)
+                        else:
+                            self.Input.set_edit_text(" ".join(input)+", "+crap)
+                        self.Input.set_edit_pos(len(self.Input.get_edit_text())-len(crap))
         else:
             self.keypress(size, key)
 
