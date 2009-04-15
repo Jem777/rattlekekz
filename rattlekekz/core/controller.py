@@ -127,10 +127,9 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
             if len(array[i])==2:
                 formatlist=self.formatopts(formatlist,array[i])
             textlist.append("")
-        while len(textlist)>len(formatlist):
-            formatlist.append("")
-        while len(textlist)<len(formatlist):
-            textlist.append("")
+        if len(textlist)!=len(formatlist):
+            formatlist=formatlist[:len(textlist)]
+            textlist=textlist[:len(formatlist)]
         for i in range(len(textlist)):
             if textlist[i]=="" and formatlist[i]=="":
                 del textlist[i]
