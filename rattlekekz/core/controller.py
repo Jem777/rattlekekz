@@ -167,8 +167,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
 
     def readConfigfile(self):
-        #filepath=os.environ["HOME"]+os.sep+".kekznet.conf"
-        filepath=os.environ["HOME"]+os.sep+"debug.conf"
+        filepath=os.environ["HOME"]+os.sep+".rattlekekz.conf"
         if os.path.exists(filepath) == False:
             dotkeckz=open(filepath, "w") # TODO: new name
             dotkeckz.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
