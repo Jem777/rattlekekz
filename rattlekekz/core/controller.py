@@ -38,6 +38,10 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.partInfo=["Part","Logout","Lost Connection","Nick-Kollision","Ping Timeout","Kick"]
         self.plugins = {}
 
+        #vars for the filetransfers
+        self.offered=[]
+        self.transfers={}
+
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
 
@@ -135,6 +139,39 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                 del textlist[i]
                 del formatlist[i]
         return textlist,formatlist
+
+    def encodeJSON(self,stuff):
+        self.model.encoder(stuff)
+
+    def decodeJSON(self,stuff):
+        self.model.decoder(stuff)
+
+    def sendJSON(self,comand): # TODO: implement error handling (e.g. unreachable host)
+        self.model.sendCPMsg(self.encode(comand))
+
+    def offerFile(self,path,target):
+        try:
+            file = open(path,"rb")
+            filename = file.name()
+            filesize = os.path.getsize(path)
+            comand = {"transfer":"init","filename":filename,"size":filesize}
+            self.offered.append(comand)
+            self.offered[-1]["file"]=file
+            self.send(comand)
+            
+        except IOError: # TODO: check wether given string is for example are directory and so on
+            self.controller.botMsg("filetransfer","IOError: "+sys.exc_value)
+
+    def doSubmit(self,id,hashobject):
+        data = self.transfers[id]["file"].read(int(4194304*0.64)) # only read 64 percent of 4kib because of 36 percent overhead by base64
+        hashobject.update(data)
+        if data is not "":
+            data = base64.b64encode(data)
+            self.send({"transfer":"data", "id":id, "base64":data})
+            self.doSubmit(id,hashobject) # no ... recursion won't work ... TODO: find something that work *g*
+        else:
+            hash = md5(transfers[id]["file"].read()).hexdigest()
+            self.send({"transfer":"finished", "id":id, "hash":hashobject.hexdigest()})
 
     def formatopts(self, formlist, opt):
         kekzformat={"cr":"red",
@@ -262,6 +299,13 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         elif string.lower().startswith("/unload"):
             string = string[8:].split(' ')
             self.unloadPlugin(string.pop(0))
+        elif string.lower().startswith('/sendfile'):
+            string = string[10:].split(" ")
+            path,target = string.pop(),string.join(" ")
+            self.offerFile(target,path)
+        elif string.lower().startswith('/accept'):
+            id = string[8:].split(" ").pop(0)
+            # TODO: implement this ;)
         elif string.lower().startswith("/quit"):
             self.view.quit()
         elif string.lower().startswith("/showtopic"):
@@ -552,15 +596,62 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.view.receivedWhois(self.stringHandler(nick), Output)
 
     def receivedCPMsg(self,user,cpmsg):
-        self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
-        if cpmsg.lower() == 'version':
-            self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
-        elif cpmsg.lower() == 'ping':
-            self.sendCPAnswer(user,cpmsg+' ping')
-        elif cpmsg.lower() in ('rev','revision'):
-            self.sendCPAnswer(user,cpmsg+' '+self.revision)
-        else:
-            self.sendCPAnswer(user,cpmsg+' (unknown)')
+        try:
+            data = self.decode(cpanswer)
+            if data.has_key("transfer"):
+                if data["transfer"] is not "init":
+                    id = data["id"]
+                    if data["transfer"] is "accept":
+                        for i in range(len(offered)):
+                            if self.offered[i]["filename"] is data["filename"]:
+                                if not transfers.has_key[id]:
+                                    self.transfers[id]=self.offered[i]
+                                    self.transfers[id]["transfer"]=data["transfer"]
+                                    self.doSubmit(id,md5())
+                                else:
+                                    self.send({"transfer":"error","id":id,"description":"You accepted my transfer with an id I am already using"})
+                                del self.offered[i]
+                            elif i is len(self.offered)-1:
+                                self.send({"transfer":"error","id":id,"description":"You accepted a transfer I didn't offer"})
+                    elif data["transfer"] is "reject":
+                        for i in range(len(offered)):
+                            if self.offered[i]["filename"] is data["filename"]:
+                                self.controller.botMsg("filetransfer",user+" rejected Transmission of "+data["filename"])
+                                del offered[i]
+                    elif data["transfer"] is "error": # TODO: handling for failed transmissions
+                        self.controller.botMsg("filetransfer",data["description"])
+                else:
+                    filename,size = data["filename"],data["size"]
+                    count=0
+                    while size > 1024:
+                        size = size/1024
+                        count=+1
+                    if count is not 0:
+                        if count is 1:
+                            disp_size=str(size)+" KiB"
+                        elif count is 2:
+                            disp_size=str(size)+" MiB"
+                        elif count is 3:
+                            disp_size=str(size)+" GiB"
+                        elif count is 4:
+                            disp_size=str(size)+" TiB"
+                        size = size*(1024**count)
+                    id = random.randint(1,999)
+                    self.transfers[id]=data
+                    self.controller.botMsg("filetransfer"),user+" offered Transmission of "+filename+" ("+disp_size+"). Type /accept "+id+" to accept the Transmission."
+        except ValueError:
+            if sys.exc_value is "No JSON object could be decoded":
+                self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
+                if cpmsg.lower() == 'version':
+                    self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
+                elif cpmsg.lower() == 'ping':
+                    self.sendCPAnswer(user,cpmsg+' ping')
+                elif cpmsg.lower() in ('rev','revision'):
+                    self.sendCPAnswer(user,cpmsg+' '+self.revision)
+                else:
+                    self.sendCPAnswer(user,cpmsg+' (unknown)')
+            else:
+                raise # something gone terrible wrong *g*
 
     def sendCPAnswer(self,user,cpmsg):
         self.model.sendCPAnswer(user,cpmsg)
