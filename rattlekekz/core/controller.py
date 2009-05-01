@@ -211,11 +211,11 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
     def readConfigfile(self):
         filepath=os.environ["HOME"]+os.sep+".rattlekekz.conf"
         if os.path.exists(filepath) == False:
-            dotkeckz=open(filepath, "w") # TODO: new name
-            dotkeckz.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
-            dotkeckz.flush()
-        dotkeckz=open(filepath)
-        array=dotkeckz.readlines()
+            _config=open(filepath, "w")
+            _config.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
+            _config.flush()
+        _config=open(filepath)
+        array=_config.readlines()
         self.configfile={}
         for i in array:
             if not (i.isspace() or i.startswith("#")) or (i.find("=")!=-1):
