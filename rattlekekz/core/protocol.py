@@ -22,7 +22,10 @@ copyright = """
 import sys
 from time import time
 from OpenSSL.SSL import SSLv3_METHOD, Context
-import json
+if sys.version < "2.6.0":
+    import simplejson as json
+else:
+    import json
 from rattlekekz.core import pluginmanager
 
 # Modules for twisted
@@ -40,12 +43,8 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
     def __init__(self,controller):
         """Takes one argument: the instance of the controller Class."""
         self.controller=controller
-        if sys.version < "2.6.0": #TODO test it on python 2.6
-            self.encoder=lambda x: json.JsonWriter().write(x)
-            self.decoder=lambda y: json.JsonReader().read(y)
-        else:
-            self.encoder=lambda x: json.JSONEncoder().encode(x)
-            self.decoder=lambda y: json.JSONDecoder().decode(y)
+        self.encoder=lambda x: json.JSONEncoder().encode(x)
+        self.decoder=lambda x: json.JSONDecoder().decode(x)
         self.plugins={}
         self.pingAnswer=False
         self.pwhash=None
