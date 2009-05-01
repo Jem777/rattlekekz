@@ -23,6 +23,7 @@ copyright = """
 from rattlekekz.core import protocol, pluginmanager
 import os, sys, re, time
 from hashlib import sha1, md5
+from twisted.internet.task import LoopingCall
 
 class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhitance for pluginmanagement
     def __init__(self, interface, *args, **kwds):
@@ -157,21 +158,25 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
             comand = {"transfer":"init","filename":filename,"size":filesize}
             self.offered.append(comand)
             self.offered[-1]["file"]=file
-            self.send(comand)
+            self.sendJSON(comand)
             
         except IOError: # TODO: check wether given string is for example are directory and so on
             self.controller.botMsg("filetransfer","IOError: "+sys.exc_value)
+
+    def startSubmit(self,id):
+        self.transfers[id]["loop"]=LoopingCall(self.doSubmit,[id,md5()])
+        self.transfers[id]["loop"].start()
 
     def doSubmit(self,id,hashobject):
         data = self.transfers[id]["file"].read(int(4194304*0.64)) # only read 64 percent of 4kib because of 36 percent overhead by base64
         hashobject.update(data)
         if data is not "":
             data = base64.b64encode(data)
-            self.send({"transfer":"data", "id":id, "base64":data})
-            self.doSubmit(id,hashobject) # no ... recursion won't work ... TODO: find something that work *g*
+            self.sendJSON({"transfer":"data", "id":id, "base64":data})
         else:
+            self.transfers[id]["loop"].stop()
             hash = md5(transfers[id]["file"].read()).hexdigest()
-            self.send({"transfer":"finished", "id":id, "hash":hashobject.hexdigest()})
+            self.sendJSON({"transfer":"finished", "id":id, "hash":hashobject.hexdigest()})
 
     def formatopts(self, formlist, opt):
         kekzformat={"cr":"red",
@@ -609,10 +614,10 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                                     self.transfers[id]["transfer"]=data["transfer"]
                                     self.doSubmit(id,md5())
                                 else:
-                                    self.send({"transfer":"error","id":id,"description":"You accepted my transfer with an id I am already using"})
+                                    self.sendJSON({"transfer":"error","id":id,"description":"You accepted my transfer with an id I am already using"})
                                 del self.offered[i]
                             elif i is len(self.offered)-1:
-                                self.send({"transfer":"error","id":id,"description":"You accepted a transfer I didn't offer"})
+                                self.sendJSON({"transfer":"error","id":id,"description":"You accepted a transfer I didn't offer"})
                     elif data["transfer"] is "reject":
                         for i in range(len(offered)):
                             if self.offered[i]["filename"] is data["filename"]:
