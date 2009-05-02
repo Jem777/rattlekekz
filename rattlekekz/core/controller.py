@@ -21,7 +21,7 @@ copyright = """
 """
 
 from rattlekekz.core import protocol, pluginmanager
-import os, sys, re, time
+import os, sys, re, time, base64
 from hashlib import sha1, md5
 from twisted.internet.task import LoopingCall
 
@@ -39,7 +39,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.partInfo=["Part","Logout","Lost Connection","Nick-Kollision","Ping Timeout","Kick"]
         self.plugins = {}
 
-        #vars for the filetransfers
         self.offered=[]
         self.transfers={}
 
@@ -151,7 +150,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.model.sendCPMsg(self.encode(comand))
 
     def offerFile(self,path,target):
-        try:
+        if os.path.isfile(path):
             file = open(path,"rb")
             filename = file.name()
             filesize = os.path.getsize(path)
@@ -159,24 +158,70 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
             self.offered.append(comand)
             self.offered[-1]["file"]=file
             self.sendJSON(comand)
-            
-        except IOError: # TODO: check wether given string is for example are directory and so on
-            self.controller.botMsg("filetransfer","IOError: "+sys.exc_value)
+        elif os.path.isdir(path):
+            self.botMsg("filetransfer",path+" is a directory") # implement directory-transmission?
+        else:
+            self.botMsg("filetransfer",path+" does not exist")
+
+    def acceptOffer(self,id):
+        self.transfers[id]["filename"]
+        self.sendJSON({"transfer":"accept", "filename":self.transfers[id]["filename"], "id":id})
 
     def startSubmit(self,id):
-        self.transfers[id]["loop"]=LoopingCall(self.doSubmit,[id,md5()])
+        self.transfers[id]["hash"]=md5()
+        self.transfers[id]["loop"]=LoopingCall(self.doSubmit,[id])
         self.transfers[id]["loop"].start()
 
-    def doSubmit(self,id,hashobject):
+    def doSubmit(self,id):
         data = self.transfers[id]["file"].read(int(4194304*0.64)) # only read 64 percent of 4kib because of 36 percent overhead by base64
-        hashobject.update(data)
+        self.transfers[id]["hash"].update(data)
         if data is not "":
             data = base64.b64encode(data)
             self.sendJSON({"transfer":"data", "id":id, "base64":data})
         else:
             self.transfers[id]["loop"].stop()
             hash = md5(transfers[id]["file"].read()).hexdigest()
-            self.sendJSON({"transfer":"finished", "id":id, "hash":hashobject.hexdigest()})
+            self.sendJSON({"transfer":"finished", "id":id, "hash":self.transfers[id]["hash"].hexdigest()})
+
+    def receivedData(self,id,base64_data):
+        file = os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"transfers"+os.sep+self.transfers[id]["filename"] # TODO: implement choosen filename and location
+        filepath = os.path.dirname(file)
+        if os.path.exists(filepath):
+            if os.path.isdir(filepath):
+                pass
+            else:
+                self.botMsg("filetransfer",filepath+" is not a directory!")
+        else:
+            os.makedirs(filepath)
+        if not os.path.exists(file):
+            self.transfers[id]["file"] = open(file,"ab")
+            self.transfers[id]["file"].write(base64.b64decode(base64_data))
+            self.transfers[id]["file"].flush()
+        else:
+            if self.transfers[id].has_key("file"): # TODO: implement continue
+                self.transfers[id]["file"].write(base64.b64decode(base64_data))
+                self.transfers[id]["file"].flush()
+            else:
+                self.botMsg("filetransfer",file+"already exists!")
+
+    def finishedTransfer(self,id,hash):
+        self.transfers[id]["file"].close()
+        self.transfers[id]["file"]=open(os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"transfers"+os.sep+self.transfers[id]["filename"],"rb")
+        self.transfers[id]["hash"]=hash
+        self.transfers[id]["ownHash"]=md5()
+        self.transfers[id]["loop"]=LoopingCall(self.getHash,[id])
+        self.transfers[id]["loop"].start()
+
+    def getHash(self,id):
+        data = self.transfers[id]["file"].read()
+        if data is not "":
+            self.transfers[id]["ownHash"].update(data)
+        else:
+            if self.transfers[id]["hash"] == self.transfers[id]["ownHash"].hexdigest():
+                self.botMsg("filetransfer",self.transfers[id]["filename"]+" successful received and hashed.")
+            else:
+                self.botMsg("filetransfer",self.transfers[id]["filename"]+" hash error")
+            self.transfers[id]["file"].close() # TODO: remove references from self.transfers
 
     def formatopts(self, formlist, opt):
         kekzformat={"cr":"red",
@@ -207,14 +252,16 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                 formlist.append(formlist[-1]+","+kekzformat[opt])
         return formlist
 
-
     def readConfigfile(self):
-        filepath=os.environ["HOME"]+os.sep+".rattlekekz.conf"
-        if os.path.exists(filepath) == False:
-            _config=open(filepath, "w")
-            _config.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
-            _config.flush()
-        _config=open(filepath)
+        file=os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"config"
+        path=os.path.dirname(file)
+        if not os.path.exists(path):
+            os.mkdir(path)
+            if not os.path.exists(file):
+                _config=open(file, "w")
+                _config.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net") # TODO: this isn't correct anymore, or?
+                _config.flush()
+        _config=open(file) # TODO: it's seems to be ugly to reopen a already open file?
         array=_config.readlines()
         self.configfile={}
         for i in array:
@@ -309,8 +356,25 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
             path,target = string.pop(),string.join(" ")
             self.offerFile(target,path)
         elif string.lower().startswith('/accept'):
-            id = string[8:].split(" ").pop(0)
-            # TODO: implement this ;)
+            id=re.findall("\d\d\d",string[8:])
+            if len(id) is 0:
+                id=re.findall("\d\d",string[8:])
+                if len(id) is 0:
+                    id=re.findall("\d",string[8:])
+                    if len(id) is not 1:
+                        self.botMsg("filetransfer","usage: /accept [id]")
+                    else:
+                        id = int(id[0])
+                else:
+                    id = int(id[0])
+            elif len(id) is not 1:
+                self.botMsg("filetransfer","please type a proper id.")
+            else:
+                id = int(id[0])
+            if self.transfers.has_key(id):
+                self.acceptOffer(id)
+            else:
+                self.botMsg("filetransfer","id doesn't exist.")
         elif string.lower().startswith("/quit"):
             self.view.quit()
         elif string.lower().startswith("/showtopic"):
@@ -606,7 +670,11 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
             if data.has_key("transfer"):
                 if data["transfer"] is not "init":
                     id = data["id"]
-                    if data["transfer"] is "accept":
+                    if data["transfer"] is "data":
+                        receivedData(data["id"],data["base64"])
+                    elif data["transfer"] is "resume":
+                        self.botMsg("filetransfer","resume not implemented yet.") # TODO: well ... implement it fuck0r :P
+                    elif data["transfer"] is "accept":
                         for i in range(len(offered)):
                             if self.offered[i]["filename"] is data["filename"]:
                                 if not transfers.has_key[id]:
@@ -623,6 +691,8 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                             if self.offered[i]["filename"] is data["filename"]:
                                 self.controller.botMsg("filetransfer",user+" rejected Transmission of "+data["filename"])
                                 del offered[i]
+                    elif data["transfer"] is "finished":
+                        self.finishedTransfer(id,date["hash"])
                     elif data["transfer"] is "error": # TODO: handling for failed transmissions
                         self.controller.botMsg("filetransfer",data["description"])
                 else:
