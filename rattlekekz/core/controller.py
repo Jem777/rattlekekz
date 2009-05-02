@@ -693,7 +693,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                                 self.controller.botMsg("filetransfer",user+" rejected Transmission of "+data["filename"])
                                 del offered[i]
                     elif data["transfer"] == "finished":
-                        self.finishedTransfer(uid,date["hash"])
+                        self.finishedTransfer(uid,data["hash"])
                     elif data["transfer"] == "error": # TODO: handling for failed transmissions
                         self.controller.botMsg("filetransfer",data["description"])
                 else:
