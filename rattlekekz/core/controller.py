@@ -44,6 +44,8 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
         self.offered=[]
         self.transfers={}
+        self.decodeJSON=self.model.decoder
+        self.encodeJSON=self.model.encoder
 
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
@@ -142,12 +144,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                 del textlist[i]
                 del formatlist[i]
         return textlist,formatlist
-
-    def encodeJSON(self,stuff):
-        return self.model.encoder(stuff)
-
-    def decodeJSON(self,stuff):
-        return self.model.decoder(stuff)
 
     def sendJSON(self,user,comand): # TODO: implement error handling (e.g. unreachable host)
         self.sendCPMsg(user,self.encodeJSON(comand))
@@ -728,18 +724,16 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                     self.transfers[uid]["user"]=user
                     self.botMsg("filetransfer",str(user)+" offered Transmission of "+str(filename)+" ("+disp_size+"). Type /accept "+str(uid)+" to accept the Transmission.")
         except ValueError:
-            #if sys.exc_value == "No JSON object could be decoded":
-                self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
-                if cpmsg.lower() == 'version':
-                    self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
-                elif cpmsg.lower() == 'ping':
-                    self.sendCPAnswer(user,cpmsg+' ping')
-                elif cpmsg.lower() in ('rev','revision'):
-                    self.sendCPAnswer(user,cpmsg+' '+self.revision)
-                else:
-                    self.sendCPAnswer(user,cpmsg+' (unknown)')
-            #else:
-            #    raise # something gone terrible wrong *g*
+            self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
+            if cpmsg.lower() == 'version':
+                self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
+            elif cpmsg.lower() == 'ping':                    self.sendCPAnswer(user,cpmsg+' ping')
+            elif cpmsg.lower() in ('rev','revision'):
+                self.sendCPAnswer(user,cpmsg+' '+self.revision)
+            else:
+                self.sendCPAnswer(user,cpmsg+' (unknown)')
+        else:
+            raise # something went terrible wrong *g*
 
     def sendCPAnswer(self,user,cpmsg):
         self.model.sendCPAnswer(user,cpmsg)
