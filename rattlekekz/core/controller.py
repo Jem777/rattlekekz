@@ -732,8 +732,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                 self.sendCPAnswer(user,cpmsg+' '+self.revision)
             else:
                 self.sendCPAnswer(user,cpmsg+' (unknown)')
-        else:
-            raise # something went terrible wrong *g*
 
     def sendCPAnswer(self,user,cpmsg):
         self.model.sendCPAnswer(user,cpmsg)
