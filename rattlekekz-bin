@@ -141,4 +141,4 @@ class main():
 
 if __name__ == "__main__":
     f = main()
-    f.startRattlekekz(f.host, f.view, usercolors=f.vargs['usercolors'], debug=f.vargs['debug'], reconnect=True, timestamp=f.vargs['timestamp'])
+    f.startRattlekekz(f.host, f.view, usercolors=f.vargs['usercolors'], debug=f.vargs['debug'], timestamp=f.vargs['timestamp'])
