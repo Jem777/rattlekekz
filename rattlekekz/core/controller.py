@@ -263,13 +263,13 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         path=os.path.dirname(file)
         if not os.path.exists(path):
             os.mkdir(path)
-            if not os.path.exists(file):
-                _config=open(file, "w")
-                if not debug:
-                    _config.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net") # TODO: this isn't correct anymore, or?
-                else:
-                    _config.write("# rattlekekz debug config")
-                _config.flush()
+        if not os.path.exists(file):
+            _config=open(file, "w")
+            if not debug:
+                _config.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net") # TODO: this isn't correct anymore, or?
+            else:
+                _config.write("# rattlekekz debug config")
+            _config.flush()
         _config=open(file) # TODO: it's seems to be ugly to reopen a already open file?
         array=_config.readlines()
         self.configfile={}
