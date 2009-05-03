@@ -479,11 +479,11 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.updateTabs()
 
     def connectionFailed(self):
-        if not self.kwds['debug']:
+        #if not self.kwds['debug']:
             self.getTab(self.ShownRoom).addLine("Verbindung fehlgeschlagen")
 
     def connectionLost(self, failure):
-        if not self.kwds['debug']:
+        #if not self.kwds['debug']:
             self.getTab(self.ShownRoom).addLine(("divider",time.strftime('[%H:%M:%S]',time.localtime(time.time()))+" Verbindung verloren\n"))
             #self.getTab(self.ShownRoom).addLine(("divider","\nVerbindung verloren\n"))
 

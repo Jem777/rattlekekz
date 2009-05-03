@@ -30,7 +30,10 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.kwds=kwds
         self.model = protocol.KekzChatClient(self)
         self.view = interface(self, *args, **kwds)
-        self.readConfigfile()
+        if not self.kwds["debug"]:
+            self.readConfigfile()
+        else:
+            self.readConfigfile(True)
         self.revision=self.view.revision
         self.nickname=""
         self.nickpattern = re.compile("",re.IGNORECASE)
@@ -252,14 +255,20 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                 formlist.append(formlist[-1]+","+kekzformat[opt])
         return formlist
 
-    def readConfigfile(self):
-        file=os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"config"
+    def readConfigfile(self,debug=False):
+        if not debug:
+            file=os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"config"
+        else:
+            file=os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"debug"
         path=os.path.dirname(file)
         if not os.path.exists(path):
             os.mkdir(path)
             if not os.path.exists(file):
                 _config=open(file, "w")
-                _config.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net") # TODO: this isn't correct anymore, or?
+                if not debug:
+                    _config.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net") # TODO: this isn't correct anymore, or?
+                else:
+                    _config.write("# rattlekekz debug config")
                 _config.flush()
         _config=open(file) # TODO: it's seems to be ugly to reopen a already open file?
         array=_config.readlines()
@@ -269,9 +278,9 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                 a=i.split("=")
                 a=a[:2]
                 self.configfile.update({a[0].strip():a[1].strip()})
-        if self.kwds['timestamp'] == 1 or self.configfile["timestamp"] == 1: self.timestamp="[%H:%M] "
-        elif self.kwds['timestamp'] == 2 or self.configfile["timestamp"] == 2: self.timestamp="[%H:%M:%S] "
-        elif self.kwds['timestamp'] == 3 or self.configfile["timestamp"] == 3: self.timestamp="[%H%M] "
+        if (self.kwds['timestamp'] == 1) or (self.configfile["timestamp"] == "1"): self.timestamp="[%H:%M] "
+        elif (self.kwds['timestamp'] == 2) or (self.configfile["timestamp"] == "2"): self.timestamp="[%H:%M:%S] "
+        elif (self.kwds['timestamp'] == 3) or (self.configfile["timestamp"] == "3"): self.timestamp="[%H%M] "
         elif self.configfile.has_key("timestamp"):
             self.timestamp=self.configfile["timestamp"]+" "
         else:
