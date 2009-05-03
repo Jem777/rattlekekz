@@ -278,11 +278,14 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                 a=i.split("=")
                 a=a[:2]
                 self.configfile.update({a[0].strip():a[1].strip()})
-        if (self.kwds['timestamp'] == 1) or (self.configfile["timestamp"] == "1"): self.timestamp="[%H:%M] "
-        elif (self.kwds['timestamp'] == 2) or (self.configfile["timestamp"] == "2"): self.timestamp="[%H:%M:%S] "
-        elif (self.kwds['timestamp'] == 3) or (self.configfile["timestamp"] == "3"): self.timestamp="[%H%M] "
+        if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
+        elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
+        elif self.kwds['timestamp'] == 3: self.timestamp="[%H%M] "
         elif self.configfile.has_key("timestamp"):
-            self.timestamp=self.configfile["timestamp"]+" "
+            if self.configfile["timestamp"] == "1": self.timestamp="[%H:%M] "
+            elif self.configfile["timestamp"] == "2": self.timestamp="[%H:%M:%S] "
+            elif self.configfile["timestamp"] == "3": self.timestamp="[%H%M] "
+            else: self.timestamp=self.configfile["timestamp"]+" "
         else:
             self.timestamp="[%H:%M] "
             

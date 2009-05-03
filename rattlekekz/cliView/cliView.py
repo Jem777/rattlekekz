@@ -258,8 +258,9 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.time=("dividerstate",time.strftime(self.clockformat,time.localtime(time.time())))
         if not self.ShownRoom==None and self.oldtime != self.time:
             self.getTab(self.ShownRoom).clock(self.time)
-            if not self.kwds['debug']:
-                self.redisplay()
+            #if not self.kwds['debug']:
+            #    self.redisplay()
+            self.redisplay()
         self.oldtime=self.time
         reactor.callLater(1,self.setClock)
 
