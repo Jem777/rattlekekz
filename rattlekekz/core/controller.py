@@ -728,7 +728,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                     self.transfers[uid]["user"]=user
                     self.botMsg("filetransfer",str(user)+" offered Transmission of "+str(filename)+" ("+disp_size+"). Type /accept "+str(uid)+" to accept the Transmission.")
         except ValueError:
-            if sys.exc_value == "No JSON object could be decoded":
+            #if sys.exc_value == "No JSON object could be decoded":
                 self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
                 if cpmsg.lower() == 'version':
                     self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
@@ -738,8 +738,8 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                     self.sendCPAnswer(user,cpmsg+' '+self.revision)
                 else:
                     self.sendCPAnswer(user,cpmsg+' (unknown)')
-            else:
-                raise # something gone terrible wrong *g*
+            #else:
+            #    raise # something gone terrible wrong *g*
 
     def sendCPAnswer(self,user,cpmsg):
         self.model.sendCPAnswer(user,cpmsg)
