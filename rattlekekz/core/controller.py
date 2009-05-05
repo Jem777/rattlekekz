@@ -675,6 +675,8 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
     def receivedCPMsg(self,user,cpmsg):
         try:
             data = self.decodeJSON(cpmsg)
+            if not type(data) == dict:
+                raise ValueError("json not a dictionary.")
             if data.has_key("transfer"):
                 if data["transfer"] != "init":
                     uid = data["id"]
@@ -723,11 +725,14 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                     self.transfers[uid]=data
                     self.transfers[uid]["user"]=user
                     self.botMsg("filetransfer",str(user)+" offered Transmission of "+str(filename)+" ("+disp_size+"). Type /accept "+str(uid)+" to accept the Transmission.")
+            else:
+                raise ValueError("not a filetransfer dictionary.")
         except ValueError:
             self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
             if cpmsg.lower() == 'version':
                 self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
-            elif cpmsg.lower() == 'ping':                    self.sendCPAnswer(user,cpmsg+' ping')
+            elif cpmsg.lower() == 'ping':
+                self.sendCPAnswer(user,cpmsg+' ping')
             elif cpmsg.lower() in ('rev','revision'):
                 self.sendCPAnswer(user,cpmsg+' '+self.revision)
             else:
