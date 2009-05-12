@@ -349,7 +349,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.getTab(self.ShownRoom).addLine("Fehler: "+message)
 
     def gotLoginException(self, message):
-        if len(self.lookupRooms)==0:
+        if len(self.lookupRooms)==1:
             self.addTab("$login",rattlekekzInfoTab)
             self.ShownRoom="$login"
         self.getTab(self.ShownRoom).addLine("Fehler: "+message)
@@ -397,7 +397,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.getTab(self.ShownRoom).addLine(msg)
 
     def minorInfo(self, message):
-        if len(self.lookupRooms)==0:
+        if len(self.lookupRooms)==1:
             self.addTab("$infos",rattlekekzInfoTab)
             self.changeTab("$infos")
         self.lookupRooms[self.ShownRoom].addLine([("divider","Info: "),message])

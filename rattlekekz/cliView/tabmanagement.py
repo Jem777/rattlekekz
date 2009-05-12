@@ -67,10 +67,15 @@ class TabManager:
 
     def getTab(self, tabname):
         """returns the object of a Tab"""
+        Tab=None
         for i in self.lookupRooms:
             if i[0]==tabname.lower():
                 Tab=i[1]
-        return Tab
+                break
+        if Tab!=None:
+            return Tab
+        else: 
+            print "No object "+tabname
     
     def getTabId(self, tabname):
         """returns the id of a tab"""
