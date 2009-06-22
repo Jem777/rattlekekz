@@ -427,9 +427,11 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
 
     def printMail(self,user,date,mail):
         self.openMailTab()
-        msg=["\nMail von ",("red",user)," vom ",("gray",date+": \n"),"---Anfang der Mail---\n"]
-        msg.extend(self.deparse(mail))
-        msg.append("\n---Ende der Mail---")
+        # msg=["\nMail von ",("red",user)," vom ",("gray",date+": \n"),"---Anfang der Mail---\n"]
+        header = "\nMail von "+user+" vom "+date+": \n ---Anfang der Mail ---- \n" 
+        end = "\n---Ende der Mail---\n"
+        mail = header + mail + end
+        msg = self.deparse(mail)
         self.getTab(self.ShownRoom).addLine(msg)
 
 
