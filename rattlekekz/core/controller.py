@@ -584,7 +584,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
     def joinUser(self,room,nick,state,joinmsg):
         self.Userlist[room].append([nick,False,state])
-        self.Userlist[room].sort(key=lambda x: x[0].lower())
+        self.Userlist[room].sort(key=lambda x: self.stringHandler(x[0]).lower())
         for i in self.Userlist[room]:
             if i[0].startswith("~"):
                 index=self.Userlist[room].index(i)
