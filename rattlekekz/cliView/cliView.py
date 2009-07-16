@@ -20,7 +20,7 @@ copyright = """
     along with rattlekekz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-revision = "$Revision$"
+revision = "Git has no revisions 1"
 
 # rattlekekz
 from rattlekekz.cliView.tabmanagement import TabManager
