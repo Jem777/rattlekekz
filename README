@@ -1,1 +1,17 @@
-TODO: write something interesting and useful :)
+rattlekekz
+----------
+
+dependecies:
+
+python, twisted, urwid, simplejson, pyopenssl
+
+install:
+
+python setup.py build
+sudo python setup.py install 
+python setup.py clean
+
+
+run:
+
+rattlekekz
