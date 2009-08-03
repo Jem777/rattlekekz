@@ -322,11 +322,26 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
                     nick = nick[1:]
                     at=True
                 solutions=[]
+                newInput = nick
                 if nick != "":
                     for i in self.completion:
                         if nick in str(i[:len(nick)]).lower():
                             solutions.append(i)
                     if len(solutions) != 0 and len(solutions) != 1:
+                        solutions.sort(key=lambda x: len(x))
+                        for x in range(len(solutions[0])):
+                            if solutions[0][x] != solutions[1][x]:
+                                break
+                            else:
+                                newInput=solutions[0][:x+1]
+                        if at:
+                            newInput="@"+newInput
+                        input.append(str(newInput))
+                        if len(input) is not 1:
+                            self.Input.set_edit_text(" ".join(input)+crap)
+                        else:
+                            self.Input.set_edit_text(" ".join(input)+crap)
+                        self.Input.set_edit_pos(len(self.Input.get_edit_text())-len(crap))
                         self.addLine(" ".join(solutions))
                     elif len(solutions) is not 0:
                         if at:
