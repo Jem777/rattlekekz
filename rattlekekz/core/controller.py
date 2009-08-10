@@ -300,6 +300,10 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
             self.clockformat=self.configfile["clock"]+" "
         else:
             self.clockformat="[%H:%M:%S] "
+        if self.configfile.has_key("autoload_plugins"):
+            list_of_plugins = map(lambda x: x.strip(),
+                    self.configfile["autoload_plugins"].split(","))
+            map(lambda x: self.loadPlugin(x), list_of_plugins)
         self.view.finishedReadingConfigfile()
 
 
