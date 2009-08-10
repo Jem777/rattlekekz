@@ -20,7 +20,7 @@ copyright = """
     along with rattlekekz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
+import subprocess
 
 class plugin:
     def __init__(self,controller,model,view):
@@ -37,8 +37,7 @@ class plugin:
         self.model.outHere(self.name,self)
 
     def receivedMsg(self, caller, nick, room, message):
-        if (self.controller.nickpattern.search(message) is not None) and
-            (self.controller.nickname != nick):
+        if (self.controller.nickpattern.search(message) is not None) and (self.controller.nickname != nick):
             self.blinklight()
 
     def privMsg(self, caller, nick, message):
@@ -47,8 +46,6 @@ class plugin:
 
     def blinklight(self):
         try:
-            Pid = os.fork()
-            if Pid == 0:
-                os.execvp("blinklight", ["blinklight", "3", "0.1"])
+            subprocess.Popen(["blinklight", "3", "0.1"])
         except:
             pass
