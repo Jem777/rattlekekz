@@ -37,16 +37,18 @@ class plugin:
         self.model.outHere(self.name,self)
 
     def receivedMsg(self, caller, nick, room, message):
-        if (self.controller.nickpattern.search(message) is not None):
+        if (self.controller.nickpattern.search(message) is not None) and
+            (self.controller.nickname != nick):
             self.blinklight()
 
     def privMsg(self, caller, nick, message):
-        self.blinklight()
+        if self.controller.nickname != nick:
+            self.blinklight()
 
     def blinklight(self):
         try:
             Pid = os.fork()
             if Pid == 0:
-                os.ecexl("/usr/bin/blinklight" "3 0.1")
+                os.execvp("blinklight", ["blinklight", "3", "0.1"])
         except:
             pass
