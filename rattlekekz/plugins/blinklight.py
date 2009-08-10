@@ -44,4 +44,9 @@ class plugin:
         self.blinklight()
 
     def blinklight(self):
-        os.system("blinklight 3 0.1")
+        try:
+            Pid = os.fork()
+            if Pid == 0:
+                os.ecexl("/usr/bin/blinklight" "3 0.1")
+        except:
+            pass
