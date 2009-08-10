@@ -7,7 +7,7 @@ setup(name='rattlekekz',
       author="rattlekekz Team",
       author_email="egg@spam.de",
       packages=['rattlekekz','rattlekekz.core','rattlekekz.cliView','rattlekekz.plugins'],
-      scripts=['bin/rattlekekz'],
+      scripts=['bin/rattlekekz', 'bin/blinklight'],
       requires=['twisted(>=8.1.0)','urwid','simplejson','OpenSSL'],
       url="http://kekz.net/",
       license="GPL v3 or higher"

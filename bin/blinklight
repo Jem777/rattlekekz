@@ -1,0 +1,40 @@
+#!/bin/bash
+#_______________________________________________
+# blink.sh - ThinkBlink making ThinkLight blink
+# author: Pawel Kazimierowicz www.PiKeyPL.com
+#_______________________________________________
+# use: sh blink.sh [how many flashes] [how long flashes]
+# eg. sh blink.sh 3 1 - three flashes for one second
+# eg. sh blink.sh 2 5 - two flashes for five seconds
+ 
+    ile=$1; # ile mrugniec, parametr skryptu
+    i=1; # licznik do petli
+ 
+read d < /sys/class/leds/tpacpi\:\:thinklight/brightness #load state of ThinkLight 
+# when state = 0 - OFF, 255 - ON 
+# echo $d # print state of ThinkLight - for diagnostic. 
+ 
+case "$d" in
+# if ThinkLight if OFF: ON->OFF
+ "0")  
+    while [ $i -le $ile ]; do
+       echo 255 > /sys/class/leds/tpacpi\:\:thinklight/brightness ;
+       sleep $2;
+       echo 0 > /sys/class/leds/tpacpi\:\:thinklight/brightness;
+       sleep $2;
+       i=$((i+1));
+ 
+    done;;
+ 
+# if ThinkLight is ON: OFF->ON
+"255") 
+     while [ $i -le $ile ]; do
+       echo 0 > /sys/class/leds/tpacpi\:\:thinklight/brightness;
+       sleep $2;
+       echo 255 > /sys/class/leds/tpacpi\:\:thinklight/brightness;
+       sleep $2;
+       i=$((i+1));
+    done
+esac
+ 
+# EOF ThinkBlink by Pawel Kazimierowicz
