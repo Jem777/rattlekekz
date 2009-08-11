@@ -20,125 +20,139 @@ copyright = """
     along with rattlekekz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-warranty = """  15. Disclaimer of Warranty.
+warranty = """
+    15. Disclaimer of Warranty.
 
-  THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
-APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
-HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY
-OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,
-THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
-IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
-ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+      THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
+    APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
+    HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY
+    OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
+    IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
+    ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
 
-  16. Limitation of Liability.
+      16. Limitation of Liability.
 
-  IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
-WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
-THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
-GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
-USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
-DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
-PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
-EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGES.
+      IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+    WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
+    THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+    GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+    USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
+    DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
+    PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
+    EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGES.
 
-  17. Interpretation of Sections 15 and 16.
+      17. Interpretation of Sections 15 and 16.
 
-  If the disclaimer of warranty and limitation of liability provided
-above cannot be given local legal effect according to their terms,
-reviewing courts shall apply local law that most closely approximates
-an absolute waiver of all civil liability in connection with the
-Program, unless a warranty or assumption of liability accompanies a
-copy of the Program in return for a fee.
+      If the disclaimer of warranty and limitation of liability provided
+    above cannot be given local legal effect according to their terms,
+    reviewing courts shall apply local law that most closely approximates
+    an absolute waiver of all civil liability in connection with the
+    Program, unless a warranty or assumption of liability accompanies a
+    copy of the Program in return for a fee.
+"""
+
+help = """
+Usage: rattlekekz [-h, -?, --help][-c, --copyright][-w, --warranty][-H, --host <host>][-v, --view <view>][-n, --nocolors][-d, --debug][-t, --timestamp <integer>]
+-?, -h, --help: Display this help
+-c, --copyright: Display copyright information
+-w, --warranty: Display disclaimer
+-H, --host: Host to connect, Default: kekz.net
+-p, --port: Port to connect, Default: 23002
+-l, --localhost: Connects to localhost (127.0.0.1)
+-v, --view: View to use, Default: cliView
+-n, --nousercolors: This Option disables colors of the Userlist in cliView
+-d, --debug: Enables some various debug settings
+-t, --timestamp: Determines the timestampformat to be used:
+1 ... [HH:MM] (default, if not overridden by kekznet.conf)
+2 ... [HH:MM:SS]
+3 ... [HHMM]
+"""
+
+copyright_short = """
+rattlekekz  Copyright (C) 2008, 2009  Moritz Doll and Christian Scharkus
+rattlekekz comes with ABSOLUTELY NO WARRANTY; for details run 'rattlekekz -w'.
+rattlekekz is free software, and you are welcome to redistribute it
+under certain conditions; run 'rattlekekz -c' for details.
 """
 
 import sys, os, getopt, types
 
-letters = 'H:v:?hlnt:cwd'
-keywords = ['host=','view=','help','copyright','warranty','localhost','nousercolors','timestamp=','debug']
-opts, extraparams = getopt.getopt(sys.argv[1:],letters,keywords)
 
+def initLogger():
+    logfile=os.environ["HOME"]+os.sep+'.rattlekekz'+os.sep+'rattlekekz.log'
+    logpath=os.path.dirname(logfile)
+    errlog = sys.stderr
+    if os.path.isdir(logpath):
+        errlog = open(logfile,'w')
+    elif os.path.exists(logpath):
+        pass # TODO: Raise exception if rattlekekz-dir is a file
+    else:
+        os.mkdir(logpath)
+        errlog = open(logfile,'w')
+    sys.stderr = errlog
 
-class main():
-    def __init__(self):
-        logfile=os.environ["HOME"]+os.sep+'.rattlekekz'+os.sep+'rattlekekz.log'
-        logpath=os.path.dirname(logfile)
-        errlog = sys.stderr
-        if os.path.isdir(logpath):
-            errlog = open(logfile,'w')
-        elif os.path.exists(logpath):
-            pass # TODO: Raise exception if rattlekekz-dir is a file
-        else:
-            os.mkdir(logpath)
-            errlog = open(logfile,'w')
-        sys.stderr = errlog
-        self.host = 'kekz.net'
-        self.view = 'cliView'
-        self.vargs = {'usercolors':True, 'debug':False, 'timestamp':0}
-        print """
-    rattlekekz  Copyright (C) 2008, 2009  Moritz Doll and Christian Scharkus
-    rattlekekz comes with ABSOLUTELY NO WARRANTY; for details run 'rattlekekz -w'.
-    rattlekekz is free software, and you are welcome to redistribute it
-    under certain conditions; run 'rattlekekz -c' for details.
-"""
+def getArgs():
+    port = 23002
+    host = 'kekz.net'
+    view = 'cliView'
+    vargs = {'usercolors':True, 'debug':False, 'timestamp':0}
+    letters = 'H:v:p:?hlnt:cwd'
+    keywords = ['host=', 'port=', 'view=','help','copyright','warranty','localhost','nousercolors','timestamp=','debug']
+    opts, extraparams = getopt.getopt(sys.argv[1:],letters,keywords)
+    for o,p in opts:
+        if o in ['-H','--host']:
+            host = p
+        elif o in ['-v','--view']:
+            view = p
+        elif o in ['-p','--port']:
+            port = int(p)
+        elif o in ['-l','--localhost']:
+            host = '127.0.0.1'
+        elif o in ['-n','--nousercolors']:
+            if self.view in 'cliView':
+                self.vargs['usercolors'] = False
+        elif o in ['-d','--debug']:
+            vargs['debug'] = True
+        elif o in ['-t','--timestamp']:
+            vargs['timestamp'] = int(p)
+        elif o in ['-w','--warranty']:
+            print warranty
+            sys.exit()
+        elif o in ['-c','--copyright']:
+            print copyright
+            sys.exit()
+        elif o in ['-?','-h','--help']:
+            print copyright_short
+            print help
+            sys.exit()
+    return host,port,view,vargs
 
-        for o,p in opts:
-            if o in ['-H','--host']:
-                self.host = p
-            elif o in ['-v','--view']:
-                self.view = p
-            elif o in ['-l','--localhost']:
-                self.host = '127.0.0.1'
-            elif o in ['-n','--nousercolors']:
-                if self.view in 'cliView':
-                    self.vargs['usercolors'] = False
-            elif o in ['-d','--debug']:
-                self.vargs['debug'] = True
-            elif o in ['-t','--timestamp']:
-                if self.view in 'cliView':
-                    self.vargs['timestamp'] = int(p) # TODO: implement this into wxView
-            elif o in ['-w','--warranty']:
-                print warranty
-                sys.exit()
-            elif o in ['-c','--copyright']:
-                print copyright
-                sys.exit()
-            elif o in ['-?','-h','--help']:
-                print 'Usage: rattlekekz [-h, -?, --help][-c, --copyright][-w, --warranty][-H, --host <host>][-v, --view <view>][-n, --nocolors][-d, --debug][-t, --timestamp <integer>]'
-                print '-?, -h, --help: Display this help'
-                print '-c, --copyright: Display copyright information'
-                print '-w, --warranty: Display disclaimer'
-                print '-H, --host: Host to connect, Default: kekz.net'
-                print '-l, --localhost: Connects to localhost (127.0.0.1)'
-                print '-v, --view: View to use, Default: cliView'
-                print '-n, --nousercolors: This Option disables colors of the Userlist in cliView'
-                print '-d, --debug: Enables some various debug settings'
-                print '-t, --timestamp: Determines the timestampformat to be used:'
-                print '1 ... [HH:MM] (default, if not overridden by kekznet.conf)'
-                print '2 ... [HH:MM:SS]'
-                print '3 ... [HHMM]'
-                sys.exit()
-
-    def startRattlekekz(self, host, view="cliView", *args, **kwds): 
-        viewPath=view+"."+view
+def startRattlekekz(host, port, view="cliView", *args, **kwds): 
+    viewPath=view+"."+view
+    try:
+        viewModule=__import__("rattlekekz."+viewPath,fromlist=viewPath) #TODO find a better way
+    except ImportError, arg:
+        print arg
+        sys.exit()
+    if "View" in dir(viewModule) and type(viewModule.View) == types.ClassType:
         try:
-            viewModule=__import__("rattlekekz."+viewPath,fromlist=viewPath) #TODO find a better way
+            from rattlekekz.core import controller
         except ImportError, arg:
             print arg
             sys.exit()
-        if "View" in dir(viewModule) and type(viewModule.View) == types.ClassType:
-            try:
-                from rattlekekz.core import controller
-            except ImportError, arg:
-                print arg
-                sys.exit()
-            kekzControl=controller.KekzController(viewModule.View, *args, **kwds)
-            kekzControl.view.startConnection(host,23002)
-        else:
-            print 'Error: Nullpointer Exception'
-            sys.exit()
+        kekzControl=controller.KekzController(viewModule.View, *args, **kwds)
+        kekzControl.view.startConnection(host,port)
+    else:
+        print 'Error: Nullpointer Exception'
+        sys.exit()
+
+def init():
+    initLogger()
+    host,port,view,vargs = getArgs()
+    startRattlekekz(host, port, view, usercolors = vargs["usercolors"], debug = vargs["debug"], timestamp = vargs["timestamp"])
 
 if __name__ == "__main__":
-    f = main()
-    f.startRattlekekz(f.host, f.view, usercolors=f.vargs['usercolors'], debug=f.vargs['debug'], timestamp=f.vargs['timestamp'])
+    init()

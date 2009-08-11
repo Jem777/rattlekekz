@@ -300,6 +300,9 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
             self.clockformat=self.configfile["clock"]+" "
         else:
             self.clockformat="[%H:%M:%S] "
+        if self.configfile.has_key("autoload_plugins"):
+            self.autoload_plugins = map(lambda x: x.strip(),
+                    self.configfile["autoload_plugins"].split(","))
         self.view.finishedReadingConfigfile()
 
 
@@ -490,6 +493,8 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.sendMailCount=0
         self.Userlist={room:[]}
         self.view.successLogin(nick,status,room)
+        if self.configfile.has_key("autoload_plugins"):
+            map(lambda x: self.loadPlugin(x), self.autoload_plugins)
 
     def successMailLogin(self):
         self.sendMailCount=0

@@ -55,8 +55,8 @@ copy of the Program in return for a fee.
 
 import sys, os, getopt, types
 
-letters = 'H:v:?hlnt:cwd'
-keywords = ['host=','view=','help','copyright','warranty','localhost','nousercolors','timestamp=','debug']
+letters = 'H:v:p:?hlnt:cwd'
+keywords = ['host=', 'port=', 'view=','help','copyright','warranty','localhost','nousercolors','timestamp=','debug']
 opts, extraparams = getopt.getopt(sys.argv[1:],letters,keywords)
 
 
@@ -73,6 +73,7 @@ class main():
             os.mkdir(logpath)
             errlog = open(logfile,'w')
         sys.stderr = errlog
+        self.port = 23002
         self.host = 'kekz.net'
         self.view = 'cliView'
         self.vargs = {'usercolors':True, 'debug':False, 'timestamp':0}
@@ -88,6 +89,8 @@ class main():
                 self.host = p
             elif o in ['-v','--view']:
                 self.view = p
+            elif o in ['-p','--port']:
+                self.port = int(p)
             elif o in ['-l','--localhost']:
                 self.host = '127.0.0.1'
             elif o in ['-n','--nousercolors']:
@@ -120,7 +123,7 @@ class main():
                 print '3 ... [HHMM]'
                 sys.exit()
 
-    def startRattlekekz(self, host, view="cliView", *args, **kwds): 
+    def startRattlekekz(self, host, port, view="cliView", *args, **kwds): 
         viewPath=view+"."+view
         try:
             viewModule=__import__("rattlekekz."+viewPath,fromlist=viewPath) #TODO find a better way
@@ -134,11 +137,11 @@ class main():
                 print arg
                 sys.exit()
             kekzControl=controller.KekzController(viewModule.View, *args, **kwds)
-            kekzControl.view.startConnection(host,23002)
+            kekzControl.view.startConnection(host,port)
         else:
             print 'Error: Nullpointer Exception'
             sys.exit()
 
 if __name__ == "__main__":
     f = main()
-    f.startRattlekekz(f.host, f.view, usercolors=f.vargs['usercolors'], debug=f.vargs['debug'], timestamp=f.vargs['timestamp'])
+    f.startRattlekekz(f.host, f.port, f.view, usercolors=f.vargs['usercolors'], debug=f.vargs['debug'], timestamp=f.vargs['timestamp'])
