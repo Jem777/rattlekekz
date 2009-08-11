@@ -27,6 +27,7 @@ app = QtGui.QApplication(sys.argv,True)
 qt4reactor.install()
 from twisted.internet import reactor
 from rattlekekz.core.pluginmanager import iterator
+from rattlekekz.qtView import tabs
 
 class View(iterator):
     def __init__(self,controller, *args, **kwds):
@@ -40,8 +41,8 @@ class View(iterator):
         self.main.setCentralWidget(QtGui.QTabWidget())
         self.tabs=self.main.centralWidget()
         self.tabs.setMovable(True)
-        self.tabs.setTabsClosable(True)
-        self.tabs.addTab(QtGui.QWidget(),"fu")
+        self.tabs.addTab(tabs.rattlekekzBaseTab(),"fu")
+        self.tabs.widget(0)._setup()
         self.tabs.addTab(QtGui.QWidget(),"bar")
         self.main.show()
 
