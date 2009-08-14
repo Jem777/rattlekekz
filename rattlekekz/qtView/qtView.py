@@ -21,16 +21,21 @@ copyright = """
 """
 
 import sys
-from PyQt4 import QtGui
+
+#twisted/qt
+from PyQt4 import QtGui,QtCore
 import qt4reactor
 app = QtGui.QApplication(sys.argv,True)
 qt4reactor.install()
 from twisted.internet import reactor
-from rattlekekz.core.pluginmanager import iterator
-from rattlekekz.qtView import tabs
 
-class View(iterator):
+from rattlekekz.core.pluginmanager import iterator
+from rattlekekz.qtView.tabs import *
+from rattlekekz.qtView.tabmanagement import TabManager
+
+class View(TabManager,iterator):
     def __init__(self,controller, *args, **kwds):
+        TabManager.__init__(self)
         self.name,self.version="rattlekekz","0.1 Nullpointer Exception"  # Diese Variablen werden vom View abgefragt
         self.controller=controller
         self.plugins={}
@@ -41,9 +46,11 @@ class View(iterator):
         self.main.setCentralWidget(QtGui.QTabWidget())
         self.tabs=self.main.centralWidget()
         self.tabs.setMovable(True)
-        self.tabs.addTab(tabs.rattlekekzBaseTab(),"fu")
-        self.tabs.widget(0)._setup()
-        self.tabs.addTab(QtGui.QWidget(),"bar")
+        self.addTab("$login",rattlekekzLoginTab)
+        self.changeTab("$login")
+        #self.tabs.addTab(rattlekekzBaseTab(),"fu")
+        #self.tabs.widget(0)._setup()
+        #self.tabs.addTab(QtGui.QWidget(),"bar")
         self.main.show()
 
     def finishedReadingConfigfile(self):
@@ -122,6 +129,9 @@ class View(iterator):
 
     def printMail(self,user,date,mail):
         pass
+
+    def sendStr(self,channel,string):
+        self.iterPlugins('sendStr', [channel, string])
 
     def unknownMethod(self,name):
         pass

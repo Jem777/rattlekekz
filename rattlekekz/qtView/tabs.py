@@ -26,6 +26,32 @@ import re
 
 class rattlekekzBaseTab(QtGui.QWidget):
     def _setup(self):
+        pass
+
+    def fu(self):
+        print "fu"
+
+class rattlekekzLoginTab(rattlekekzBaseTab):
+    def _setup(self,room,parent):
+        self.room,self.parent=room,parent
+        self.Box = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight,self)
+        self.Box.addWidget(QtGui.QListView())
+        Form = QtGui.QFormLayout()
+        Form.addRow("Nickname",QtGui.QLineEdit())
+        Form.addRow("Passwort",QtGui.QLineEdit())
+        Form.addRow(u"Räume",QtGui.QLineEdit())
+        Form.addRow(QtGui.QPushButton("&Login"))
+        self.Box.addLayout(Form)
+        self.roomList = self.Box.itemAt(1).widget()
+        self.nickInput = self.Box.itemAt(1).layout().itemAt(1).widget()
+        self.passInput = self.Box.itemAt(1).layout().itemAt(3).widget()
+        self.roomInput = self.Box.itemAt(1).layout().itemAt(5).widget()
+        self.loginButton = self.Box.itemAt(1).layout().itemAt(6).widget()
+        self.passInput.setEchoMode(QtGui.QLineEdit.Password)
+
+class rattlekekzPrivTab(rattlekekzBaseTab):
+    def _setup(self,room,parent):
+        self.room,self.parent=room,parent
         self.Box0 = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom,self)
         Box1 = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
         Box1.addWidget(QtGui.QSplitter())
@@ -37,19 +63,16 @@ class rattlekekzBaseTab(QtGui.QWidget):
         Box2.addWidget(QtGui.QPushButton("&Send"))
         self.Box0.addLayout(Box2)
         self.output=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(0)
-        self.userlist=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(1)
-        self.input=self.Box0.itemAt(1).layout().itemAt(0).widget()
-        self.send=self.Box0.itemAt(1).layout().itemAt(1).widget()
-        self.connect(self.send,QtCore.SIGNAL("clicked()"),self.fu)
+        self.userlist=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(1) # QListView
+        self.input=self.Box0.itemAt(1).layout().itemAt(0).widget() # QLineEdit TODO: May replace with QTextEdit
+        self.send=self.Box0.itemAt(1).layout().itemAt(1).widget() # QPushButton
+        self.connect(self.send,QtCore.SIGNAL("clicked()"),self.sendStr)
+        self.connect(self.input,QtCore.SIGNAL("returnPressed()"),self.sendStr)
 
-    def fu(self):
-        print "fu"
-
-class rattlekekzLoginTab(rattlekekzBaseTab):
-    pass
-
-class rattlekekzPrivTab(rattlekekzBaseTab):
-    pass
+    def sendStr(self):
+        if self.input.hasAcceptableInput():
+            input = str(self.input.text())
+            self.parent.sendStr(self.room,input)
 
 class rattlekekzMsgTab(rattlekekzPrivTab):
     pass
