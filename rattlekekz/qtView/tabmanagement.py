@@ -24,17 +24,19 @@ from PyQt4 import QtGui,QtCore
 
 class TabManager():
     def __init__(self):
-        pass
+        self.ShownRoom=None
 
     def changeTab(self, tabname):
         """changes the Tab to tabname"""
         Tab = self.getTab(tabname)
         self.tabs.setCurrentWidget(Tab)
+        self.ShownRoom=tabname
 
     def getTab(self,tabname):
         """returns the object of a Tab"""
         for i in range(self.tabs.count()):
-            if str(self.tabs.tabText(i)).lower()==tabname.lower():
+            print str(self.tabs.tabText(i)),tabname
+            if str(self.tabs.tabText(i))==tabname:
                 Tab=self.tabs.widget(i)
                 break
         return Tab
@@ -46,3 +48,5 @@ class TabManager():
         except:
             self.tabs.addTab(tab(),tabname)
             self.getTab(tabname)._setup(tabname, self)
+            if self.tabs.count() == 1:
+                self.shownRoom = tabname

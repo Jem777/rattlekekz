@@ -42,12 +42,21 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
         Form.addRow(u"Räume",QtGui.QLineEdit())
         Form.addRow(QtGui.QPushButton("&Login"))
         self.Box.addLayout(Form)
-        self.roomList = self.Box.itemAt(1).widget()
-        self.nickInput = self.Box.itemAt(1).layout().itemAt(1).widget()
-        self.passInput = self.Box.itemAt(1).layout().itemAt(3).widget()
-        self.roomInput = self.Box.itemAt(1).layout().itemAt(5).widget()
-        self.loginButton = self.Box.itemAt(1).layout().itemAt(6).widget()
+        self.Box.itemAt(0).widget().setModel(QtGui.QStringListModel())
+        self.roomList = self.Box.itemAt(0).widget().model()
+        self.nickInput = self.Box.itemAt(1).layout().itemAt(1).widget() # QLineEdit
+        self.passInput = self.Box.itemAt(1).layout().itemAt(3).widget() # QLineEdit
+        self.roomInput = self.Box.itemAt(1).layout().itemAt(5).widget() # QLineEdit
+        self.loginButton = self.Box.itemAt(1).layout().itemAt(6).widget() # QPushButton
         self.passInput.setEchoMode(QtGui.QLineEdit.Password)
+        self.loginButton.setDisabled(True)
+
+    def receivedPreLoginData(self,rooms,array):
+        self.loginButton.setEnabled(True)
+        list=[]
+        for i in rooms:
+            list.append(i["name"]+" ("+str(i["users"])+"/"+str(i["max"])+")")
+        self.roomList.setStringList(list)
 
 class rattlekekzPrivTab(rattlekekzBaseTab):
     def _setup(self,room,parent):
@@ -62,7 +71,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
         Box2.addWidget(QtGui.QLineEdit())
         Box2.addWidget(QtGui.QPushButton("&Send"))
         self.Box0.addLayout(Box2)
-        self.output=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(0)
+        self.output=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(0) # QTextbrowser
         self.userlist=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(1) # QListView
         self.input=self.Box0.itemAt(1).layout().itemAt(0).widget() # QLineEdit TODO: May replace with QTextEdit
         self.send=self.Box0.itemAt(1).layout().itemAt(1).widget() # QPushButton

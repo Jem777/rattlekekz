@@ -35,9 +35,10 @@ from rattlekekz.qtView.tabmanagement import TabManager
 
 class View(TabManager,iterator):
     def __init__(self,controller, *args, **kwds):
-        TabManager.__init__(self)
         self.name,self.version="rattlekekz","0.1 Nullpointer Exception"  # Diese Variablen werden vom View abgefragt
         self.controller=controller
+        TabManager.__init__(self)
+        self.blubb=lambda x:chr(ord(x)-43)
         self.plugins={}
         self.main = QtGui.QMainWindow()
         self.main.setWindowTitle(self.name)
@@ -57,7 +58,8 @@ class View(TabManager,iterator):
         pass
 
     def receivedPreLoginData(self,rooms,array):
-        pass
+        self.isConnected=True
+        self.getTab(self.ShownRoom).receivedPreLoginData(rooms,array)
 
     def startConnection(self,host,port):
         reactor.connectSSL(host, port, self.controller.model, self.controller.model)
@@ -65,6 +67,9 @@ class View(TabManager,iterator):
 
     def connectionLost(self,reason):
         pass
+
+    def connectionFailed(self):
+        print "fail!"
 
     def successLogin(self,nick,status,room):
         pass
