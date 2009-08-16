@@ -42,14 +42,20 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
         Form.addRow(u"Räume",QtGui.QLineEdit())
         Form.addRow(QtGui.QPushButton("&Login"))
         self.Box.addLayout(Form)
-        self.Box.itemAt(0).widget().setModel(QtGui.QStringListModel())
-        self.roomList = self.Box.itemAt(0).widget().model()
+        self.roomView = self.Box.itemAt(0).widget()
+        self.roomView.setModel(QtGui.QStringListModel())
+        self.roomView.setEditTriggers(self.roomView.NoEditTriggers)
+        self.roomView.setSelectionMode(self.roomView.NoSelection)
+        self.roomView.setDragDropMode(self.roomView.NoDragDrop)
+        self.roomView.setAlternatingRowColors(True)
+        self.roomList = self.Box.itemAt(0).widget().model() # QStringListModel
         self.nickInput = self.Box.itemAt(1).layout().itemAt(1).widget() # QLineEdit
         self.passInput = self.Box.itemAt(1).layout().itemAt(3).widget() # QLineEdit
         self.roomInput = self.Box.itemAt(1).layout().itemAt(5).widget() # QLineEdit
         self.loginButton = self.Box.itemAt(1).layout().itemAt(6).widget() # QPushButton
         self.passInput.setEchoMode(QtGui.QLineEdit.Password)
         self.loginButton.setDisabled(True)
+        self.connect(self.loginButton,QtCore.SIGNAL("clicked()"),self.sendLogin)
 
     def receivedPreLoginData(self,rooms,array):
         self.loginButton.setEnabled(True)
@@ -57,6 +63,10 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
         for i in rooms:
             list.append(i["name"]+" ("+str(i["users"])+"/"+str(i["max"])+")")
         self.roomList.setStringList(list)
+
+    def sendLogin(self):
+        nick,password,rooms=self.parent.stringHandler([self.nickInput.text(),self.passInput.text(),self.roomInput.text()])
+        self.parent.sendLogin(nick,password,rooms)
 
 class rattlekekzPrivTab(rattlekekzBaseTab):
     def _setup(self,room,parent):
@@ -73,6 +83,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
         self.Box0.addLayout(Box2)
         self.output=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(0) # QTextbrowser
         self.userlist=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(1) # QListView
+        self.userlist.setEditTriggers(self.userlist.NoEditTriggers)
         self.input=self.Box0.itemAt(1).layout().itemAt(0).widget() # QLineEdit TODO: May replace with QTextEdit
         self.send=self.Box0.itemAt(1).layout().itemAt(1).widget() # QPushButton
         self.connect(self.send,QtCore.SIGNAL("clicked()"),self.sendStr)
@@ -84,7 +95,8 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
             self.parent.sendStr(self.room,input)
 
 class rattlekekzMsgTab(rattlekekzPrivTab):
-    pass
+    def nothing(self):
+        pass
 
 class rattlekekzMailTab(rattlekekzBaseTab):
     pass

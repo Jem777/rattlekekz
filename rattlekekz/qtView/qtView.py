@@ -53,6 +53,90 @@ class View(TabManager,iterator):
         #self.tabs.widget(0)._setup()
         #self.tabs.addTab(QtGui.QWidget(),"bar")
         self.main.show()
+        self.smilies={"s6":":-)",
+                 "s4":":-(",
+                 "s1":":-/",
+                 "s8":"X-O",
+                 "s7":"(-:",
+                 "s9":"?-|",
+                 "s10":"X-|",
+                 "s11":"8-)",
+                 "s2":":-D",
+                 "s3":":-P",
+                 "s5":";-)",
+                 "sxmas":"o:)",
+                 "s12":":-E",
+                 "s13":":-G"}
+
+    def deparse(self,msg):
+        text,format=self.controller.decode(msg)
+        msg=[]
+        for i in range(len(text)):
+            if format[i] == "hline":
+                text[i] = "---------------\n"
+                msg.append(('normal',text[i]))
+                continue
+            if format[i] == "imageurl":
+                msg.append(('smilie',text[i]))
+                continue
+            if len(format[i]) > 1:
+                if format[i][0] == "ownnick":
+                    if not "green" in format[i][1]:
+                        color = "green"
+                    else:
+                        color = "blue"
+                    msg.append((color,text[i]))
+                    continue
+            #if text[i].isspace() or text[i]=="":   # NOTE: If there are any bugs with new rooms and the roomop-message THIS could be is the reason ;)
+            #    continue                           # 
+            if text[i] == "":                       #
+                continue                            #
+            form=format[i].split(",")
+            color="normal"
+            font=""
+            for a in form:
+                if a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow","white","reset"]:
+                    if a != "reset":
+                        color=a
+                    else:
+                        color="normal"
+                if a == "bold":
+                    font="bold"
+                if a == "sb":
+                    if self.smilies.has_key(text[i]):
+                        text[i]=self.smilies[text[i]]
+                        color="smilie"
+                        font=""
+                    else:
+                        text[i]=""
+                if a == "button":
+                    color="smilie"
+                    font=""
+                    text[i] = "["+text[i]+"]"
+            msg.append((color+font,text[i]))
+            for i in range(len(msg)):
+                if type(msg[i][1]) is unicode:
+                    msg[i] = (msg[i][0],msg[i][1].encode("utf_8"))
+            #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
+            #self.lookupRooms[room].addLine(text[i])
+        return msg
+
+    def stringHandler(self,string):
+        if type(string) is list:
+            result=[]
+            for i in string:
+                try:
+                    i=str(i)
+                except UnicodeEncodeError:
+                    i=unicode(i).encode("utf_8")
+                result.append(i)
+            return result
+        else:
+            try:
+                return str(string)
+            except UnicodeEncodeError:
+                string=unicode(string)
+                return string.encode("utf_8")
 
     def finishedReadingConfigfile(self):
         pass
@@ -65,6 +149,9 @@ class View(TabManager,iterator):
         reactor.connectSSL(host, port, self.controller.model, self.controller.model)
         reactor.run()
 
+    def sendLogin(self, nick, passwd, room):
+        self.iterPlugins('sendLogin', [nick, passwd, room])
+
     def connectionLost(self,reason):
         pass
 
@@ -72,7 +159,11 @@ class View(TabManager,iterator):
         print "fail!"
 
     def successLogin(self,nick,status,room):
-        pass
+        self.nickname=nick
+        self.ShownRoom=room
+        self.addTab(room,rattlekekzMsgTab)
+        self.changeTab(room)
+        self.delTab("$login")
 
     def successRegister(self):
         pass
@@ -92,8 +183,8 @@ class View(TabManager,iterator):
     def receivedPing(self,deltaPing):
         pass
 
-    def printMsg(self,nick,msg,channel,status):
-        pass
+    def printMsg(self,room,msg):
+        print "("+room+")",msg
 
     def gotException(self, message):
         pass
@@ -137,6 +228,12 @@ class View(TabManager,iterator):
 
     def sendStr(self,channel,string):
         self.iterPlugins('sendStr', [channel, string])
+
+    def timestamp(self, string):
+        return ("timestamp",string)
+
+    def colorizeText(self, color, text):
+        return (color, text)
 
     def unknownMethod(self,name):
         pass

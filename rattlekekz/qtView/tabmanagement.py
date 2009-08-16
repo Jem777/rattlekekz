@@ -32,14 +32,24 @@ class TabManager():
         self.tabs.setCurrentWidget(Tab)
         self.ShownRoom=tabname
 
+    def getActiveTab(self):
+        """returns the Active Tab"""
+        return self.ShownRoom
+
     def getTab(self,tabname):
         """returns the object of a Tab"""
         for i in range(self.tabs.count()):
-            print str(self.tabs.tabText(i)),tabname
-            if str(self.tabs.tabText(i))==tabname:
+            if self.stringHandler(self.tabs.tabText(i))==tabname:
                 Tab=self.tabs.widget(i)
                 break
         return Tab
+
+    def getTabId(self,tabname):
+        for i in range(self.tabs.count()):
+            if self.stringHandler(self.tabs.tabText(i))==tabname:
+                integer=i
+                break
+        return integer
 
     def addTab(self,tabname,tab):
         """adds a new Tab with tabname and the object"""
@@ -50,3 +60,14 @@ class TabManager():
             self.getTab(tabname)._setup(tabname, self)
             if self.tabs.count() == 1:
                 self.shownRoom = tabname
+
+    def delTab(self,tabname):
+        """deletes a Tab"""
+        #if tabname.lower()==self.ShownRoom.lower():
+        #    index=self.getTabId(self.ShownRoom)
+        #    if index==0 or index==1:
+        #        index=2
+        #    else:
+        #        index=index-1
+        #    self.changeTab(self.tabs.widget(index))
+        self.tabs.removeTab(self.getTabId(tabname))
