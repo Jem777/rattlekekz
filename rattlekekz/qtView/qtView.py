@@ -123,22 +123,36 @@ class View(TabManager,iterator):
             msg[i]=msg[i][1]
         return msg
 
-    def stringHandler(self,string):
+    def stringHandler(self,string,return_utf8=False):
         if type(string) is list:
             result=[]
             for i in string:
-                try:
-                    i=str(i)
-                except UnicodeEncodeError:
-                    i=unicode(i).encode("utf_8")
-                result.append(i)
+                if return_utf8 == False:
+                    try:
+                        i=str(i)
+                    except UnicodeEncodeError:
+                        i=unicode(i).encode("utf_8")
+                    result.append(i)
+                else:
+                    try:
+                        i=unicode(i)
+                    except UnicodeDecodeError:
+                        i=str(i).decode("utf_8")
+                    result.append(i)
             return result
         else:
-            try:
-                return str(string)
-            except UnicodeEncodeError:
-                string=unicode(string)
-                return string.encode("utf_8")
+            if return_utf8 == False:
+                try:
+                    return str(string)
+                except UnicodeEncodeError:
+                    string=unicode(string)
+                    return string.encode("utf_8")
+            else:
+                try:
+                    return unicode(string)
+                except UnicodeDecodeError:
+                    string=str(string)
+                    return string.decode("utf_8")
 
     def finishedReadingConfigfile(self):
         pass
@@ -199,7 +213,9 @@ class View(TabManager,iterator):
         pass
 
     def meJoin(self,room,background):
-        pass
+        self.addTab(room,rattlekekzMsgTab)
+        if not background:
+            self.changeTab(room)
 
     def mePart(self,room):
         pass

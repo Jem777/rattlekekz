@@ -97,7 +97,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
             self.input.setText("")
 
     def addLine(self,msg):
-        self.output.append(msg)
+        self.output.append(self.parent.stringHandler(msg,True))
 
 class rattlekekzMsgTab(rattlekekzPrivTab):
     def nothing(self):

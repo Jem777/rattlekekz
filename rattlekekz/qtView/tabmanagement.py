@@ -25,6 +25,7 @@ from PyQt4 import QtGui,QtCore
 class TabManager():
     def __init__(self):
         self.ShownRoom=None
+        self.lookupRooms=[]
 
     def changeTab(self, tabname):
         """changes the Tab to tabname"""
@@ -57,6 +58,7 @@ class TabManager():
             self.getTab(tabname.lower())
         except:
             self.tabs.addTab(tab(),tabname)
+            self.lookupRooms.append("stub")
             self.getTab(tabname)._setup(tabname, self)
             if self.tabs.count() == 1:
                 self.shownRoom = tabname
@@ -71,6 +73,7 @@ class TabManager():
         #        index=index-1
         #    self.changeTab(self.tabs.widget(index))
         self.tabs.removeTab(self.getTabId(tabname))
+        del self.lookupRooms[0]
 
     def highlightTab(self,tab,highlight):
         pass # TODO: Add this later on
