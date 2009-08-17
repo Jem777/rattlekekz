@@ -37,6 +37,7 @@ class View(TabManager,iterator):
     def __init__(self,controller, *args, **kwds):
         self.name,self.version="rattlekekz","0.1 Nullpointer Exception"  # Diese Variablen werden vom View abgefragt
         self.controller=controller
+        self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
         TabManager.__init__(self)
         self.blubb=lambda x:chr(ord(x)-43)
         self.plugins={}
@@ -210,7 +211,7 @@ class View(TabManager,iterator):
         pass
 
     def listUser(self,room,users):
-        pass
+        self.getTab(room).listUser(users,self.kwds['usercolors'])
 
     def meJoin(self,room,background):
         self.addTab(room,rattlekekzMsgTab)

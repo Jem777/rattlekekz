@@ -83,8 +83,13 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
         self.Box0.addLayout(Box2)
         self.output=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(0) # QTextEdit
         self.output.setReadOnly(True)
-        self.userlist=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(1) # QListView
-        self.userlist.setEditTriggers(self.userlist.NoEditTriggers)
+        self.userView = self.Box0.itemAt(0).layout().itemAt(0).widget().widget(1)
+        self.userView.setModel(QtGui.QStringListModel())
+        self.userView.setEditTriggers(self.userView.NoEditTriggers)
+        #self.userView.setSelectionMode(self.roomView.NoSelection)
+        self.userView.setDragDropMode(self.userView.NoDragDrop)
+        #self.roomView.setAlternatingRowColors(True)
+        self.userList=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(1).model() # QStringListModel TODO: Move to MsgTab
         self.input=self.Box0.itemAt(1).layout().itemAt(0).widget() # QLineEdit TODO: May replace with QTextEdit
         self.send=self.Box0.itemAt(1).layout().itemAt(1).widget() # QPushButton
         self.connect(self.send,QtCore.SIGNAL("clicked()"),self.sendStr)
@@ -95,6 +100,49 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
             input = self.parent.stringHandler(self.input.text())
             self.parent.sendStr(self.parent.stringHandler(self.room),input)
             self.input.setText("")
+
+    def listUser(self,users,color=True): # TODO: Move to MsgTab
+        """takes a list of users and updates the Userlist of the room"""
+        self.completion=[]
+        new=[]
+        self.userList.removeRows(0,self.userList.rowCount())
+        #if color is True: # TODO: Add color parsing
+        #    for i in users:
+        #        self.completion.append(i[0])
+        #        if i[2] in 'x':
+        #            self.color='normal'
+        #        elif i[2] in 's':
+        #            self.color='green'
+        #        elif i[2] in 'c':
+        #            self.color='blue'
+        #        elif i[2] in 'o':
+        #            self.color='yellow'
+        #        elif i[2] in 'a':
+        #            self.color='red'
+        #        if i[1] == True:
+        #            self.color=self.color+'away'
+        #            self.Userlistarray.append(urwid.Text((self.color,'('+i[0]+')')))
+        #        else:
+        #            self.Userlistarray.append(urwid.Text((self.color,i[0])))
+        #else:
+        if True:
+            for i in users:
+                self.completion.append(i[0])
+                if i[2] in 'x':
+                    self.color=' '
+                elif i[2] in 's':
+                    self.color='~'
+                elif i[2] in 'c':
+                    self.color='$'
+                elif i[2] in 'o':
+                    self.color='@'
+                elif i[2] in 'a':
+                    self.color='%'
+                if i[1] == True:
+                    i[0] = '('+i[0]+')'
+                new.append(self.color+i[0])
+        new = self.parent.stringHandler(new,True)
+        self.userList.setStringList(new)
 
     def addLine(self,msg):
         self.output.append(self.parent.stringHandler(msg,True))
