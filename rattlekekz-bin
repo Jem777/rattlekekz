@@ -71,7 +71,8 @@ class main():
             pass # TODO: Raise exception if rattlekekz-dir is a file
         else:
             os.mkdir(logpath)
-            errlog = open(logfile,'w')
+            if view == cliView: # qtView wants backtraces in term :)
+                errlog = open(logfile,'w')
         sys.stderr = errlog
         self.port = 23002
         self.host = 'kekz.net'
