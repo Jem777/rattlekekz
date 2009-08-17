@@ -119,6 +119,8 @@ class View(TabManager,iterator):
                     msg[i] = (msg[i][0],msg[i][1].encode("utf_8"))
             #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
             #self.lookupRooms[room].addLine(text[i])
+        for i in range(len(msg)): # TODO: Add real parsing
+            msg[i]=msg[i][1]
         return msg
 
     def stringHandler(self,string):
@@ -148,6 +150,10 @@ class View(TabManager,iterator):
     def startConnection(self,host,port):
         reactor.connectSSL(host, port, self.controller.model, self.controller.model)
         reactor.run()
+
+    def addRoom(self,room,tab):
+        tablist={"ChatRoom":rattlekekzMsgTab,"PrivRoom":rattlekekzPrivTab,"InfoRoom":rattlekekzInfoTab,"MailRoom":rattlekekzMailTab,"SecureRoom":rattlekekzSecureTab,"EditRoom":rattlekekzEditTab}
+        self.addTab(room,tablist[tab])
 
     def sendLogin(self, nick, passwd, room):
         self.iterPlugins('sendLogin', [nick, passwd, room])
@@ -184,7 +190,7 @@ class View(TabManager,iterator):
         pass
 
     def printMsg(self,room,msg):
-        print "("+room+")",msg
+        self.getTab(room).addLine("".join(msg))
 
     def gotException(self, message):
         pass
@@ -230,10 +236,10 @@ class View(TabManager,iterator):
         self.iterPlugins('sendStr', [channel, string])
 
     def timestamp(self, string):
-        return ("timestamp",string)
+        return string
 
     def colorizeText(self, color, text):
-        return (color, text)
+        return text
 
     def unknownMethod(self,name):
         pass

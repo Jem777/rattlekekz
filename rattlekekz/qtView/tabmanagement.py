@@ -71,3 +71,6 @@ class TabManager():
         #        index=index-1
         #    self.changeTab(self.tabs.widget(index))
         self.tabs.removeTab(self.getTabId(tabname))
+
+    def highlightTab(self,tab,highlight):
+        pass # TODO: Add this later on
