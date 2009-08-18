@@ -72,12 +72,12 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
     def _setup(self,room,parent):
         self.room,self.parent=room,parent
         self.Box0 = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom,self)
-        self.Box0.addWidget(QtGui.QTextEdit())
+        self.Box0.addWidget(QtGui.QTextBrowser())
         Box2 = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
         Box2.addWidget(QtGui.QLineEdit())
         Box2.addWidget(QtGui.QPushButton("&Send"))
         self.Box0.addLayout(Box2)
-        self.output=self.Box0.itemAt(0).widget() # QTextEdit
+        self.output=self.Box0.itemAt(0).widget() # QTextBrowser
         self.output.setReadOnly(True)
         self.output.setHtml(u"")
         self.input=self.Box0.itemAt(1).layout().itemAt(0).widget() # QLineEdit TODO: May replace with QTextEdit
@@ -96,13 +96,17 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
 
 class rattlekekzMsgTab(rattlekekzPrivTab):
     def _setup(self,room,parent):
-        rattlekekzPrivTab._setup(self,room,parent)
+        self.room,self.parent=room,parent
+        self.Box0 = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom,self)
         Box1 = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
         Box1.addWidget(QtGui.QSplitter())
-        Box1.itemAt(0).widget().addWidget(QtGui.QTextEdit())
+        Box1.itemAt(0).widget().addWidget(QtGui.QTextBrowser())
         Box1.itemAt(0).widget().addWidget(QtGui.QListView())
-        self.Box0.insertLayout(0,Box1)
-        self.Box0.removeWidget(self.output)
+        self.Box0.addLayout(Box1)
+        Box2 = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
+        Box2.addWidget(QtGui.QLineEdit())
+        Box2.addWidget(QtGui.QPushButton("&Send"))
+        self.Box0.addLayout(Box2)
         self.userView = self.Box0.itemAt(0).layout().itemAt(0).widget().widget(1)
         self.userView.setModel(QtGui.QStringListModel())
         self.userView.setEditTriggers(self.userView.NoEditTriggers)
@@ -110,8 +114,13 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
         self.userView.setDragDropMode(self.userView.NoDragDrop)
         #self.roomView.setAlternatingRowColors(True)
         self.userList=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(1).model() # QStringListModel
-        self.output=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(0) # QTextEdit
+        self.output=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(0) # QTextBrowser
         self.output.setReadOnly(True)
+        self.output.setHtml(u"")
+        self.input=self.Box0.itemAt(1).layout().itemAt(0).widget() # QLineEdit TODO: May replace with QTextEdit
+        self.send=self.Box0.itemAt(1).layout().itemAt(1).widget() # QPushButton
+        self.connect(self.send,QtCore.SIGNAL("clicked()"),self.sendStr)
+        self.connect(self.input,QtCore.SIGNAL("returnPressed()"),self.sendStr)
 
     def listUser(self,users,color=True):
         """takes a list of users and updates the Userlist of the room"""
