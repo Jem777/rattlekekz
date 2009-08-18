@@ -70,14 +70,19 @@ class View(TabManager,iterator):
                  "s13":":-G"}
         self.colors={"red":"FF0000",
                      "blue":"020285",
-                     "darkgreen":"015401",
-                     "grey":"696969",
+                     "green":"015401",
+                     "gray":"696969",
                      "cyan":"00FFFF",
                      "magenta":"FF00FF",
                      "orange":"FFA500",
                      "pink":"FFC0CB",
                      "yellow":"FFFF00",
-                     "normal":"000000"}
+                     "normal":"000000",
+                     "normalaway":"696969",
+                     "greenaway":"215421",
+                     "blueaway":"222285",
+                     "yellowaway":"FFA500",
+                     "redaway":"FF2020"}
 
     def deparse(self,msg):
         text,format=self.controller.decode(msg)
@@ -126,12 +131,7 @@ class View(TabManager,iterator):
                 if a == "italic":
                     font="<i>"
                 if a == "sb":
-                    if self.smilies.has_key(text[i]):
-                        text[i]=self.smilies[text[i]]
-                        color="smilie"
-                        font="<div>"
-                    else:
-                        text[i]=""
+                    text[i]="<img src='http://kekz.net/forum/Smileys/default/"+text[i]+".png'>" # TODO: fetch this stuff
                 if a == "button":
                     color=""
                     font="<a>"

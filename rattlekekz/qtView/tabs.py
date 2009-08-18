@@ -113,12 +113,12 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
         self.output=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(0) # QTextEdit
         self.output.setReadOnly(True)
 
-    def listUser(self,users,color=True): # TODO: Move to MsgTab
+    def listUser(self,users,color=True):
         """takes a list of users and updates the Userlist of the room"""
         self.completion=[]
         new=[]
         self.userList.removeRows(0,self.userList.rowCount())
-        #if color is True: # TODO: Add color parsing
+        #if color: # TODO: Add color parsing
         #    for i in users:
         #        self.completion.append(i[0])
         #        if i[2] in 'x':
@@ -133,9 +133,9 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
         #            self.color='red'
         #        if i[1] == True:
         #            self.color=self.color+'away'
-        #            self.Userlistarray.append(urwid.Text((self.color,'('+i[0]+')')))
+        #            new.append("<font color='#"+self.parent.colors[self.color]+"'>("+i[0]+")</font>")
         #        else:
-        #            self.Userlistarray.append(urwid.Text((self.color,i[0])))
+        #            new.append("<font color='#"+self.parent.colors[self.color]+"'>"+i[0]+"</font>")
         #else:
         if True:
             for i in users:
