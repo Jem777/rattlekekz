@@ -20,7 +20,10 @@ copyright = """
     along with rattlekekz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+revision = "Git has no revisions 1"
+
 import sys
+from re import search
 
 #twisted/qt
 from PyQt4 import QtGui,QtCore
@@ -33,11 +36,14 @@ from rattlekekz.core.pluginmanager import iterator
 from rattlekekz.qtView.tabs import *
 from rattlekekz.qtView.tabmanagement import TabManager
 
+rev=search("\d+",revision).group()
+
 class View(TabManager,iterator):
     def __init__(self,controller, *args, **kwds):
         self.name,self.version="rattlekekz","0.1 Nullpointer Exception"  # Diese Variablen werden vom View abgefragt
         self.controller=controller
         self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
+        self.revision=rev
         TabManager.__init__(self)
         self.blubb=lambda x:chr(ord(x)-43)
         self.plugins={}
@@ -284,10 +290,10 @@ class View(TabManager,iterator):
         self.iterPlugins('sendStr', [channel, string])
 
     def timestamp(self, string):
-        return string
+        return "<font color='#"+self.colors["green"]+"'>"+string+"</font>"
 
     def colorizeText(self, color, text):
-        return text
+        return "<font color='#"+self.colors[color]+"'>"+text+"</font>"
 
     def unknownMethod(self,name):
         pass
