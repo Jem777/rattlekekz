@@ -19,7 +19,7 @@ copyright = """
 """
 
 # Modules
-import sys
+import sys, os
 from time import time
 from OpenSSL.SSL import SSLv3_METHOD, Context
 if sys.version < "2.6.0":
@@ -72,7 +72,7 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
     def sendLine(self,line): # TODO: review this in context of plugins.
         """sends a line to the server if connected"""
         if self.isConnected:
-            basic.LineOnlyReceiver.sendLine(self,line)
+            basic.LineOnlyReceiver.sendLine(self,"".join(line.split("\n")))
         else:
             self.controller.gotException("Nicht verbunden")
 
