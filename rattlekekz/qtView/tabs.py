@@ -79,6 +79,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
         self.Box0.addLayout(Box2)
         self.output=self.Box0.itemAt(0).widget() # QTextEdit
         self.output.setReadOnly(True)
+        self.output.setHtml(u"")
         self.input=self.Box0.itemAt(1).layout().itemAt(0).widget() # QLineEdit TODO: May replace with QTextEdit
         self.send=self.Box0.itemAt(1).layout().itemAt(1).widget() # QPushButton
         self.connect(self.send,QtCore.SIGNAL("clicked()"),self.sendStr)

@@ -68,17 +68,33 @@ class View(TabManager,iterator):
                  "sxmas":"o:)",
                  "s12":":-E",
                  "s13":":-G"}
+        self.colors={"red":"FF0000",
+                     "blue":"020285",
+                     "darkgreen":"015401",
+                     "grey":"696969",
+                     "cyan":"00FFFF",
+                     "magenta":"FF00FF",
+                     "orange":"FFA500",
+                     "pink":"FFC0CB",
+                     "yellow":"FFFF00",
+                     "normal":"000000"}
 
     def deparse(self,msg):
         text,format=self.controller.decode(msg)
         msg=[]
+        self.fontTag=False
         for i in range(len(text)):
+            text[i]="&amp;".join(text[i].split("&"))
+            text[i]="&lt;".join(text[i].split("<"))
+            text[i]="&gt;".join(text[i].split(">"))
+            if format[i] == "newline":
+                msg.append("<br>")
+                continue
             if format[i] == "hline":
-                text[i] = "---------------\n"
-                msg.append(('normal',text[i]))
+                msg.append("<hr>")
                 continue
             if format[i] == "imageurl":
-                msg.append(('smilie',text[i]))
+                msg.append(("<img src="+text[i]+">"))
                 continue
             if len(format[i]) > 1:
                 if format[i][0] == "ownnick":
@@ -86,42 +102,57 @@ class View(TabManager,iterator):
                         color = "green"
                     else:
                         color = "blue"
-                    msg.append((color,text[i]))
+                    if self.fontTag:
+                        msg.append("</font><font color='#"+self.colors[color]+"'>"+text[i])
+                    else:
+                        msg.append("<font color='#"+self.colors[color]+"'>"+text[i])
+                        self.fontTag=True
                     continue
             #if text[i].isspace() or text[i]=="":   # NOTE: If there are any bugs with new rooms and the roomop-message THIS could be is the reason ;)
             #    continue                           # 
             if text[i] == "":                       #
                 continue                            #
             form=format[i].split(",")
-            color="normal"
-            font=""
+            color=""
+            font="<span>"
             for a in form:
                 if a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow","white","reset"]:
                     if a != "reset":
                         color=a
                     else:
-                        color="normal"
+                        color="reset"
                 if a == "bold":
-                    font="bold"
+                    font="<b>"
+                if a == "italic":
+                    font="<i>"
                 if a == "sb":
                     if self.smilies.has_key(text[i]):
                         text[i]=self.smilies[text[i]]
                         color="smilie"
-                        font=""
+                        font="<div>"
                     else:
                         text[i]=""
                 if a == "button":
-                    color="smilie"
-                    font=""
+                    color=""
+                    font="<a>"
                     text[i] = "["+text[i]+"]"
-            msg.append((color+font,text[i]))
-            for i in range(len(msg)):
-                if type(msg[i][1]) is unicode:
-                    msg[i] = (msg[i][0],msg[i][1].encode("utf_8"))
-            #self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
-            #self.lookupRooms[room].addLine(text[i])
-        for i in range(len(msg)): # TODO: Add real parsing
-            msg[i]=msg[i][1]
+            if color != "":
+                if self.fontTag:
+                    msg.append("</font><font color='#"+self.colors[color]+"'>"+font+text[i]+font[:1]+"/"+font[1:])
+                else:
+                    msg.append("<font color='#"+self.colors[color]+"'>"+font+text[i]+font[:1]+"/"+font[1:])
+                    self.fontTag=True
+            else:
+                msg.append(font+text[i]+font[:1]+"/"+font[1:])
+            #for i in range(len(msg)):
+            #    if type(msg[i][1]) is unicode:
+            #        msg[i] = (msg[i][0],msg[i][1].encode("utf_8"))
+            ##self.lookupRooms[room].addLine(color)    #they are just for debugging purposes, but don't delete them
+            ##self.lookupRooms[room].addLine(text[i])
+        #for i in range(len(msg)): # TODO: Add real parsing
+        #    msg[i]=msg[i][1]
+        if self.fontTag:
+            msg.append("</font>")
         return msg
 
     def stringHandler(self,string,return_utf8=False):
