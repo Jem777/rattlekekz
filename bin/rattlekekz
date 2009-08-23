@@ -54,23 +54,6 @@ warranty = """
     copy of the Program in return for a fee.
 """
 
-help = """
-Usage: rattlekekz [-h, -?, --help][-c, --copyright][-w, --warranty][-H, --host <host>][-v, --view <view>][-n, --nocolors][-d, --debug][-t, --timestamp <integer>]
--?, -h, --help: Display this help
--c, --copyright: Display copyright information
--w, --warranty: Display disclaimer
--H, --host: Host to connect, Default: kekz.net
--p, --port: Port to connect, Default: 23002
--l, --localhost: Connects to localhost (127.0.0.1)
--v, --view: View to use, Default: cliView
--n, --nousercolors: This Option disables colors of the Userlist in cliView
--d, --debug: Enables some various debug settings
--t, --timestamp: Determines the timestampformat to be used:
-1 ... [HH:MM] (default, if not overridden by kekznet.conf)
-2 ... [HH:MM:SS]
-3 ... [HHMM]
-"""
-
 copyright_short = """
 rattlekekz  Copyright (C) 2008, 2009  Moritz Doll and Christian Scharkus
 rattlekekz comes with ABSOLUTELY NO WARRANTY; for details run 'rattlekekz -w'.
@@ -78,11 +61,10 @@ rattlekekz is free software, and you are welcome to redistribute it
 under certain conditions; run 'rattlekekz -c' for details.
 """
 
-import sys, os, getopt, types
-
+import sys, os, types, optparse
 
 def initLogger():
-    logfile=os.environ["HOME"]+os.sep+'.rattlekekz'+os.sep+'rattlekekz.log'
+    logfile=os.environ["HOME"]+os.sep+'.rattlekekz'+os.sep+'error.log'
     logpath=os.path.dirname(logfile)
     errlog = sys.stderr
     if os.path.isdir(logpath):
@@ -95,43 +77,47 @@ def initLogger():
         errlog = open(logfile,'w')
     sys.stderr = errlog
 
-def getArgs():
-    port = 23002
-    host = 'kekz.net'
-    view = 'cliView'
-    vargs = {'usercolors':True, 'debug':False, 'timestamp':0}
-    letters = 'H:v:p:?hlnt:cwd'
-    keywords = ['host=', 'port=', 'view=','help','copyright','warranty','localhost','nousercolors','timestamp=','debug']
-    opts, extraparams = getopt.getopt(sys.argv[1:],letters,keywords)
-    for o,p in opts:
-        if o in ['-H','--host']:
-            host = p
-        elif o in ['-v','--view']:
-            view = p
-        elif o in ['-p','--port']:
-            port = int(p)
-        elif o in ['-l','--localhost']:
-            host = '127.0.0.1'
-        elif o in ['-n','--nousercolors']:
-            if self.view in 'cliView':
-                self.vargs['usercolors'] = False
-        elif o in ['-d','--debug']:
-            vargs['debug'] = True
-        elif o in ['-t','--timestamp']:
-            vargs['timestamp'] = int(p)
-        elif o in ['-w','--warranty']:
-            print warranty
-            sys.exit()
-        elif o in ['-c','--copyright']:
-            print copyright
-            sys.exit()
-        elif o in ['-?','-h','--help']:
-            print copyright_short
-            print help
-            sys.exit()
-    return host,port,view,vargs
+def getOptions():
+    parser = optparse.OptionParser(version = "%prog 0.99")
+    parser.add_option("-H", "--host", dest = "host", default = "kekz.net", 
+            help = "Host or IP to connect to, default is kekz.net", metavar = "HOST")
+    parser.add_option("-l", "--localhost", dest = "host", action = "store_const", 
+            const = "127.0.0.1", help = "connect to localhost")
+    parser.add_option("-p", "--port", type = "int", dest = "port", default = 23002, 
+            help = "Port to connect, default is 23002", metavar = "PORT")
+    parser.add_option("-v", "--view", dest = "view", default = "cliView", 
+            help = "select the frontend, default is cliView")
+    parser.add_option("-c", "--copyright", action = "store_true", dest =
+            "copyright", default = False)
+    parser.add_option("-w", "--warranty", action = "store_true", dest =
+            "warranty", default = False)
+    parser.add_option("-n", "--nousercolors", action = "store_false", dest =
+            "usercolors", default = True, help = "Turns of the colors of the userlist in the cliView")
+    parser.add_option("-d", "--debug", action = "store_true", dest =
+            "debug", default = False, help = "Enables the debug mode")
+    parser.add_option("-t", "--timestamp", type = "int", dest =
+            "timestamp", metavar = "TIMESTAMP", help = "Determines the timestampformat to be used")
+    (_options, args) = parser.parse_args()
+    options = toDict(_options)
+    if options["warranty"] == True:
+        print warranty
+    elif options["copyright"] == True:
+        print copyright
+    else:
+        del options["warranty"]
+        del options["copyright"]
+        return options 
 
-def startRattlekekz(host, port, view="cliView", *args, **kwds): 
+def toDict(options):
+    dictionary = {}
+    empty_opts = optparse.Values()
+    for key in dir(options):
+        if not key in dir(empty_opts):
+            value = getattr(options, key)
+            dictionary[key] = value
+    return dictionary
+
+def startRattlekekz(host, port, view="cliView", kwds={}): 
     viewPath=view+"."+view
     try:
         viewModule=__import__("rattlekekz."+viewPath,fromlist=viewPath) #TODO find a better way
@@ -143,17 +129,20 @@ def startRattlekekz(host, port, view="cliView", *args, **kwds):
             from rattlekekz.core import controller
         except ImportError, arg:
             print arg
-            sys.exit()
-        kekzControl=controller.KekzController(viewModule.View, *args, **kwds)
-        kekzControl.view.startConnection(host,port)
+        else:
+            kekzControl=controller.KekzController(viewModule.View, kwds)
+            kekzControl.view.startConnection(host, port)
     else:
         print 'Error: Nullpointer Exception'
-        sys.exit()
 
 def init():
-    initLogger()
-    host,port,view,vargs = getArgs()
-    startRattlekekz(host, port, view, usercolors = vargs["usercolors"], debug = vargs["debug"], timestamp = vargs["timestamp"])
+    opts = getOptions() 
+    if opts != None:
+        initLogger()
+        host = opts.pop("host")
+        port = opts.pop("port")
+        view = opts.pop("view")
+        startRattlekekz(host, port, view, opts)
 
 if __name__ == "__main__":
     init()

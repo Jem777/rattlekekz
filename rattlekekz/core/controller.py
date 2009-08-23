@@ -26,10 +26,10 @@ from hashlib import sha1, md5
 from twisted.internet.task import LoopingCall
 
 class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhitance for pluginmanagement
-    def __init__(self, interface, *args, **kwds):
+    def __init__(self, interface, kwds):
         self.kwds=kwds
         self.model = protocol.KekzChatClient(self)
-        self.view = interface(self, *args, **kwds)
+        self.view = interface(self, usercolors=kwds["usercolors"])
         if not self.kwds["debug"]:
             self.readConfigfile()
         else:
