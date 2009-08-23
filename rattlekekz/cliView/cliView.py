@@ -45,16 +45,14 @@ class TextTooLongError(Exception):
     pass
 
 class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interhitance for pluginmanagement
-    def __init__(self, controller, *args, **kwds):
+    def __init__(self, controller):
         TabManager.__init__(self)
         sys.stdout.write('\033]0;rattlekekz\007') # TODO: some more maybe?
         self.revision=rev
-        self.ShownRoom=None
         self.Ping=""
         self.nickname=""
         self.controller=controller
         self.vargs = args
-        self.kwds=kwds# List of Arguments e.g. if Userlist got colors.
         self.plugins={}
         self.name,self.version="rattlekekz","0.1 Beta 'Nullpointer-Exception'"
         colors =[('normal','default','default'),
@@ -136,31 +134,32 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
 
     def finishedReadingConfigfile(self):
         self.setClock()
-        self.writehistory=self.controller.writehistory # TODO: Find some way to handle variables with plugin-system
-        self.readhistory=self.controller.readhistory
-        if self.controller.configfile.has_key("sorttabs") and self.controller.configfile["sorttabs"] in ("True","1","yes"):
+        self.writehistory=self.controller.getValue("writehistory") 
+        self.readhistory=self.controller.getValue("readhistory")
+        if self.controller.getValue("sorttabs") in ("True", "1", "yes"):
             self.sortTabs=True
 
     def init(self):
-        self.blubb=lambda x:chr(ord(x)-43)
+        self.blubb = lambda x: chr(ord(x)-43)
         self.size = self.tui.get_cols_rows()
-        self.addTab("$login",rattlekekzLoginTab)
+        self.addTab("$login", rattlekekzLoginTab)
         self.changeTab("$login")
 
-    def suspendView(self,app):
+    def suspendView(self, app):
         self.tui.stop()
-        if ""!=app!=" ":
+        app.strip()
+        if "" != app:
             try:
-                fubar = subprocess.call(app, shell=True)
+                subprocess.call(app, shell=True)
             except:
                 pass
         self.tui.start()
 
-    def startConnection(self,server,port):
+    def startConnection(self, server, port):
         reactor.connectSSL(server, port, self.controller.model, self.controller.model)
         self.tui.run_wrapper(reactor.run)
 
-    def addRoom(self,room,tab):
+    def addRoom(self, room, tab):
         tablist={"ChatRoom":rattlekekzMsgTab,"PrivRoom":rattlekekzPrivTab,"InfoRoom":rattlekekzInfoTab,"MailRoom":rattlekekzMailTab,"SecureRoom":rattlekekzSecureTab,"EditRoom":rattlekekzEditTab}
         self.addTab(room,tablist[tab])
 
@@ -175,7 +174,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
             prefix="[+] "
         else:
             prefix="[*] "
-        sys.stdout.write('\033]0;'+prefix+self.name+' - '+self.ShownRoom+' \007')
+        sys.stdout.write('\033]0;' + prefix + self.name + ' - ' + self.ShownRoom + ' \007')
 
     def changeTab(self,tabname):
         TabManager.changeTab(self,tabname)
@@ -254,15 +253,13 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.getTab(self.ShownRoom).addLine(msg)
 
     def setClock(self):
-        self.clockformat=self.controller.clockformat
-        self.time=("dividerstate",time.strftime(self.clockformat,time.localtime(time.time())))
-        if not self.ShownRoom==None and self.oldtime != self.time:
+        self.clockformat = self.controller.getValue("clockformat")
+        self.time = ("dividerstate", time.strftime(self.clockformat, time.localtime(time.time())))
+        if not self.ShownRoom == None and self.oldtime != self.time:
             self.getTab(self.ShownRoom).clock(self.time)
-            #if not self.kwds['debug']:
-            #    self.redisplay()
             self.redisplay()
         self.oldtime=self.time
-        reactor.callLater(1,self.setClock)
+        reactor.callLater(1, self.setClock)
 
     def receivedPing(self,deltaPing):
         self.Ping="Ping: "+str(deltaPing)+"ms"
@@ -336,17 +333,17 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
     def colorizeText(self, color, text):
         return (color, text)
 
-    def printMsg(self,room,msg): 
+    def printMsg(self, room, msg): 
         self.getTab(room).addLine(msg)
-        if room==self.ShownRoom:
+        if room == self.ShownRoom:
             self.redisplay()
         self.setTitle()
 
     def gotException(self, message):
-        if len(self.lookupRooms)==1:
-            self.addTab("$infos",rattlekekzInfoTab)
+        if len(self.lookupRooms) == 1:
+            self.addTab("$infos", rattlekekzInfoTab)
             self.ShownRoom="$infos"
-        self.getTab(self.ShownRoom).addLine("Fehler: "+message)
+        self.getTab(self.ShownRoom).addLine("Fehler: " + message)
 
     def gotLoginException(self, message):
         if len(self.lookupRooms)==1:
@@ -356,7 +353,9 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.getTab(self.ShownRoom).reLogin()
 
     def listUser(self,room,users):
-        self.getTab(room).listUser(users,self.kwds['usercolors'])
+        usercolors = self.controller.getValue("usercolors")
+        if usercolors == None: usercolors = True
+        self.getTab(room).listUser(users, usercolors)
 
     def meJoin(self,room,background):
         self.addTab(room,rattlekekzMsgTab)
@@ -392,7 +391,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
     def receivedInformation(self,info):
         self.addTab("$infos",rattlekekzInfoTab)
         self.changeTab("$infos")
-        msg=self.deparse(info)
+        msg = self.deparse(info)
         self.getTab(self.ShownRoom).addLine(("divider","Infos: "))
         self.getTab(self.ShownRoom).addLine(msg)
 
@@ -403,9 +402,9 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.lookupRooms[self.ShownRoom].addLine([("divider","Info: "),message])
 
     def receivedWhois(self,nick,array):
-        self.addTab("$infos",rattlekekzInfoTab)
+        self.addTab("$infos", rattlekekzInfoTab)
         self.changeTab("$infos")
-        out=map(self.deparse, array)
+        out = map(self.deparse, array)
         #for i in array:
         #    out.append(self.deparse(i))
         self.getTab("$infos").addWhois(nick, out)
@@ -482,16 +481,8 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.updateTabs()
 
     def connectionFailed(self):
-        #if not self.kwds['debug']:
-            self.getTab(self.ShownRoom).addLine("Verbindung fehlgeschlagen")
+        self.getTab(self.ShownRoom).addLine("Verbindung fehlgeschlagen")
 
     def connectionLost(self, failure):
-        #if not self.kwds['debug']:
-            self.getTab(self.ShownRoom).addLine(("divider",time.strftime('[%H:%M:%S]',time.localtime(time.time()))+" Verbindung verloren\n"))
-            #self.getTab(self.ShownRoom).addLine(("divider","\nVerbindung verloren\n"))
+        self.getTab(self.ShownRoom).addLine(("divider",time.strftime('[%H:%M:%S]',time.localtime(time.time()))+" Verbindung verloren\n"))
 
-
-if __name__ == '__main__':
-    from rattlekekz.core import controller
-    kekzControl=controller.KekzController(View,usercolors=True,timestamp=1)
-    kekzControl.view.startConnection("kekz.net",23002)

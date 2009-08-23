@@ -235,6 +235,9 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                 return None
         self.conf.setValue(key, value)
 
+    def getValue(self, key):
+        self.conf.getValue(key)
+
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
 
