@@ -19,7 +19,7 @@ copyright = """
 """
 
 # Modules
-import sys
+import sys, os
 from time import time
 from OpenSSL.SSL import SSLv3_METHOD, Context
 if sys.version < "2.6.0":
@@ -42,16 +42,15 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
 
     def __init__(self,controller):
         """Takes one argument: the instance of the controller Class."""
+        pluginmanager.iterator.__init__(self)
         self.controller=controller
         self.encoder=json.JSONEncoder().encode
         self.decoder=json.JSONDecoder().decode
-        self.plugins={}
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
         self.delimiter='\n'
         self.isConnected=False
-        self.plugins={}
 
     def getPlugin(self):
         pass
@@ -72,7 +71,7 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
     def sendLine(self,line): # TODO: review this in context of plugins.
         """sends a line to the server if connected"""
         if self.isConnected:
-            basic.LineOnlyReceiver.sendLine(self,line)
+            basic.LineOnlyReceiver.sendLine(self,"".join(line.split("\n")))
         else:
             self.controller.gotException("Nicht verbunden")
 

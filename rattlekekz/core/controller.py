@@ -25,6 +25,7 @@ import os, sys, re, time, base64, random
 from hashlib import sha1, md5
 from twisted.internet.task import LoopingCall
 
+
 class ConfigFile:
     def __init__(self, dict = {}, path = ""):
         self.config = dict
@@ -48,56 +49,18 @@ class ConfigFile:
     def readConf(self):
         configfile = open(self.path)
         lines = configfile.readlines()
+        parsed_conf = self.parseConf(lines)
+        if parsed_conf.has_key("readhistory"):
+            try:
+                parsed_conf["readhistory"] = int(parsed_conf["readhistory"])
+            except:
+                del parsed_conf["readhistory"]
+        if parsed_conf.has_key("writehistory"):
+            try:
+                parsed_conf["writehistory"] = int(parsed_conf["writehistory"])
+            except:
+                del parsed_conf["writehistory"]
         self.config.update(self.parseConf(lines))
-
-    def readConfigfile(self):
-        if not debug:
-            file=os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"config"
-        else:
-            file=os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"debug"
-        path=os.path.dirname(file)
-        if not os.path.exists(path):
-            os.mkdir(path)
-        if not os.path.exists(file):
-            _config=open(file, "w")
-            if not debug:
-                _config.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net") # TODO: this isn't correct anymore, or?
-            else:
-                _config.write("# rattlekekz debug config")
-            _config.flush()
-        _config=open(file) # TODO: it's seems to be ugly to reopen a already open file?
-        array=_config.readlines()
-        self.configfile = self.parseConf(array)
-        if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
-        elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
-        elif self.kwds['timestamp'] == 3: self.timestamp="[%H%M] "
-        elif self.configfile.has_key("timestamp"):
-            if self.configfile["timestamp"] == "1": self.timestamp="[%H:%M] "
-            elif self.configfile["timestamp"] == "2": self.timestamp="[%H:%M:%S] "
-            elif self.configfile["timestamp"] == "3": self.timestamp="[%H%M] "
-            else: self.timestamp=self.configfile["timestamp"]+" "
-        else:
-            self.timestamp="[%H:%M] "
-            
-        self.readhistory,self.writehistory=5000,200
-        if self.configfile.has_key("readhistory"):
-            try:
-                self.readhistory=int(self.configfile["readhistory"])
-            except:
-                pass
-        if self.configfile.has_key("writehistory"):
-            try:
-                self.writehistory=int(self.configfile["writehistory"])
-            except:
-                pass
-        if self.configfile.has_key("clock"):
-            self.clockformat=self.configfile["clock"]+" "
-        else:
-            self.clockformat="[%H:%M:%S] "
-        if self.configfile.has_key("autoload_plugins"):
-            self.autoload_plugins = map(lambda x: x.strip(),
-                    self.configfile["autoload_plugins"].split(","))
-        self.view.finishedReadingConfigfile()
 
     def writeConf(self):
         pass
@@ -196,16 +159,19 @@ class FileTransfer:
             self.transfers[uid]["file"].close() # TODO: remove references from self.transfers
 
 class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't use interhitance for pluginmanagement
-    def __init__(self, interface, *args, **kwds):
-        self.kwds=kwds
+    def __init__(self, interface, kwds):
         self.model = protocol.KekzChatClient(self)
-        self.view = interface(self, *args, **kwds)
+        self.view = interface(self)
         pluginmanager.manager.__init__(self)
         FileTransfer.__init__(self, self.model.encoder, self.model.decoder)
-        debug = kwds["debug"]
-        del kwds["debug"]
+        if kwds.has_key("debug"):
+            debug = kwds.pop("debug")
+        else:
+            debug = False
         self.initConfig(debug, kwds)
-        self.revision=self.view.revision
+        self.view.finishedReadingConfigfile()
+
+        self.revisioni = self.view.revision
         self.nickname=""
         self.nickpattern = re.compile("",re.IGNORECASE)
         
@@ -216,11 +182,14 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         default_conf = {"timestamp" : "[%H:%M] ",
                 "clock" : "[%H:%M:%S] ",
                 "writehistory" : 200,
-                "readhistory" : 5000}
+                "readhistory" : 5000,
+                "nick" : "",
+                "room" : "",
+                "passwd" : ""}
         path = os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"config"
         self.conf = ConfigFile(default_conf, path)
         if not debug:
-            if not os.path.exists(path)
+            if not os.path.exists(path):
                 self.conf.createEmptyConf("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
             self.conf.readConf()
         map(lambda (x,y): self.addKeyword(x,y), kwds.items())
@@ -236,7 +205,8 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.conf.setValue(key, value)
 
     def getValue(self, key):
-        self.conf.getValue(key)
+        value = self.conf.getValue(key)
+        return value
 
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
@@ -528,12 +498,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.model.getRooms()
 
     def receivedRooms(self,rooms):
-        array=[]
-        for a in ["autologin","nick","passwd","room"]:
-            try:
-                array.append(self.configfile[a])
-            except:
-                array.append("")
+        array = map(self.getValue, ["autologin", "nick", "passwd", "room"])
         if array[0]=="True" or array[0]=="1":
             self.model.sendLogin(array[1],array[2],array[3])
         else:
@@ -543,16 +508,18 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
     def successLogin(self,nick,status,room):
         self.nickname=nick
-        if self.configfile.has_key("regex"):
-            self.nickpattern = re.compile(self.configfile["regex"], re.IGNORECASE)
+        regex = self.conf.getValue("regex")
+        if regex != None:
+            self.nickpattern = re.compile(regex, re.IGNORECASE)
         else:
             self.nickpattern = re.compile(self.nickname,re.IGNORECASE)
         self.lookupSendId={}
         self.sendMailCount=0
         self.Userlist={room:[]}
         self.view.successLogin(nick,status,room)
-        if self.configfile.has_key("autoload_plugins"):
-            map(lambda x: self.loadPlugin(x), self.autoload_plugins)
+        autoload_plugins = self.getValue("autoload_plugins")
+        if autoload_plugins != None:
+            map(lambda x: self.loadPlugin(x.strip()), autoload_plugins.split(","))
 
     def successMailLogin(self):
         self.sendMailCount=0
@@ -600,7 +567,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
     def printMsg(self,nick,message,room,state):
         activeTab=self.view.getActiveTab()
         msg=[]
-        msg.append(self.view.timestamp(time.strftime(self.timestamp,time.localtime(time.time()))))
+        msg.append(self.view.timestamp(time.strftime(self.getValue("timestamp") ,time.localtime(time.time()))))
         if state==0 or state==2 or state==4:
             if nick.lower()==self.nickname.lower():
                 msg.append(self.view.colorizeText("green",nick+": "))

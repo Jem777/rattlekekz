@@ -47,14 +47,13 @@ class TextTooLongError(Exception):
 class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interhitance for pluginmanagement
     def __init__(self, controller):
         TabManager.__init__(self)
+        pluginmanager.iterator.__init__(self)
         sys.stdout.write('\033]0;rattlekekz\007') # TODO: some more maybe?
         self.revision=rev
         self.Ping=""
         self.nickname=""
-        self.controller=controller
-        self.vargs = args
-        self.plugins={}
-        self.name,self.version="rattlekekz","0.1 Beta 'Nullpointer-Exception'"
+        self.controller = controller
+        self.name,self.version = "rattlekekz","0.99"
         colors =[('normal','default','default'),
             ('divider', 'white', 'dark blue'),
             ('divideryellow', 'yellow', 'dark blue'),
@@ -133,11 +132,12 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         return 'rattlekekz'
 
     def finishedReadingConfigfile(self):
-        self.setClock()
-        self.writehistory=self.controller.getValue("writehistory") 
-        self.readhistory=self.controller.getValue("readhistory")
+        self.clock = self.controller.getValue("clock") 
+        self.writehistory = self.controller.getValue("writehistory") 
+        self.readhistory = self.controller.getValue("readhistory")
         if self.controller.getValue("sorttabs") in ("True", "1", "yes"):
             self.sortTabs=True
+        self.setClock()
 
     def init(self):
         self.blubb = lambda x: chr(ord(x)-43)
@@ -253,8 +253,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.getTab(self.ShownRoom).addLine(msg)
 
     def setClock(self):
-        self.clockformat = self.controller.getValue("clockformat")
-        self.time = ("dividerstate", time.strftime(self.clockformat, time.localtime(time.time())))
+        self.time = ("dividerstate", time.strftime(self.clock, time.localtime(time.time())))
         if not self.ShownRoom == None and self.oldtime != self.time:
             self.getTab(self.ShownRoom).clock(self.time)
             self.redisplay()

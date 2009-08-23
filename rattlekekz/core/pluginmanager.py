@@ -3,7 +3,7 @@
 
 # TODO: Make this more usable and smarter :)
 
-class manager():
+class manager:
     def __init__(self):
         self.plugins = {}
 
@@ -35,7 +35,10 @@ class manager():
             except:
                 self.gotException('unable to unload plugin %s.' % plugin)
 
-class iterator():
+class iterator:
+    def __init__(self):
+        self.plugins = {}
+
     def hiThere(self,name,instance):
         """method for plugins to say "hi there" :D"""
         if not self.plugins.has_key(name):
