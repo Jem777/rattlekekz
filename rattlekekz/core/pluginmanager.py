@@ -4,6 +4,9 @@
 # TODO: Make this more usable and smarter :)
 
 class manager():
+    def __init__(self):
+        self.plugins = {}
+
     def loadPlugin(self,plugin,params=[]):
         """this option is called by the view to load any plugins."""
         try:

@@ -25,27 +25,215 @@ import os, sys, re, time, base64, random
 from hashlib import sha1, md5
 from twisted.internet.task import LoopingCall
 
-class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhitance for pluginmanagement
+class ConfigFile:
+    def __init__(self, dict = {}, path = ""):
+        self.config = dict
+        self.path = path
+
+    def getValue(self, key):
+        if self.config.has_key(key):
+            return self.config[key]
+
+    def setValue(self, key, value):
+        self.config[key] = value
+
+    def createEmptyConf(self, text):
+        path = os.path.dirname(self.path)
+        if not os.path.exists(path):
+            os.mkdir(path)
+        config = open(file, "w")
+        config.write(text)
+        config.flush()
+
+    def readConf(self):
+        configfile = open(self.path)
+        lines = configfile.readlines()
+        self.config.update(self.parseConf(lines))
+
+    def readConfigfile(self):
+        if not debug:
+            file=os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"config"
+        else:
+            file=os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"debug"
+        path=os.path.dirname(file)
+        if not os.path.exists(path):
+            os.mkdir(path)
+        if not os.path.exists(file):
+            _config=open(file, "w")
+            if not debug:
+                _config.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net") # TODO: this isn't correct anymore, or?
+            else:
+                _config.write("# rattlekekz debug config")
+            _config.flush()
+        _config=open(file) # TODO: it's seems to be ugly to reopen a already open file?
+        array=_config.readlines()
+        self.configfile = self.parseConf(array)
+        if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
+        elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
+        elif self.kwds['timestamp'] == 3: self.timestamp="[%H%M] "
+        elif self.configfile.has_key("timestamp"):
+            if self.configfile["timestamp"] == "1": self.timestamp="[%H:%M] "
+            elif self.configfile["timestamp"] == "2": self.timestamp="[%H:%M:%S] "
+            elif self.configfile["timestamp"] == "3": self.timestamp="[%H%M] "
+            else: self.timestamp=self.configfile["timestamp"]+" "
+        else:
+            self.timestamp="[%H:%M] "
+            
+        self.readhistory,self.writehistory=5000,200
+        if self.configfile.has_key("readhistory"):
+            try:
+                self.readhistory=int(self.configfile["readhistory"])
+            except:
+                pass
+        if self.configfile.has_key("writehistory"):
+            try:
+                self.writehistory=int(self.configfile["writehistory"])
+            except:
+                pass
+        if self.configfile.has_key("clock"):
+            self.clockformat=self.configfile["clock"]+" "
+        else:
+            self.clockformat="[%H:%M:%S] "
+        if self.configfile.has_key("autoload_plugins"):
+            self.autoload_plugins = map(lambda x: x.strip(),
+                    self.configfile["autoload_plugins"].split(","))
+        self.view.finishedReadingConfigfile()
+
+    def writeConf(self):
+        pass
+
+    def parseConf(self, Conf):
+        config = {}
+        for i in Conf:
+            if not (i.isspace() or i.startswith("#")) or (i.find("=")!=-1):
+                a=i.split("=")
+                a=a[:2]
+                config[a[0].strip()] = a[1].strip()
+        return config
+
+class FileTransfer:
+    def __init__(self, encoder, decoder):
+        self.offered = []
+        self.transfers = {}
+        self.decodeJSON = decoder
+        self.encodeJSON = encoder
+
+    def sendJSON(self,user,comand): # TODO: implement error handling (e.g. unreachable host)
+        self.sendCPMsg(user,self.encodeJSON(comand))
+
+    def offerFile(self,user,path):
+        if os.path.isfile(path):
+            data = open(path,"rb")
+            filename = data.name.split(os.sep).pop()
+            filesize = os.path.getsize(path)
+            comand = {"transfer":"init","filename":filename,"size":filesize}
+            self.offered.append(comand)
+            self.offered[-1]["file"]=data
+            self.offered[-1]["user"]=user
+            self.sendJSON(user,{"transfer":"init","filename":filename,"size":filesize})
+        elif os.path.isdir(path):
+            self.botMsg("filetransfer",path+" is a directory") # implement directory-transmission?
+        else:
+            self.botMsg("filetransfer",path+" does not exist")
+
+    def acceptOffer(self,uid):
+        self.sendJSON(self.transfers[uid]["user"],{"transfer":"accept", "filename":self.transfers[uid]["filename"], "id":uid})
+
+    def startSubmit(self,uid):
+        self.transfers[uid]["hash"]=md5()
+        self.transfers[uid]["loop"]=LoopingCall(self.doSubmit,uid)
+        self.transfers[uid]["loop"].start(1)
+
+    def doSubmit(self,uid):
+        data = self.transfers[uid]["file"].read(2684355) # only read 64 percent of 4kib because of 36 percent overhead by base64
+        self.transfers[uid]["hash"].update(data)
+        if data is not "":
+            data = base64.b64encode(data)
+            self.sendJSON(self.transfers[uid]["user"],{"transfer":"data", "id":uid, "base64":data})
+        else:
+            self.transfers[uid]["loop"].stop()
+            self.sendJSON(self.transfers[uid]["user"],{"transfer":"finished", "id":uid, "hash":self.transfers[uid]["hash"].hexdigest()})
+
+    def receivedData(self,uid,base64_data):
+        data = os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"transfers"+os.sep+self.transfers[uid]["filename"] # TODO: implement choosen filename and location
+        filepath = os.path.dirname(data)
+        if os.path.exists(filepath):
+            if os.path.isdir(filepath):
+                pass
+            else:
+                self.botMsg("filetransfer",filepath+" is not a directory!")
+        else:
+            os.makedirs(filepath)
+        if not os.path.exists(data):
+            self.transfers[uid]["file"] = open(data,"ab")
+            self.transfers[uid]["file"].write(base64.b64decode(base64_data))
+            self.transfers[uid]["file"].flush()
+        else:
+            if self.transfers[uid].has_key("file"): # TODO: implement continue
+                self.transfers[uid]["file"].write(base64.b64decode(base64_data))
+                self.transfers[uid]["file"].flush()
+            else:
+                self.botMsg("filetransfer",data+"already exists!")
+
+    def finishedTransfer(self,uid,hash):
+        self.transfers[uid]["file"].close()
+        self.transfers[uid]["file"]=open(os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"transfers"+os.sep+self.transfers[uid]["filename"],"rb")
+        self.transfers[uid]["hash"]=hash
+        self.transfers[uid]["ownHash"]=md5()
+        self.transfers[uid]["loop"]=LoopingCall(self.getHash,uid)
+        self.transfers[uid]["loop"].start(1)
+
+    def getHash(self,uid):
+        data = self.transfers[uid]["file"].read()
+        if data is not "":
+            self.transfers[uid]["ownHash"].update(data)
+        else:
+            self.transfers[uid]["loop"].stop()
+            if self.transfers[uid]["hash"] == self.transfers[uid]["ownHash"].hexdigest():
+                self.botMsg("filetransfer",self.transfers[uid]["filename"]+" successful received and hashed.")
+            else:
+                self.botMsg("filetransfer",self.transfers[uid]["filename"]+" hash error")
+            self.transfers[uid]["file"].close() # TODO: remove references from self.transfers
+
+class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't use interhitance for pluginmanagement
     def __init__(self, interface, *args, **kwds):
         self.kwds=kwds
         self.model = protocol.KekzChatClient(self)
         self.view = interface(self, *args, **kwds)
-        if not self.kwds["debug"]:
-            self.readConfigfile()
-        else:
-            self.readConfigfile(True)
+        pluginmanager.manager.__init__(self)
+        FileTransfer.__init__(self, self.model.encoder, self.model.decoder)
+        debug = kwds["debug"]
+        del kwds["debug"]
+        self.initConfig(debug, kwds)
         self.revision=self.view.revision
         self.nickname=""
         self.nickpattern = re.compile("",re.IGNORECASE)
         
         self.joinInfo=["Join","Login","Einladung"]
         self.partInfo=["Part","Logout","Lost Connection","Nick-Kollision","Ping Timeout","Kick"]
-        self.plugins = {}
 
-        self.offered=[]
-        self.transfers={}
-        self.decodeJSON=self.model.decoder
-        self.encodeJSON=self.model.encoder
+    def initConfig(self, debug, kwds):
+        default_conf = {"timestamp" : "[%H:%M] ",
+                "clock" : "[%H:%M:%S] ",
+                "writehistory" : 200,
+                "readhistory" : 5000}
+        path = os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"config"
+        self.conf = ConfigFile(default_conf, path)
+        if not debug:
+            if not os.path.exists(path)
+                self.conf.createEmptyConf("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
+            self.conf.readConf()
+        map(lambda (x,y): self.addKeyword(x,y), kwds.items())
+
+    def addKeyword(self, key, value):
+        if key in ["clock", "timestamp"]:
+            value = value + " "
+        elif key in ["writehistory", "readhistory"]:
+            try:
+                value = int(value)
+            except:
+                return None
+        self.conf.setValue(key, value)
 
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
@@ -145,83 +333,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                 del formatlist[i]
         return textlist,formatlist
 
-    def sendJSON(self,user,comand): # TODO: implement error handling (e.g. unreachable host)
-        self.sendCPMsg(user,self.encodeJSON(comand))
-
-    def offerFile(self,user,path):
-        if os.path.isfile(path):
-            data = open(path,"rb")
-            filename = data.name.split(os.sep).pop()
-            filesize = os.path.getsize(path)
-            comand = {"transfer":"init","filename":filename,"size":filesize}
-            self.offered.append(comand)
-            self.offered[-1]["file"]=data
-            self.offered[-1]["user"]=user
-            self.sendJSON(user,{"transfer":"init","filename":filename,"size":filesize})
-        elif os.path.isdir(path):
-            self.botMsg("filetransfer",path+" is a directory") # implement directory-transmission?
-        else:
-            self.botMsg("filetransfer",path+" does not exist")
-
-    def acceptOffer(self,uid):
-        self.sendJSON(self.transfers[uid]["user"],{"transfer":"accept", "filename":self.transfers[uid]["filename"], "id":uid})
-
-    def startSubmit(self,uid):
-        self.transfers[uid]["hash"]=md5()
-        self.transfers[uid]["loop"]=LoopingCall(self.doSubmit,uid)
-        self.transfers[uid]["loop"].start(1)
-
-    def doSubmit(self,uid):
-        data = self.transfers[uid]["file"].read(2684355) # only read 64 percent of 4kib because of 36 percent overhead by base64
-        self.transfers[uid]["hash"].update(data)
-        if data is not "":
-            data = base64.b64encode(data)
-            self.sendJSON(self.transfers[uid]["user"],{"transfer":"data", "id":uid, "base64":data})
-        else:
-            self.transfers[uid]["loop"].stop()
-            self.sendJSON(self.transfers[uid]["user"],{"transfer":"finished", "id":uid, "hash":self.transfers[uid]["hash"].hexdigest()})
-
-    def receivedData(self,uid,base64_data):
-        data = os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"transfers"+os.sep+self.transfers[uid]["filename"] # TODO: implement choosen filename and location
-        filepath = os.path.dirname(data)
-        if os.path.exists(filepath):
-            if os.path.isdir(filepath):
-                pass
-            else:
-                self.botMsg("filetransfer",filepath+" is not a directory!")
-        else:
-            os.makedirs(filepath)
-        if not os.path.exists(data):
-            self.transfers[uid]["file"] = open(data,"ab")
-            self.transfers[uid]["file"].write(base64.b64decode(base64_data))
-            self.transfers[uid]["file"].flush()
-        else:
-            if self.transfers[uid].has_key("file"): # TODO: implement continue
-                self.transfers[uid]["file"].write(base64.b64decode(base64_data))
-                self.transfers[uid]["file"].flush()
-            else:
-                self.botMsg("filetransfer",data+"already exists!")
-
-    def finishedTransfer(self,uid,hash):
-        self.transfers[uid]["file"].close()
-        self.transfers[uid]["file"]=open(os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"transfers"+os.sep+self.transfers[uid]["filename"],"rb")
-        self.transfers[uid]["hash"]=hash
-        self.transfers[uid]["ownHash"]=md5()
-        self.transfers[uid]["loop"]=LoopingCall(self.getHash,uid)
-        self.transfers[uid]["loop"].start(1)
-
-    def getHash(self,uid):
-        data = self.transfers[uid]["file"].read()
-        if data is not "":
-            self.transfers[uid]["ownHash"].update(data)
-        else:
-            self.transfers[uid]["loop"].stop()
-            if self.transfers[uid]["hash"] == self.transfers[uid]["ownHash"].hexdigest():
-                self.botMsg("filetransfer",self.transfers[uid]["filename"]+" successful received and hashed.")
-            else:
-                self.botMsg("filetransfer",self.transfers[uid]["filename"]+" hash error")
-            self.transfers[uid]["file"].close() # TODO: remove references from self.transfers
-
     def formatopts(self, formlist, opt):
         kekzformat={"cr":"red",
                     "cb":"blue",
@@ -250,61 +361,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
             else:
                 formlist.append(formlist[-1]+","+kekzformat[opt])
         return formlist
-
-    def readConfigfile(self,debug=False):
-        if not debug:
-            file=os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"config"
-        else:
-            file=os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"debug"
-        path=os.path.dirname(file)
-        if not os.path.exists(path):
-            os.mkdir(path)
-        if not os.path.exists(file):
-            _config=open(file, "w")
-            if not debug:
-                _config.write("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net") # TODO: this isn't correct anymore, or?
-            else:
-                _config.write("# rattlekekz debug config")
-            _config.flush()
-        _config=open(file) # TODO: it's seems to be ugly to reopen a already open file?
-        array=_config.readlines()
-        self.configfile={}
-        for i in array:
-            if not (i.isspace() or i.startswith("#")) or (i.find("=")!=-1):
-                a=i.split("=")
-                a=a[:2]
-                self.configfile.update({a[0].strip():a[1].strip()})
-        if self.kwds['timestamp'] == 1: self.timestamp="[%H:%M] "
-        elif self.kwds['timestamp'] == 2: self.timestamp="[%H:%M:%S] "
-        elif self.kwds['timestamp'] == 3: self.timestamp="[%H%M] "
-        elif self.configfile.has_key("timestamp"):
-            if self.configfile["timestamp"] == "1": self.timestamp="[%H:%M] "
-            elif self.configfile["timestamp"] == "2": self.timestamp="[%H:%M:%S] "
-            elif self.configfile["timestamp"] == "3": self.timestamp="[%H%M] "
-            else: self.timestamp=self.configfile["timestamp"]+" "
-        else:
-            self.timestamp="[%H:%M] "
-            
-        self.readhistory,self.writehistory=5000,200
-        if self.configfile.has_key("readhistory"):
-            try:
-                self.readhistory=int(self.configfile["readhistory"])
-            except:
-                pass
-        if self.configfile.has_key("writehistory"):
-            try:
-                self.writehistory=int(self.configfile["writehistory"])
-            except:
-                pass
-        if self.configfile.has_key("clock"):
-            self.clockformat=self.configfile["clock"]+" "
-        else:
-            self.clockformat="[%H:%M:%S] "
-        if self.configfile.has_key("autoload_plugins"):
-            self.autoload_plugins = map(lambda x: x.strip(),
-                    self.configfile["autoload_plugins"].split(","))
-        self.view.finishedReadingConfigfile()
-
 
     def checkPassword(self,password):
         if len(password)>4:
@@ -480,7 +536,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         else:
             self.view.receivedPreLoginData(rooms,array[1:])
             # now the array is: [nick,passwd,room]
-            # the view has to give back an array or has to send model.sendLogin by itself
 
 
     def successLogin(self,nick,status,room):
