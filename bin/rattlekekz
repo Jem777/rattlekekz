@@ -54,23 +54,6 @@ warranty = """
     copy of the Program in return for a fee.
 """
 
-help = """
-Usage: rattlekekz [-h, -?, --help][-c, --copyright][-w, --warranty][-H, --host <host>][-v, --view <view>][-n, --nocolors][-d, --debug][-t, --timestamp <integer>]
--?, -h, --help: Display this help
--c, --copyright: Display copyright information
--w, --warranty: Display disclaimer
--H, --host: Host to connect, Default: kekz.net
--p, --port: Port to connect, Default: 23002
--l, --localhost: Connects to localhost (127.0.0.1)
--v, --view: View to use, Default: cliView
--n, --nousercolors: This Option disables colors of the Userlist in cliView
--d, --debug: Enables some various debug settings
--t, --timestamp: Determines the timestampformat to be used:
-1 ... [HH:MM] (default, if not overridden by kekznet.conf)
-2 ... [HH:MM:SS]
-3 ... [HHMM]
-"""
-
 copyright_short = """
 rattlekekz  Copyright (C) 2008, 2009  Moritz Doll and Christian Scharkus
 rattlekekz comes with ABSOLUTELY NO WARRANTY; for details run 'rattlekekz -w'.
@@ -78,11 +61,10 @@ rattlekekz is free software, and you are welcome to redistribute it
 under certain conditions; run 'rattlekekz -c' for details.
 """
 
-import sys, os, getopt, types
-from optparse import OptionParser
+import sys, os, types, optparse
 
 def initLogger():
-    logfile=os.environ["HOME"]+os.sep+'.rattlekekz'+os.sep+'rattlekekz.log'
+    logfile=os.environ["HOME"]+os.sep+'.rattlekekz'+os.sep+'error.log'
     logpath=os.path.dirname(logfile)
     errlog = sys.stderr
     if os.path.isdir(logpath):
@@ -95,7 +77,7 @@ def initLogger():
     sys.stderr = errlog
 
 def getOptions():
-    parser = OptionParser(version = "%prog 0.99")
+    parser = optparse.OptionParser(version = "%prog 0.99")
     parser.add_option("-H", "--host", dest = "host", default = "kekz.net", 
             help = "Host or IP to connect to, default is kekz.net", metavar = "HOST")
     parser.add_option("-l", "--localhost", dest = "host", action = "store_const", 
@@ -114,14 +96,25 @@ def getOptions():
             "debug", default = False, help = "Enables the debug mode")
     parser.add_option("-t", "--timestamp", type = "int", dest =
             "timestamp", metavar = "TIMESTAMP", help = "Determines the timestampformat to be used")
-    (options, args) = parser.parse_args()
-    print options
+    (_options, args) = parser.parse_args()
+    options = toDict(_options)
     if options["warranty"] == True:
         print warranty
     elif options["copyright"] == True:
         print copyright
     else:
+        del options["warranty"]
+        del options["copyright"]
         return options 
+
+def toDict(options):
+    dictionary = {}
+    empty_opts = optparse.Values()
+    for key in dir(options):
+        if not key in dir(empty_opts):
+            value = getattr(options, key)
+            dictionary[key] = value
+    return dictionary
 
 def startRattlekekz(host, port, view="cliView", kwds={}): 
     viewPath=view+"."+view
@@ -142,10 +135,13 @@ def startRattlekekz(host, port, view="cliView", kwds={}):
         print 'Error: Nullpointer Exception'
 
 def init():
-    opts = getOption() #Foo()
+    opts = getOptions() 
     if opts != None:
         initLogger()
-        startRattlekekz(opts.host, opts.port, opts.view, opts)
+        host = opts.pop("host")
+        port = opts.pop("port")
+        view = opts.pop("view")
+        startRattlekekz(host, port, view, opts)
 
 if __name__ == "__main__":
     init()
