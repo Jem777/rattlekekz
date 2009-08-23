@@ -28,7 +28,7 @@ from re import search
 #twisted/qt
 from PyQt4 import QtGui,QtCore
 import qt4reactor
-app = QtGui.QApplication(sys.argv,True)
+app = QtGui.QApplication(sys.argv)
 qt4reactor.install()
 from twisted.internet import reactor
 
@@ -47,13 +47,7 @@ class View(TabManager,iterator):
         TabManager.__init__(self)
         self.blubb=lambda x:chr(ord(x)-43)
         self.plugins={}
-        self.main = QtGui.QMainWindow()
-        self.main.setWindowTitle(self.name)
-        self.menu=self.main.menuBar()
-        self.menu.addMenu("&File") # TODO: add shit
-        self.main.setCentralWidget(QtGui.QTabWidget())
-        self.tabs=self.main.centralWidget()
-        self.tabs.setMovable(True)
+        self._setup()
         self.addTab("$login",rattlekekzLoginTab)
         self.changeTab("$login")
         #self.tabs.addTab(rattlekekzBaseTab(),"fu")
@@ -89,6 +83,24 @@ class View(TabManager,iterator):
                      "blueaway":"222285",
                      "yellowaway":"FFA500",
                      "redaway":"FF2020"}
+
+    def _setup(self):
+        class mainWin(QtGui.QMainWindow):
+            def closeEvent(self,event):
+                self.emit(QtCore.SIGNAL("closed()"))
+        self.main=mainWin()
+        self.main.setWindowTitle(self.name)
+        self.menu=self.main.menuBar()
+        self.menu.addMenu("&File") # TODO: add shit
+        self.main.setCentralWidget(QtGui.QTabWidget())
+        self.tabs=self.main.centralWidget()
+        self.tabs.setMovable(True)
+        self.main.connect(self.main,QtCore.SIGNAL("closed()"),self.quit)
+
+    def quit(self):
+        self.iterPlugins('quitConnection')
+        reactor.stop()
+        sys.exit()
 
     def deparse(self,msg):
         text,format=self.controller.decode(msg)
