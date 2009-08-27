@@ -594,7 +594,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                 importance=2
             self.view.highlightTab(room,importance)
         if state==5:
-            msg.append(self.view.colorizeText("blue",message))
+            msg.append(self.view.colorizeText("blue",self.view.escapeText(message)))
         else:
             msg.extend(self.view.deparse(message))
         self.view.printMsg(room,msg)
