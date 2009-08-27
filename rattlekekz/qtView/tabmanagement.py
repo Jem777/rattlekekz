@@ -59,7 +59,7 @@ class TabManager():
         except:
             self.tabs.addTab(tab(),tabname)
             self.lookupRooms.append("stub")
-            self.getTab(tabname)._setup(tabname, self)
+            self.getTab(tabname)._setup(tabname,self)
             if self.tabs.count() == 1:
                 self.shownRoom = tabname
 

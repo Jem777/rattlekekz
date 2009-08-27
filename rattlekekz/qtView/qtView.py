@@ -31,6 +31,7 @@ import qt4reactor
 app = QtGui.QApplication(sys.argv)
 qt4reactor.install()
 from twisted.internet import reactor
+from twisted.web.client import getPage
 
 from rattlekekz.core.pluginmanager import iterator
 from rattlekekz.qtView.tabs import *
@@ -137,7 +138,10 @@ class View(TabManager,iterator):
                 continue                            #
             form=format[i].split(",")
             color=""
-            font="<span>"
+            if self.fontTag:
+                font="</font><span>"
+            else:
+                font="<span>"
             for a in form:
                 if a in ["red", "blue", "green", "gray", "cyan", "magenta", "orange", "pink", "yellow","white","reset"]:
                     if a != "reset":
@@ -149,7 +153,8 @@ class View(TabManager,iterator):
                 if a == "italic":
                     font="<i>"
                 if a == "sb":
-                    text[i]="<img src='http://kekz.net/forum/Smileys/default/"+text[i]+".png'>" # TODO: fetch this stuff
+                    src="http://kekz.net/forum/Smileys/default/"+text[i]+".png"
+                    
                 if a == "button":
                     color=""
                     font="<a>"
@@ -172,6 +177,9 @@ class View(TabManager,iterator):
         if self.fontTag:
             msg.append("</font>")
         return msg
+
+    def fetchImage(url):
+        getPage(url).addCallbacks(callback=lambda image:image)
 
     def stringHandler(self,string,return_utf8=False):
         if type(string) is list:
@@ -219,6 +227,9 @@ class View(TabManager,iterator):
         tablist={"ChatRoom":rattlekekzMsgTab,"PrivRoom":rattlekekzPrivTab,"InfoRoom":rattlekekzInfoTab,"MailRoom":rattlekekzMailTab,"SecureRoom":rattlekekzSecureTab,"EditRoom":rattlekekzEditTab}
         self.addTab(room,tablist[tab])
 
+    def newTopic(self,room,topic):
+        self.getTab(room).newTopic(topic)
+
     def sendLogin(self, nick, passwd, room):
         self.iterPlugins('sendLogin', [nick, passwd, room])
 
@@ -254,6 +265,7 @@ class View(TabManager,iterator):
         pass
 
     def printMsg(self,room,msg):
+        print "<%s> %s" % (room,"".join(msg))
         self.getTab(room).addLine("".join(msg))
 
     def gotException(self, message):
@@ -274,7 +286,7 @@ class View(TabManager,iterator):
         pass
 
     def newTopic(self,room,topic):
-        pass
+        self.getTab(room).newTopic(topic)
 
     def loggedOut(self):
         pass

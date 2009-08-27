@@ -25,7 +25,7 @@ from PyQt4 import QtCore
 import re
 
 class rattlekekzBaseTab(QtGui.QWidget):
-    def _setup(self):
+    def _setup(self,room,parent):
         pass
 
     def fu(self):
@@ -98,6 +98,7 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
     def _setup(self,room,parent):
         self.room,self.parent=room,parent
         self.Box0 = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom,self)
+        self.Box0.addWidget(QtGui.QLineEdit())
         Box1 = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
         Box1.addWidget(QtGui.QSplitter())
         Box1.itemAt(0).widget().addWidget(QtGui.QTextBrowser())
@@ -107,18 +108,19 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
         Box2.addWidget(QtGui.QLineEdit())
         Box2.addWidget(QtGui.QPushButton("&Send"))
         self.Box0.addLayout(Box2)
-        self.userView = self.Box0.itemAt(0).layout().itemAt(0).widget().widget(1)
+        self.userView = self.Box0.itemAt(1).layout().itemAt(0).widget().widget(1)
         self.userView.setModel(QtGui.QStringListModel())
         self.userView.setEditTriggers(self.userView.NoEditTriggers)
         #self.userView.setSelectionMode(self.roomView.NoSelection)
         self.userView.setDragDropMode(self.userView.NoDragDrop)
         #self.roomView.setAlternatingRowColors(True)
-        self.userList=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(1).model() # QStringListModel
-        self.output=self.Box0.itemAt(0).layout().itemAt(0).widget().widget(0) # QTextBrowser
+        self.topicLine=self.Box0.itemAt(0).widget() # QLineEdit
+        self.userList=self.Box0.itemAt(1).layout().itemAt(0).widget().widget(1).model() # QStringListModel
+        self.output=self.Box0.itemAt(1).layout().itemAt(0).widget().widget(0) # QTextBrowser
         self.output.setReadOnly(True)
         self.output.setHtml(u"")
-        self.input=self.Box0.itemAt(1).layout().itemAt(0).widget() # QLineEdit TODO: May replace with QTextEdit
-        self.send=self.Box0.itemAt(1).layout().itemAt(1).widget() # QPushButton
+        self.input=self.Box0.itemAt(2).layout().itemAt(0).widget() # QLineEdit TODO: May replace with QTextEdit
+        self.send=self.Box0.itemAt(2).layout().itemAt(1).widget() # QPushButton
         self.connect(self.send,QtCore.SIGNAL("clicked()"),self.sendStr)
         self.connect(self.input,QtCore.SIGNAL("returnPressed()"),self.sendStr)
 
@@ -159,17 +161,31 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
                     self.color='@'
                 elif i[2] in 'a':
                     self.color='%'
-                if i[1] == True:
-                    i[0] = '('+i[0]+')'
-                new.append(self.color+i[0])
+                if i[1]:
+                    new.append(self.color+"("+i[0]+")")
+                else:
+                    new.append(self.color+i[0])
         new = self.parent.stringHandler(new,True)
         self.userList.setStringList(new)
+
+    def newTopic(self,topic):
+        self.topicLine.setText(self.parent.stringHandler(topic,True))
+        self.addLine(self.parent.stringHandler("Topic: "+topic,True))
 
 class rattlekekzMailTab(rattlekekzBaseTab):
     pass
 
 class rattlekekzInfoTab(rattlekekzBaseTab):
-    pass
+    def _setup(self,room,parent):
+        self.room,self.parent=room,parent
+        Box = QtGui.QBoxLayout(QtGui.QBoxLayout.TopToBottom,self)
+        Box.addWidget(QtGui.QTextEdit())
+        self.output = Box.itemAt(0).widget()
+        self.output.setHtml("")
+        self.output.setReadOnly(True)
+
+    def addLine(self,msg):
+        self.output.append(self.parent.stringHandler(msg,True))
 
 class rattlekekzSecureTab(rattlekekzBaseTab):
     pass

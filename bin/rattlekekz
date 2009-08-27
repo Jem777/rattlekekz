@@ -68,8 +68,8 @@ def initLogger():
     logpath=os.path.dirname(logfile)
     errlog = sys.stderr
     if os.path.isdir(logpath):
-        if view == cliView: # qtView wants backtraces in term :)
-            errlog = open(logfile,'w')
+        #if view == cliView: # qtView wants backtraces in term :)
+        errlog = open(logfile,'w')
     elif os.path.exists(logpath):
         pass # TODO: Raise exception if rattlekekz-dir is a file
     else:
