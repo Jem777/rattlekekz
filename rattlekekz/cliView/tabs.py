@@ -391,7 +391,7 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
                     self.color='yellow'
                 elif i[2] in 'a':
                     self.color='red'
-                if i[1] == True:
+                if i[1]:
                     self.color=self.color+'away'
                     self.Userlistarray.append(urwid.Text((self.color,'('+i[0]+')')))
                 else:
@@ -409,9 +409,10 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
                     self.color='@'
                 elif i[2] in 'a':
                     self.color='%'
-                if i[1] == True:
-                    i[0] = '('+i[0]+')'
-                self.Userlistarray.append(urwid.Text(self.color+i[0]))
+                if i[1]:
+                    self.Userlistarray.append(urwid.Text(self.color+"("+i[0]+")"))
+                else:
+                    self.Userlistarray.append(urwid.Text(self.color+i[0]))
         self.Userlist.set_focus(len(self.Userlistarray) - 1)
         self.parent.redisplay()
 
