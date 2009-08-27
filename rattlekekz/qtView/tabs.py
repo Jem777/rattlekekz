@@ -20,8 +20,7 @@ copyright = """
     along with rattlekekz.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+from PyQt4 import QtCore,QtGui
 import re
 
 class rattlekekzBaseTab(QtGui.QWidget):
@@ -105,7 +104,17 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
         Box1.itemAt(0).widget().addWidget(QtGui.QListView())
         self.Box0.addLayout(Box1)
         Box2 = QtGui.QBoxLayout(QtGui.QBoxLayout.LeftToRight)
-        Box2.addWidget(QtGui.QLineEdit())
+        class QLineEdit(QtGui.QLineEdit):
+            def event(self,event):
+                event.setAccepted(True)
+                if event.type() != QtCore.QEvent.KeyPress:
+                    return QtGui.QLineEdit.event(self,event)
+                elif QtCore.Qt.Key_Backtab != event.key() != QtCore.Qt.Key_Tab:
+                    return self.keyPressEvent(event)
+                elif event.key() == QtCore.Qt.Key_Tab:
+                    self.emit(QtCore.SIGNAL("tabPressed()"))
+                    return True
+        Box2.addWidget(QLineEdit())
         Box2.addWidget(QtGui.QPushButton("&Send"))
         self.Box0.addLayout(Box2)
         self.userView = self.Box0.itemAt(1).layout().itemAt(0).widget().widget(1)
@@ -120,8 +129,13 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
         self.output.setReadOnly(True)
         self.output.setHtml(u"")
         self.input=self.Box0.itemAt(2).layout().itemAt(0).widget() # QLineEdit TODO: May replace with QTextEdit
+        #self.input.setCompleter(QtGui.QCompleter())
+        #self.input.completer().setModel(QtGui.QStringListModel())
+        #self.input.completer().setCompletionMode(QtGui.QCompleter.InlineCompletion)
+        #self.input.completer().setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.send=self.Box0.itemAt(2).layout().itemAt(1).widget() # QPushButton
         self.connect(self.send,QtCore.SIGNAL("clicked()"),self.sendStr)
+        self.connect(self.input,QtCore.SIGNAL("tabPressed()"),self.complete)
         self.connect(self.input,QtCore.SIGNAL("returnPressed()"),self.sendStr)
 
     def listUser(self,users,color=True):
@@ -167,6 +181,45 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
                     new.append(self.color+i[0])
         new = self.parent.stringHandler(new,True)
         self.userList.setStringList(new)
+        #self.input.completer().model().setStringList(self.completion)
+
+    def complete(self):
+        at=False
+        input = self.parent.stringHandler(self.input.text())
+        input,crap=input[:self.input.cursorPosition()].split(),input[self.input.cursorPosition():]
+        if len(input) is not 0:
+            nick = input.pop().lower()
+            if nick.startswith("@"):
+                nick = nick[1:]
+                at=True
+            solutions=[]
+            newInput = nick
+            if nick != "":
+                for i in self.completion:
+                    if nick in str(i[:len(nick)]).lower():
+                        solutions.append(i)
+                if len(solutions) != 0 and len(solutions) != 1:
+                    solutions.sort(key=lambda x: len(x))
+                    for x in range(len(solutions[0])):
+                        if solutions[0][x] != solutions[1][x]:
+                            break
+                        else:
+                            newInput=solutions[0][:x+1]
+                    if at:
+                        newInput="@"+newInput
+                    input.append(str(newInput))
+                    self.input.setText(self.parent.stringHandler(" ".join(input)+crap,True))
+                    self.input.setCursorPosition(len(self.input.text())-len(crap))
+                    self.addLine(" ".join(solutions))
+                elif len(solutions) is not 0:
+                    if at:
+                        solutions[0]="@"+solutions[0]
+                    input.append(str(solutions[0]))
+                    if len(input) is not 1:
+                        self.input.setText(self.parent.stringHandler(" ".join(input)+" "+crap,True))
+                    else:
+                        self.input.setText(self.parent.stringHandler(" ".join(input)+", "+crap,True))
+                    self.input.setCursorPosition(len(self.input.text())-len(crap))
 
     def newTopic(self,topic):
         self.topicLine.setText(self.parent.stringHandler(topic,True))
