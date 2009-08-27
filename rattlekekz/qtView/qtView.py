@@ -111,9 +111,7 @@ class View(TabManager,iterator):
         msg=[]
         self.fontTag=False
         for i in range(len(text)):
-            text[i]="&amp;".join(text[i].split("&"))
-            text[i]="&lt;".join(text[i].split("<"))
-            text[i]="&gt;".join(text[i].split(">"))
+            text[i] = self.escapeText(text[i])
             if format[i] == "newline":
                 msg.append("<br>")
                 continue
@@ -121,7 +119,7 @@ class View(TabManager,iterator):
                 msg.append("<hr>")
                 continue
             if format[i] == "imageurl":
-                msg.append(("<img src="+text[i]+">"))
+                msg.append(("<img src='"+text[i]+"'>"))
                 continue
             if len(format[i]) > 1:
                 if format[i][0] == "ownnick":
@@ -181,7 +179,13 @@ class View(TabManager,iterator):
             msg.append("</font>")
         return msg
 
-    def fetchImage(url):
+    def escapeText(self,text):
+        text="&amp;".join(text.split("&"))
+        text="&lt;".join(text.split("<"))
+        text="&gt;".join(text.split(">"))
+        return"&nbsp;".join(text.split(" "))
+
+    def fetchImage(self,url):
         getPage(url).addCallbacks(callback=lambda image:image)
 
     def stringHandler(self,string,return_utf8=False):
@@ -283,10 +287,13 @@ class View(TabManager,iterator):
             self.changeTab(room)
 
     def mePart(self,room):
-        pass
+        self.delTab(room)
 
     def meGo(self,oldroom,newroom):
-        pass
+        index = self.getTabId(oldroom)
+        self.addTab(newroom,rattlekekzMsgTab,index)
+        self.changeTab(newroom)
+        self.delTab(oldroom)
 
     def newTopic(self,room,topic):
         self.getTab(room).newTopic(topic)

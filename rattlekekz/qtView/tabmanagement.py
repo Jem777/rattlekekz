@@ -40,7 +40,7 @@ class TabManager():
     def getTab(self,tabname):
         """returns the object of a Tab"""
         for i in range(self.tabs.count()):
-            if self.stringHandler(self.tabs.tabText(i))==tabname:
+            if self.stringHandler(self.tabs.tabText(i)).lower()==self.stringHandler(tabname).lower():
                 Tab=self.tabs.widget(i)
                 break
         return Tab
@@ -52,12 +52,15 @@ class TabManager():
                 break
         return integer
 
-    def addTab(self,tabname,tab):
+    def addTab(self,tabname,tab,index=None):
         """adds a new Tab with tabname and the object"""
         try:
             self.getTab(tabname.lower())
         except:
-            self.tabs.addTab(tab(),tabname)
+            if index == None:
+                self.tabs.addTab(tab(),tabname)
+            else:
+                self.tabs.insertTab(index,tab(),tabname)
             self.lookupRooms.append("stub")
             self.getTab(tabname)._setup(tabname,self)
             if self.tabs.count() == 1:
