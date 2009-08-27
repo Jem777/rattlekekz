@@ -42,16 +42,15 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
 
     def __init__(self,controller):
         """Takes one argument: the instance of the controller Class."""
+        pluginmanager.iterator.__init__(self)
         self.controller=controller
         self.encoder=json.JSONEncoder().encode
         self.decoder=json.JSONDecoder().decode
-        self.plugins={}
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
         self.delimiter='\n'
         self.isConnected=False
-        self.plugins={}
 
     def getPlugin(self):
         pass

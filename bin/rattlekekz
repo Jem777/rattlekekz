@@ -99,6 +99,13 @@ def getOptions():
             "timestamp", metavar = "TIMESTAMP", help = "Determines the timestampformat to be used")
     (_options, args) = parser.parse_args()
     options = toDict(_options)
+    if options.has_key("timestamp"):
+        if options["timestamp"] == 2:
+            options["timestamp"] = "[%H:%M]"
+        elif options["timestamp"] == 3:
+            options["timestamp"] = "[%H:%M]"
+        else:
+            options["timestamp"] = "[%H:%M]"
     if options["warranty"] == True:
         print warranty
     elif options["copyright"] == True:
@@ -130,7 +137,7 @@ def startRattlekekz(host, port, view="cliView", kwds={}):
         except ImportError, arg:
             print arg
         else:
-            kekzControl=controller.KekzController(viewModule.View, kwds)
+            kekzControl = controller.KekzController(viewModule.View, kwds)
             kekzControl.view.startConnection(host, port)
     else:
         print 'Error: Nullpointer Exception'

@@ -3,7 +3,10 @@
 
 # TODO: Make this more usable and smarter :)
 
-class manager():
+class manager:
+    def __init__(self):
+        self.plugins = {}
+
     def loadPlugin(self,plugin,params=[]):
         """this option is called by the view to load any plugins."""
         try:
@@ -32,7 +35,10 @@ class manager():
             except:
                 self.gotException('unable to unload plugin %s.' % plugin)
 
-class iterator():
+class iterator:
+    def __init__(self):
+        self.plugins = {}
+
     def hiThere(self,name,instance):
         """method for plugins to say "hi there" :D"""
         if not self.plugins.has_key(name):
