@@ -279,7 +279,9 @@ class View(TabManager,iterator):
         pass
 
     def listUser(self,room,users):
-        self.getTab(room).listUser(users,self.kwds['usercolors'])
+        usercolors = self.controller.getValue("usercolors")
+        if usercolors == None: usercolors = True
+        self.getTab(room).listUser(users,usercolors)
 
     def meJoin(self,room,background):
         self.addTab(room,rattlekekzMsgTab)
