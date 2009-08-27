@@ -37,9 +37,9 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
         self.Box.addWidget(QtGui.QListView())
         Form = QtGui.QFormLayout()
         Form.addRow("Nickname",QtGui.QLineEdit())
-        Form.addRow("Passwort",QtGui.QLineEdit())
-        Form.addRow(u"Räume",QtGui.QLineEdit())
-        Form.addRow(QtGui.QPushButton("&Login"))
+        Form.addRow("Password",QtGui.QLineEdit())
+        Form.addRow("Rooms",QtGui.QLineEdit())
+        Form.addRow(QtGui.QPushButton("&Login"),QtGui.QPushButton("&Register"))
         self.Box.addLayout(Form)
         self.roomView = self.Box.itemAt(0).widget()
         self.roomView.setModel(QtGui.QStringListModel())
@@ -52,9 +52,11 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
         self.passInput = self.Box.itemAt(1).layout().itemAt(3).widget() # QLineEdit
         self.roomInput = self.Box.itemAt(1).layout().itemAt(5).widget() # QLineEdit
         self.loginButton = self.Box.itemAt(1).layout().itemAt(6).widget() # QPushButton
+        self.registerButton = self.Box.itemAt(1).layout().itemAt(7).widget() # QPushButton
         self.passInput.setEchoMode(QtGui.QLineEdit.Password)
         self.loginButton.setDisabled(True)
         self.connect(self.loginButton,QtCore.SIGNAL("clicked()"),self.sendLogin)
+        self.connect(self.registerButton,QtCore.SIGNAL("clicked()"),self.registerNick)
 
     def receivedPreLoginData(self,rooms,array):
         self.loginButton.setEnabled(True)
@@ -66,6 +68,37 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
     def sendLogin(self):
         nick,password,rooms=self.parent.stringHandler([self.nickInput.text(),self.passInput.text(),self.roomInput.text()])
         self.parent.sendLogin(nick,password,rooms)
+
+    def registerNick(self):
+        self.parent.addTab("$register",rattlekekzRegTab)
+        self.parent.changeTab("$register")
+
+class rattlekekzRegTab(rattlekekzBaseTab):
+    def _setup(self,room,parent):
+        self.room,self.parent=room,parent
+        self.Form = QtGui.QFormLayout(self)
+        self.Form.addRow("Nickname",QtGui.QLineEdit())
+        self.Form.addRow("Password",QtGui.QLineEdit())
+        self.Form.addRow("Password",QtGui.QLineEdit())
+        self.Form.addRow("E-Mail",QtGui.QLineEdit())
+        self.Form.addRow(QtGui.QPushButton("&Register"))
+        self.nickInput = self.Form.itemAt(1).widget() # QLineEdit
+        self.passwordInput = self.Form.itemAt(3).widget() # QLineEdit
+        self.passwordCheck = self.Form.itemAt(5).widget() # QLineEdit
+        self.mailInput = self.Form.itemAt(7).widget() # QLineEdit
+        self.registerButton = self.Form.itemAt(8).widget() # QPushButton
+        self.connect(self.registerButton,QtCore.SIGNAL("clicked()"),self.registerNick)
+
+    def registerNick(self):
+        if self.passwordInput.text() == self.passwordCheck.text():
+            nick,passwd,mail = map(lambda x: x.strip(),self.parent.stringHandler([self.nickInput.text(),self.passwordInput.text(),self.mailInput.text()]))
+            if nick != "" != mail:
+                self.parent.registerNick(nick,passwd,mail)
+                print "STUB: register nick"
+            else:
+                print "STUB: Nick or Mail empty"
+        else:
+            "STUB: Passwords not matching"
 
 class rattlekekzPrivTab(rattlekekzBaseTab):
     def _setup(self,room,parent):

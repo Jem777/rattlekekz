@@ -240,6 +240,9 @@ class View(TabManager,iterator):
     def sendLogin(self, nick, passwd, room):
         self.iterPlugins('sendLogin', [nick, passwd, room])
 
+    def registerNick(self, nick, passwd, email):
+        self.iterPlugins('registerNick', [nick, passwd, email])
+
     def connectionLost(self,reason):
         pass
 
@@ -254,7 +257,7 @@ class View(TabManager,iterator):
         self.delTab("$login")
 
     def successRegister(self):
-        pass
+        print "STUB: nick registered"
 
     def successNewPassword(self):
         pass
@@ -276,7 +279,10 @@ class View(TabManager,iterator):
         self.getTab(room).addLine("".join(msg))
 
     def gotException(self, message):
-        pass
+        print "STUB:",message
+
+    def gotLoginException(self,message):
+        print "STUB:",message
 
     def listUser(self,room,users):
         usercolors = self.controller.getValue("usercolors")
