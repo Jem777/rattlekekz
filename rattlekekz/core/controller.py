@@ -276,11 +276,16 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                     formatlist.append(formatlist[-1]+",sb")
                 formatlist.append(formatlist[-2])
             if array[i].startswith("n"):
-                textlist[-1]=textlist[-1]+"\n"
+                textlist.append("\n")
+                formatlist.append("newline")
                 if array[i]=="nu": 
-                    textlist[-1]=textlist[-1]+" > > > "
+                    textlist.append(" > > > ")
+                    formatlist.append(formatlist[-2])
                 elif array[i]=="np":
-                    textlist[-1]=textlist[-1]+"\n"
+                    textlist.append("\n")
+                    formatlist.append("newline")
+                    formatlist.append(formatlist[-3])
+                    textlist.append("")
                 elif array[i]=="nr":
                     textlist.append("")
                     formatlist.append("hline")
@@ -594,7 +599,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                 importance=2
             self.view.highlightTab(room,importance)
         if state==5:
-            msg.append(self.view.colorizeText("blue",message))
+            msg.append(self.view.colorizeText("blue",self.view.escapeText(message)))
         else:
             msg.extend(self.view.deparse(message))
         self.view.printMsg(room,msg)
