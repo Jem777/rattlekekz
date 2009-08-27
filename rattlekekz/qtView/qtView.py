@@ -51,9 +51,6 @@ class View(TabManager,iterator):
         self._setup()
         self.addTab("$login",rattlekekzLoginTab)
         self.changeTab("$login")
-        #self.tabs.addTab(rattlekekzBaseTab(),"fu")
-        #self.tabs.widget(0)._setup()
-        #self.tabs.addTab(QtGui.QWidget(),"bar")
         self.main.show()
         self.smilies={"s6":":-)",
                  "s4":":-(",
@@ -96,7 +93,13 @@ class View(TabManager,iterator):
         self.main.setCentralWidget(QtGui.QTabWidget())
         self.tabs=self.main.centralWidget()
         self.tabs.setMovable(True)
+        self.tabs.setTabsClosable(True)
+        self.main.connect(self.tabs,QtCore.SIGNAL("tabCloseRequested(int)"),self.closeTab)
         self.main.connect(self.main,QtCore.SIGNAL("closed()"),self.quit)
+
+    def closeTab(self,integer):
+        self.tabs.removeTab(integer)
+        del self.lookupRooms[0]
 
     def quit(self):
         self.iterPlugins('quitConnection')
