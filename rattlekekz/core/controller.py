@@ -193,7 +193,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                 self.conf.createEmptyConf("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
             self.conf.readConf()
 
-        def addKeyword(self, key, value):
+        def addKeyword(key, value):
             if key in ["clock", "timestamp"]:
                 value = value + " "
             elif key in ["writehistory", "readhistory"]:
@@ -202,7 +202,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                 except:
                     return None
             self.conf.setValue(key, value)
-        map(lambda (x,y): self.addKeyword(x,y), kwds.items())
+        map(lambda (x,y): addKeyword(x,y), kwds.items())
 
     def getValue(self, key):
         value = self.conf.getValue(key)
