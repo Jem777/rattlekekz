@@ -163,21 +163,28 @@ class editWidget(urwid.Edit):
         if self.tab == True:
             self.parent.addLine(" ".join(self.solutions))
             return
-        all = self.parent.getCompletions()
-        solutions = filter(lambda x: x.lower().startswith(before.lower()), all)
+        listofwords = before.split(" ")
+        word = listofwords.pop()
+        if len(listofwords) == 0:
+            before = ""
+            all = self.parent.getSolutions(bol = True)
+        else:
+            before = " ".join(listofwords)
+            all = self.parent.getSolutions()
+        solutions = filter(lambda x: x.lower().startswith(word.lower()), all)
         if len(possible) == 1:
-            before = solutions[0]
-            self.set_edit_text(before + after)
-            self.set_edit_pos(len(before))
+            word = solutions[0]
+            self.set_edit_text(" ".join([before, word, after]))
+            self.set_edit_pos(len(before + " " + word))
             self.tab = False
         else:
-            new_before = self.trySolutions(before, solutions)
-            if before == new_before:
+            new_word = self.trySolutions(word, solutions)
+            if word == new_word:
                 self.solutions = solutions
                 self.tab = True
             else:
-                self.set_edit_text(new_before + after)
-                self.set_edit_pos(len(new_before))
+                self.set_edit_text(" ".join([before, word, after]))
+                self.set_edit_pos(len(before + " " + word))
                 self.tab = False
 
     def trySolutions(self, before, solutions):
@@ -349,7 +356,7 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
 
 class rattlekekzPrivTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
-        self.Input = urwid.Edit()
+        self.Input = editWidget(self)
         rattlekekzBaseTab.__init__(self,room, parent)
         self.history=[""]
         self.count = -1
@@ -454,6 +461,12 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
         self.MainView.set_focus(len(self.Output) - 1)
         self.parent.sendStr(self.room,string)
 
+    def getSolutions(self, bol = True):
+        if bol:
+            solutions = map(lambda x: x + ",", self.completion)
+            return solutions
+        else:
+            return self.completion
 
 class rattlekekzMsgTab(rattlekekzPrivTab):
     def buildOutputWidgets(self):
