@@ -88,6 +88,8 @@ class rattlekekzBaseTab(urwid.Frame):
 
     def onKeyPressed(self, size, key):
         altkeys=["alt", "meta 1", "meta 2", "meta 3", "meta 4", "meta 5", "meta 6", "meta 7", "meta 8", "meta 9", "meta 0"]
+        if key == 'ctrl d':
+            self.onClose()
         if key in ('ctrl up', 'ctrl down', 'page up', 'page down'):
             if key in ('ctrl up', 'ctrl down'):
                 self.MainView.keypress(size, key.split()[1])
@@ -118,16 +120,17 @@ class titleWidget(urwid.Text):
 
 class editWidget(urwid.Edit):
     def __init__(self, parent):
+        self.parent = parent
         urwid.Edit.__init__(self)
         self.history = [""]
         self.count = 0
 
     def keypress(self, size, key):
         if key == 'tab':
-            pos = self.edit_pos()
+            pos = self.edit_pos
             text = self.get_edit_text()
-            before = text[pos:]
-            after = text[:pos]
+            before = text[:pos]
+            after = text[pos:]
             self.tabcompletion(before, after)
             return
         self.tab = False
@@ -143,21 +146,22 @@ class editWidget(urwid.Edit):
             urwid.Edit.keypress(self, size, key)
 
     def scrollUp(self):
-        text = self.get_edit_text()
         if self.count != 0: 
+            text = self.get_edit_text()
             self.history[self.count] = text
             self.count -= 1
-            self.set_edit_text(self.history[self.count])
-            self.set_edit_pos(-1)
+            new_text = self.history[self.count]
+            self.set_edit_text(new_text)
+            self.set_edit_pos(len(new_text))
 
     def scrollDown(self):
-        text = self.get_edit_text()
-        if self.count != len(text):
+        if self.count != (len(self.history)-1):
+            text = self.get_edit_text()
             self.history[self.count] = text
             self.count += 1
             new_text = self.history[self.count]
             self.set_edit_text(new_text)
-            self.set_edit_pos(-1)
+            self.set_edit_pos(len(new_text))
 
     def tabcompletion(self, before, after):
         if self.tab == True:
@@ -166,16 +170,22 @@ class editWidget(urwid.Edit):
         listofwords = before.split(" ")
         word = listofwords.pop()
         if len(listofwords) == 0:
-            before = ""
-            all = self.parent.getSolutions(bol = True)
+            bol = True
         else:
-            before = " ".join(listofwords)
-            all = self.parent.getSolutions()
+            bol = False
+            prefix = " ".join(listofwords)
+        all = self.parent.getSolutions(bol)
         solutions = filter(lambda x: x.lower().startswith(word.lower()), all)
-        if len(possible) == 1:
-            word = solutions[0]
-            self.set_edit_text(" ".join([before, word, after]))
-            self.set_edit_pos(len(before + " " + word))
+        if len(solutions) == 1:
+            new_word = solutions[0]
+            if bol:
+                before = new_word
+            else:
+                before = prefix + " " + new_word
+            self.set_edit_text(before + after)
+            self.set_edit_pos(len(before))
+            self.tab = False
+        elif len(solutions) == 0:
             self.tab = False
         else:
             new_word = self.trySolutions(word, solutions)
@@ -183,23 +193,34 @@ class editWidget(urwid.Edit):
                 self.solutions = solutions
                 self.tab = True
             else:
-                self.set_edit_text(" ".join([before, word, after]))
-                self.set_edit_pos(len(before + " " + word))
+                if bol:
+                    before = new_word
+                else:
+                    before = prefix + " " + new_word
+                self.set_edit_text(before + after)
+                self.set_edit_pos(len(before))
                 self.tab = False
 
     def trySolutions(self, before, solutions):
         index = len(before)+1
-        first = solutions.pop()
-        for i in solutions:
-            if first[index] != i[index]:
+        for i in solutions[1:]:
+            if solutions[0][index].lower() != i[index].lower():
                 return before
-        before + first[index]
-        solutions.append(first)
+        before += first[index]
         self.trySolutions(before, solutions)
 
     def sendStr(self, string):
         """sends the string to the tab"""
-        self.parent.sendStr(string)
+        if string.strip() == "":
+            return
+        self.parent.sendStr(str(string))
+        if self.count != (len(self.history)-1):
+            del self.history[self.count]
+        del self.history[-1]
+        self.history.append(string)
+        self.history.append("")
+        self.count = (len(self.history)-1)
+        self.set_edit_text("")
 
 class rattlekekzLoginTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
@@ -358,8 +379,6 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = editWidget(self)
         rattlekekzBaseTab.__init__(self,room, parent)
-        self.history=[""]
-        self.count = -1
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile([
@@ -378,83 +397,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
 
     def onKeyPressed(self, size, key):
         rattlekekzBaseTab.onKeyPressed(self, size, key)
-        if key == 'ctrl d' and self.Input.get_edit_text() is "": # TODO: Find a good way to do this for all tabs
-            self.onClose()
-        if key == 'enter': 
-            text = self.Input.get_edit_text()
-            if text=="":
-                return
-            elif text.lower().startswith("/suspend"):
-                self.parent.suspendView(text.lower()[9:])
-            elif text.lower().startswith("/close"):
-                self.onClose()
-            else:
-                self.sendStr(str(text))
-            if self.count is not -1 and self.Input.get_edit_text() == self.history[self.count]:
-                self.history.insert(0,self.history.pop(self.count))
-            else:
-                self.history.insert(0,text)
-            self.count = -1
-            self.Input.set_edit_text('')
-        while len(self.history) > self.parent.writehistory:
-            del self.history[-1]
-        if key in ('up', 'down'):
-            if key in 'up' and len(self.history) is not (0 or self.count+1):
-                self.count+=1
-                if self.count is 0:
-                    self.current = self.Input.get_edit_text()
-                    self.Input.set_edit_text(self.history[self.count])
-                else:
-                    self.Input.set_edit_text(self.history[self.count])
-            elif key in 'down' and self.count is not -1:
-                self.count-=1
-                if self.count is -1:
-                    self.Input.set_edit_text(self.current)
-                else:
-                    self.Input.set_edit_text(self.history[self.count])
-            self.Input.set_edit_pos(len(self.Input.get_edit_text()))
-        elif key == 'tab':
-            at=False
-            input = self.Input.get_edit_text()
-            input,crap=input[:self.Input.edit_pos].split(),input[self.Input.edit_pos:]
-            if len(input) is not 0:
-                nick = input.pop().lower()
-                if nick.startswith("@"):
-                    nick = nick[1:]
-                    at=True
-                solutions=[]
-                newInput = nick
-                if nick != "":
-                    for i in self.completion:
-                        if nick in str(i[:len(nick)]).lower():
-                            solutions.append(i)
-                    if len(solutions) != 0 and len(solutions) != 1:
-                        solutions.sort(key=lambda x: len(x))
-                        for x in range(len(solutions[0])):
-                            if solutions[0][x] != solutions[1][x]:
-                                break
-                            else:
-                                newInput=solutions[0][:x+1]
-                        if at:
-                            newInput="@"+newInput
-                        input.append(str(newInput))
-                        if len(input) is not 1:
-                            self.Input.set_edit_text(" ".join(input)+crap)
-                        else:
-                            self.Input.set_edit_text(" ".join(input)+crap)
-                        self.Input.set_edit_pos(len(self.Input.get_edit_text())-len(crap))
-                        self.addLine(" ".join(solutions))
-                    elif len(solutions) is not 0:
-                        if at:
-                            solutions[0]="@"+solutions[0]
-                        input.append(str(solutions[0]))
-                        if len(input) is not 1:
-                            self.Input.set_edit_text(" ".join(input)+" "+crap)
-                        else:
-                            self.Input.set_edit_text(" ".join(input)+", "+crap)
-                        self.Input.set_edit_pos(len(self.Input.get_edit_text())-len(crap))
-        else:
-            self.keypress(size, key)
+        self.keypress(size, key)
 
     def sendStr(self,string):
         """sends the string to the controller"""
@@ -463,7 +406,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
 
     def getSolutions(self, bol = True):
         if bol:
-            solutions = map(lambda x: x + ",", self.completion)
+            solutions = map(lambda x: x + ", ", self.completion)
             return solutions
         else:
             return self.completion
