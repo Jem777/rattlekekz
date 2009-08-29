@@ -430,11 +430,7 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
         """sends a /part to the controller"""
         self.sendStr("/part")
 
-class rattlekekzMailTab(rattlekekzBaseTab):
-    def __init__(self,room, parent):
-        self.Input = urwid.Edit()
-        rattlekekzBaseTab.__init__(self,room, parent)
-
+class rattlekekzMailTab(rattlekekzPrivTab):
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))])
         self.header.set_text("rattlekekz  (Beta: "+self.parent.revision+") - KekzMail")
