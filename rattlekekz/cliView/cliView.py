@@ -398,7 +398,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         if len(self.lookupRooms)==1:
             self.addTab("$infos",rattlekekzInfoTab)
             self.changeTab("$infos")
-        self.lookupRooms[self.ShownRoom].addLine([("divider","Info: "),message])
+        self.getTab(self.ShownRoom).addLine([("divider","Info: "),message])
 
     def receivedWhois(self,nick,array):
         self.addTab("$infos", rattlekekzInfoTab)
