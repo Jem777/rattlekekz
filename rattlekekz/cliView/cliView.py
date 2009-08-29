@@ -326,6 +326,9 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         else:
             return str(string)
 
+    def escapeText(self,text):
+        return text
+
     def timestamp(self, string):
         return ("timestamp",string)
 
