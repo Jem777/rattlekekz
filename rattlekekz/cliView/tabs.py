@@ -40,7 +40,7 @@ class rattlekekzBaseTab(urwid.Frame):
         self.upperDivider=urwid.Text(("divider",self.parent.Ping), "right")
         self.statelist=[("dividerstate",self.time),("dividerstate",self.nickname),("dividerstate"," ")]
         self.lowerDivider=urwid.Text(self.statelist, "left")
-        self.header=urwid.Text("rattlekekz","center")
+        self.header = urwid.Text("rattlekekz","center")
         
         self.buildOutputWidgets()
         self.connectWidgets()
@@ -107,6 +107,92 @@ class rattlekekzBaseTab(urwid.Frame):
         """Closes the Room"""
         self.parent.closeActiveWindow(self.room)
 
+class titleWidget(urwid.Text):
+    def __init__(self, name = "", version = "", tabname = ""):
+        self.name = name
+        self.version = version
+        self.tabname = tabname
+        self.formatstring = "%s (v %s) - %s"
+        title = self.formatstring % (self.name, self.version, self.tabname)
+        urwid.Text.__init__(self, title, "center")
+
+class editWidget(urwid.Edit):
+    def __init__(self, parent):
+        urwid.Edit.__init__(self)
+        self.history = [""]
+        self.count = 0
+
+    def keypress(self, size, key):
+        if key == 'tab':
+            pos = self.edit_pos()
+            text = self.get_edit_text()
+            before = text[pos:]
+            after = text[:pos]
+            self.tabcompletion(before, after)
+            return
+        self.tab = False
+        if key == 'enter':
+            text = self.get_edit_text()
+            self.set_edit_text('')
+            self.sendStr(text)
+        elif key == 'up':
+            self.scrollUp()
+        elif key == 'down':
+            self.scrollDown()
+        else:
+            urwid.Edit.keypress(self, size, key)
+
+    def scrollUp(self):
+        text = self.get_edit_text()
+        if self.count != 0: 
+            self.history[self.count] = text
+            self.count -= 1
+            self.set_edit_text(self.history[self.count])
+            self.set_edit_pos(-1)
+
+    def scrollDown(self):
+        text = self.get_edit_text()
+        if self.count != len(text):
+            self.history[self.count] = text
+            self.count += 1
+            new_text = self.history[self.count]
+            self.set_edit_text(new_text)
+            self.set_edit_pos(-1)
+
+    def tabcompletion(self, before, after):
+        if self.tab == True:
+            self.parent.addLine(" ".join(self.solutions))
+            return
+        all = self.parent.getCompletions()
+        solutions = filter(lambda x: x.lower().startswith(before.lower()), all)
+        if len(possible) == 1:
+            before = solutions[0]
+            self.set_edit_text(before + after)
+            self.set_edit_pos(len(before))
+            self.tab = False
+        else:
+            new_before = self.trySolutions(before, solutions)
+            if before == new_before:
+                self.solutions = solutions
+                self.tab = True
+            else:
+                self.set_edit_text(new_before + after)
+                self.set_edit_pos(len(new_before))
+                self.tab = False
+
+    def trySolutions(self, before, solutions):
+        index = len(before)+1
+        first = solutions.pop()
+        for i in solutions:
+            if first[index] != i[index]:
+                return before
+        before + first[index]
+        solutions.append(first)
+        self.trySolutions(before, solutions)
+
+    def sendStr(self, string):
+        """sends the string to the tab"""
+        self.parent.sendStr(string)
 
 class rattlekekzLoginTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
@@ -114,7 +200,11 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
         rattlekekzBaseTab.__init__(self,room, parent)
 
     def buildOutputWidgets(self):
-        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))])
+        self.vsizer=urwid.Pile([
+            ("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), 
+            self.MainView,
+            ("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))
+            ])
         self.hasOutput=False
         self.hasInput=True
         self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Willkommen im Kekznet | "+self.room)
@@ -265,7 +355,11 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
         self.count = -1
 
     def buildOutputWidgets(self):
-        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))])
+        self.vsizer=urwid.Pile([
+            ("flow",urwid.AttrWrap(self.upperDivider, 'divider')), 
+            self.MainView, 
+            ("flow",urwid.AttrWrap(self.lowerDivider, 'divider'))
+            ])
         self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Private Unterhaltung "+self.room)
         self.completion=[self.room[1:]]
 
@@ -432,7 +526,11 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
 
 class rattlekekzMailTab(rattlekekzPrivTab):
     def buildOutputWidgets(self):
-        self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))])
+        self.vsizer=urwid.Pile([
+            ("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), 
+            self.MainView,
+            ("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))
+            ])
         self.header.set_text("rattlekekz  (Beta: "+self.parent.revision+") - KekzMail")
 
     def connectWidgets(self):
