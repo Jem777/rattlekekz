@@ -234,16 +234,16 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.getTab(self.ShownRoom).reLogin(True)
 
     def successNewPassword(self):
-        self.getTab("$edit").addLine("Passwort erfolgreich geändert")
-        self.getTab("$edit").addLine("\ndrücken Sie Alt+Q zum beenden oder Strg+E um das Profil zu ändern")
+        self.getTab("$edit").addLine("password change succesful")
+        self.getTab("$edit").addLine("\npress alt+q to exit or ctrl+e to change your profile")
 
     def receivedProfile(self,name,location,homepage,hobbies,signature):
         self.changeTab("$edit")
         self.getTab("$edit").receivedProfile(name,location,homepage,hobbies,signature)
 
     def successNewProfile(self):
-        self.getTab("$edit").addLine("Profil erfolgreich geändert")
-        self.getTab("$edit").addLine("\ndrücken Sie Alt+Q zum beenden oder Strg+A um das Passwort zu ändern")
+        self.getTab("$edit").addLine("profile change sucessful")
+        self.getTab("$edit").addLine("\npress alt+q to exit or ctrl+a to change your password")
 
     def securityCheck(self,infotext):
         self.addTab("$secure",rattlekekzSecureTab)
@@ -345,13 +345,13 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         if len(self.lookupRooms) == 1:
             self.addTab("$infos", rattlekekzInfoTab)
             self.ShownRoom="$infos"
-        self.getTab(self.ShownRoom).addLine("Fehler: " + message)
+        self.getTab(self.ShownRoom).addLine("Error: " + message)
 
     def gotLoginException(self, message):
         if len(self.lookupRooms)==1:
             self.addTab("$login",rattlekekzInfoTab)
             self.ShownRoom="$login"
-        self.getTab(self.ShownRoom).addLine("Fehler: "+message)
+        self.getTab(self.ShownRoom).addLine("Error: "+message)
         self.getTab(self.ShownRoom).reLogin()
 
     def listUser(self,room,users):
@@ -394,7 +394,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.addTab("$infos",rattlekekzInfoTab)
         self.changeTab("$infos")
         msg = self.deparse(info)
-        self.getTab(self.ShownRoom).addLine(("divider","Infos: "))
+        self.getTab(self.ShownRoom).addLine(("divider","Info: "))
         self.getTab(self.ShownRoom).addLine(msg)
 
     def minorInfo(self, message):
@@ -422,15 +422,15 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
     def receivedMails(self,userid,mailcount,mails):
         self.openMailTab()
         if not len(mails)==0:
-            self.getTab(self.ShownRoom).addLine(("green","\nMails: "))
+            self.getTab(self.ShownRoom).addLine(("green","\nmail: "))
             for i in mails:
                 self.getTab(self.ShownRoom).addLine(str(i["index"])+".: von "+i["from"]+", um "+i["date"]+": \n"+i["stub"])
 
     def printMail(self,user,date,mail):
         self.openMailTab()
         # msg=["\nMail von ",("red",user)," vom ",("gray",date+": \n"),"---Anfang der Mail---\n"]
-        header = "\nMail von "+user+" vom "+date+": \n ---Anfang der Mail ---- \n" 
-        end = "\n---Ende der Mail---\n"
+        header = "\nMail von "+user+" vom "+date+": \n ---begin of mail ---- \n" 
+        end = "\n---end of mail---\n"
         mail = header + mail + end
         msg = self.deparse(mail)
         self.getTab(self.ShownRoom).addLine(msg)
@@ -483,8 +483,8 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.updateTabs()
 
     def connectionFailed(self):
-        self.getTab(self.ShownRoom).addLine("Verbindung fehlgeschlagen")
+        self.getTab(self.ShownRoom).addLine("connection failed")
 
     def connectionLost(self, failure):
-        self.getTab(self.ShownRoom).addLine(("divider",time.strftime('[%H:%M:%S]',time.localtime(time.time()))+" Verbindung verloren\n"))
+        self.getTab(self.ShownRoom).addLine(("divider",time.strftime('[%H:%M:%S]',time.localtime(time.time()))+" connection lost\n"))
 

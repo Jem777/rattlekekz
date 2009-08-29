@@ -117,7 +117,7 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))])
         self.hasOutput=False
         self.hasInput=True
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Willkommen im Kekznet | "+self.room)
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - welcome at kekznet | "+self.room)
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -135,9 +135,9 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
             else:
                 self.addLine(i["name"]+"("+str(i["users"])+")")
         if registered is False:
-            self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
+            self.addLine("\nplease enter your nickname: (to register a new nickname press ctrl + r)")
         else:
-            self.addLine("\nGeben sie ihren Nicknamen ein:")
+            self.addLine("\nenter your nickname:")
         self.Input.set_edit_text(self.nick)
 
     def receivedPreLoginData(self,rooms,array):
@@ -154,7 +154,7 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
                 self.addLine(i["name"]+"("+str(i["users"])+")")
         self.Input.set_edit_text(self.nick)
         self.Input.set_edit_pos(len(self.nick))
-        self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
+        self.addLine("\nenter your nickname: (to register a new nickname press ctrl + r)")
 
     def onKeyPressed(self, size, key):
         if self.parent.isConnected:
@@ -188,32 +188,32 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
             if self.integer==-1:
                 self.nick = self.Input.get_edit_text()
                 if self.register is False:
-                    self.addLine(self.nick+"\nGeben Sie Ihr Passwort ein: ")
+                    self.addLine(self.nick+"\nenter your password: ")
                 else:
-                    self.addLine(self.nick+"\nGeben Sie Ihr gewünschtes Passwort ein: ")
+                    self.addLine(self.nick+"\nenter a password: ")
                 self.Input.set_edit_text('*'*len(self.passwd))
                 self.integer+=1
             elif self.integer==0:
                 if key != 'shift tab':
                     if self.register is False:
-                        self.addLine('*'*len(self.passwd)+"\nGeben Sie den Raum ein in den Sie joinen wollen: ")
+                        self.addLine('*'*len(self.passwd)+"\nenter a room you want to join: ")
                         self.Input.set_edit_text(self.room)
                     else:
-                        self.addLine('*'*len(self.passwd)+"\nGeben Sie bitte ihre E-Mail-Adresse an: ")
+                        self.addLine('*'*len(self.passwd)+"\nenter your mail-adress: ")
                         self.Input.set_edit_text(self.mail)
                     self.integer+=1
                 else:
                     if self.register is False:
-                        self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
+                        self.addLine("\nenter your nickname: (to register a new nickname press ctrl + r)")
                     else:
-                        self.addLine("\nGeben Sie den gewünschen Nicknamen ein: (Drücken Sie Strg + L um sich einzuloggen)")
+                        self.addLine("\nenter a nickname: (press ctrl + L for login)")
                     self.Input.set_edit_text(self.nick)
                     self.integer-=1
             elif self.integer==1:
                 if key != 'shift tab':
                     if self.register is False:
                         self.room = self.Input.get_edit_text()
-                        self.addLine(self.room+"\nLogging in")
+                        self.addLine(self.room+"\nlogging in")
                         self.room.strip()
                         re.sub("\s","",self.room)
                         self.nick.strip()
@@ -227,9 +227,9 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
                 else:
                     self.room = self.Input.get_edit_text()
                     if self.register is False:
-                        self.addLine(self.nick+"\nGeben Sie Ihr Passwort ein: ")
+                        self.addLine(self.nick+"\nenter your password: ")
                     else:
-                        self.addLine(self.nick+"\nGeben Sie Ihr gewünschtes Passwort ein: ")
+                        self.addLine(self.nick+"\nenter a password: ")
                     self.Input.set_edit_text('*'*len(self.passwd))
                     self.integer-=1
             self.Input.set_edit_pos(len(self.Input.get_edit_text()))
@@ -238,12 +238,12 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
                 if self.register is False:
                     self.integer,self.register=-1,True
                     self.nick,self.passwd,self.mail='','',''
-                    self.addLine("\nGeben Sie den gewünschen Nicknamen ein: (Drücken Sie Strg + L um sich einzuloggen)")
+                    self.addLine("\nenter a nickname: (press ctrl + l for login)")
             elif key == 'ctrl l':
                 if self.register is True:
                     self.integer,self.register=-1,False
                     self.nick,self.passwd,self.room='','',''
-                    self.addLine("\nGeben sie ihren Nicknamen ein: (Um einen neuen Nick zu registrieren drücken Sie Strg + R)")
+                    self.addLine("\nenter your nickname: (to register a new nickname press ctrl + r)")
             elif self.integer == 0 and key not in ('up','down','page up','page down','tab','esc','insert') and key.split()[0] not in ('super','ctrl','shift','meta'):
                 if len(key) is 2:
                     if key[0].lower() != 'f':
@@ -266,7 +266,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))])
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Private Unterhaltung "+self.room)
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - private conversation "+self.room)
         self.completion=[self.room[1:]]
 
     def connectWidgets(self):
@@ -370,14 +370,14 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
         self.upperCol=urwid.Columns([("weight",4,self.Topic), self.upperDivider])
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperCol, 'divider' )), self.hsizer,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Raum: "+self.room)
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - room: "+self.room)
 
     def listUser(self,users,color=True):
         """takes a list of users and updates the Userlist of the room"""
         self.completion=[]
         for i in range(0,len(self.Userlistarray)):
             del(self.Userlistarray[0])
-        self.Userlistarray.append(urwid.Text('Userliste: '))
+        self.Userlistarray.append(urwid.Text('userlist: '))
         if color is True:
             for i in users:
                 self.completion.append(i[0])
@@ -460,13 +460,13 @@ class rattlekekzMailTab(rattlekekzPrivTab):
                 self.parent.sendMail(user,str(msg))
         elif stringlist[0]==("/help"):
             self.addLine("""Hilfe:
-        Mails neu abrufen: /refresh
-        Mail anzeigen: /show index
-        Mail löschen: /del index 
-        Alle gelesenen Mails löschen: /del all 
-        Mail versenden: /sendm nick msg""")
+        refresh mails: /refresh
+        show mail: /show index
+        delete mail: /del index 
+        delete all readed mails: /del all 
+        send mail: /sendm nick msg""")
         else:
-            self.addLine("Sie haben keinen gültigen Befehl eingegeben")
+            self.addLine("you've entered a invalid comand")
 
     def onKeyPressed(self, size, key):
         rattlekekzBaseTab.onKeyPressed(self, size, key)
@@ -503,7 +503,7 @@ class rattlekekzMailTab(rattlekekzPrivTab):
 class rattlekekzInfoTab(rattlekekzBaseTab):
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView, ("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Nachrichtenanzeige")
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - mail tab")
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -522,8 +522,8 @@ class rattlekekzInfoTab(rattlekekzBaseTab):
         """ add a line to the internal list of lines"""
         while len(self.Output) > self.parent.readhistory:
             del self.Output[0]
-        whois.insert(0,("divider","Whois von "+nick))
-        whois.append(("divider","Ende des Whois"))
+        whois.insert(0,("divider","whois of "+nick))
+        whois.append(("divider","end of whois"))
         for i in whois:
             self.Output.append(urwid.Text(i))
         self.MainView.set_focus(len(self.Output) - 1)
@@ -536,7 +536,7 @@ class rattlekekzSecureTab(rattlekekzBaseTab):
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView, ("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Nachrichtenanzeige")
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - security identify")
         self.passwd=""
 
     def connectWidgets(self):
@@ -593,7 +593,7 @@ class rattlekekzEditTab(rattlekekzBaseTab):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
         self.hasOutput=False
         self.hasInput=True
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - Profil editieren ")
+        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - edit profile ")
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -607,7 +607,7 @@ class rattlekekzEditTab(rattlekekzBaseTab):
         self.integer=0
         self.editPassword=False
         self.blind=False
-        self.addLine("\n(Drücken Sie Strg + A um ihr Passwort zu ändern)\nName: ")
+        self.addLine("\n(press ctrl + a to change your password)\nname: ")
         self.Input.set_edit_text(self.parent.stringHandler(self.name))
         self.passwd=""
 
@@ -615,7 +615,7 @@ class rattlekekzEditTab(rattlekekzBaseTab):
         self.integer=0
         self.editPassword=True
         self.blind=True
-        self.addLine("\nGeben sie ihr altes Passwort ein: (Um um ihr Profil zu ändern drücken Sie Strg + E)")
+        self.addLine("\nenter your old password: (to edit your profile press ctrl + e)")
         self.Input.set_edit_text("")
         self.passwd=""
 
@@ -669,23 +669,23 @@ class rattlekekzEditTab(rattlekekzBaseTab):
         if self.integer==0:
             if self.editPassword:
                 self.oldPassword = self.passwd
-                self.addLine("*"*len(self.oldPassword)+"\nGeben Sie Ihr neues Passwort ein: ")
+                self.addLine("*"*len(self.oldPassword)+"\nenter your new password: ")
                 self.Input.set_edit_text("")
                 self.passwd=""
             else:
                 self.newName=self.Input.get_edit_text()
-                self.addLine(self.newName+"\nOrt: ")
+                self.addLine(self.newName+"\nlocation: ")
                 self.Input.set_edit_text(self.parent.stringHandler(self.location))
             self.integer+=1
         elif self.integer==1:
             if self.editPassword:
                 self.newPassword = self.passwd
-                self.addLine('*'*len(self.newPassword)+"\nWiederholen Sie Ihr neues Passwort: ")
+                self.addLine('*'*len(self.newPassword)+"\nretype your new password: ")
                 self.Input.set_edit_text("")
                 self.passwd=""
             else:
                 self.newLocation=self.Input.get_edit_text()
-                self.addLine(self.parent.stringHandler(self.newLocation)+"\nHomepage: ")
+                self.addLine(self.parent.stringHandler(self.newLocation)+"\nhomepage: ")
                 self.Input.set_edit_text(self.parent.stringHandler(self.homepage))
             self.integer+=1
         elif self.integer==2:
@@ -694,7 +694,7 @@ class rattlekekzEditTab(rattlekekzBaseTab):
                 self.addLine("*"*len(self.newPasswordagain))
                 self.passwd=""
                 if self.newPassword != self.newPasswordagain:
-                    self.addLine("Passwörter nicht identisch")
+                    self.addLine("passwords do not match")
                     self.receivedPassword()
                 else:
                     self.parent.changePassword(self.oldPassword,self.newPassword)
@@ -704,22 +704,22 @@ class rattlekekzEditTab(rattlekekzBaseTab):
                     self.blind=False
             else:
                 self.newHomepage=self.Input.get_edit_text()
-                self.addLine(self.parent.stringHandler(self.newHomepage)+"\nHobbies: ")
+                self.addLine(self.parent.stringHandler(self.newHomepage)+"\nhobbies: ")
                 self.Input.set_edit_text(self.parent.stringHandler(self.hobbies))
                 self.integer+=1
         elif self.integer==3:
             self.newHobbies=self.Input.get_edit_text()
-            self.addLine(self.parent.stringHandler(self.newHobbies)+"\nFreitext: (~n~ für Zeilenumbrüche)")
+            self.addLine(self.parent.stringHandler(self.newHobbies)+"\nsignature: (~n~ for newlines)")
             self.Input.set_edit_text(self.parent.stringHandler(self.signature))
             self.integer+=1
         elif self.integer==4:
             self.newSignature=re.subn("~n~","\\n",self.Input.get_edit_text())[0]
-            self.addLine(self.parent.stringHandler(self.newSignature)+"\nPasswort zum bestätigen: ")
+            self.addLine(self.parent.stringHandler(self.newSignature)+"\npassword for validation: ")
             self.Input.set_edit_text("")
             self.blind=True
             self.integer+=1
         elif self.integer==5:
-            self.addLine("*"*len(self.passwd)+"\nÄndere Profil...")
+            self.addLine("*"*len(self.passwd)+"\nchanging profile ...")
             self.parent.updateProfile(self.newName,self.newLocation,self.newHomepage,self.newHobbies,self.newSignature,self.passwd)
             self.Input.set_edit_text("")
             self.passwd=""
