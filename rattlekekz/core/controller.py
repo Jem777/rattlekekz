@@ -42,7 +42,7 @@ class ConfigFile:
         path = os.path.dirname(self.path)
         if not os.path.exists(path):
             os.mkdir(path)
-        config = open(file, "w")
+        config = open(path+os.sep+"config", "w")
         config.write(text)
         config.flush()
 
@@ -68,7 +68,7 @@ class ConfigFile:
     def parseConf(self, Conf):
         config = {}
         for i in Conf:
-            if not (i.isspace() or i.startswith("#")) or (i.find("=")!=-1):
+            if not (i.isspace() or i.startswith("#")) and (i.find("=")!=-1):
                 a=i.split("=")
                 a=a[:2]
                 config[a[0].strip()] = a[1].strip()
@@ -176,7 +176,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.nickpattern = re.compile("",re.IGNORECASE)
         
         self.joinInfo=["Join","Login","Einladung"]
-        self.partInfo=["Part","Logout","Lost Connection","Nick-Kollision","Ping Timeout","Kick"]
+        self.partInfo=["Part","Logout","Lost Connection","Nick-Collision","Ping Timeout","Kick"]
 
     def initConfig(self, debug, kwds):
         default_conf = {"timestamp" : "[%H:%M] ",
@@ -190,7 +190,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.conf = ConfigFile(default_conf, path)
         if not debug:
             if not os.path.exists(path):
-                self.conf.createEmptyConf("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
+                self.conf.createEmptyConf("# this is the kekznet config. for more information visit the wiki at kekz.net")
             self.conf.readConf()
 
         def addKeyword(key, value):
@@ -357,13 +357,13 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
     def registerNick(self,nick,passwd,email):
         if not self.checkPassword(passwd):
-            self.view.gotException("Ungüliges Passwort")
+            self.view.gotException("password is to short")
         else:
             self.model.registerNick(nick,sha1(passwd).hexdigest(),email)
 
     def changePassword(self,passwd,passwdnew):
         if not self.checkPassword(passwdnew):
-            self.view.gotException("Ungüliges Passwort")
+            self.view.gotException("password is to short")
         else:
             self.model.changePassword(sha1(passwd).hexdigest(),sha1(passwdnew).hexdigest())
         
@@ -464,7 +464,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         try:
             id=self.lookupMailId[int(index)]
         except:
-            self.view.MailInfo("Mail Nr."+str(index)+" existiert nicht")
+            self.view.MailInfo("mail number"+str(index)+" does not exist")
         else:
             self.model.getMail(str(id))
 
@@ -472,7 +472,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         try:
             id=self.lookupMailId[int(index)]
         except:
-            self.view.MailInfo("Mail Nr."+str(index)+" existiert nicht")
+            self.view.MailInfo("mail number"+str(index)+" does not exist")
         else:
             self.model.deleteMail(str(id))
 
@@ -488,7 +488,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
     def startedConnection(self):
         """indicates that the model is connecting. Here should be a call to the view later on"""
-        pass
+        pass # TODO: Add this call
 
     def lostConnection(self, reason):
         self.view.connectionLost(reason)
@@ -605,7 +605,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.view.printMsg(room,msg)
 
     def gotHandshakeException(self, message):
-        self.view.gotException("rattlekekz muss geupdatet werden")
+        self.view.gotException("rattlekekz have to be updated")
 
     def gotLoginException(self, message):
         self.view.gotLoginException(message)
@@ -626,14 +626,14 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                 self.Userlist[room].insert(0,i)
                 del self.Userlist[room][index+1] 
         self.view.listUser(room,self.Userlist[room])
-        self.printMsg("","(>>>) "+nick+" betritt den Raum ("+self.joinInfo[int(joinmsg)]+")",room,5)
+        self.printMsg("","(>>>) "+nick+" enters the room ("+self.joinInfo[int(joinmsg)]+")",room,5)
 
     def quitUser(self,room,nick,partmsg):
         for i in self.Userlist[room]:
             if i[0]==nick:
                 self.Userlist[room].remove(i)
         self.view.listUser(room,self.Userlist[room])
-        self.printMsg("","(<<<) "+nick+" hat den Raum verlassen ("+self.partInfo[int(partmsg)]+")",room,5)
+        self.printMsg("","(<<<) "+nick+" left the room ("+self.partInfo[int(partmsg)]+")",room,5)
 
     def changedUserdata(self,room,nick,away,state):
         for i in self.Userlist[room]:
@@ -682,19 +682,19 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             value=self.stringHandler(value,True)
             if key=="nick":
                 nick=value
-            if key == "regdata": key=u"Registriert seit "
-            elif key == "logindate": key=u"Eingeloggt seit "
-            elif key == "lastseen": key=u"Ausgeloggt seit "
+            if key == "regdata": key=u"registered since "
+            elif key == "logindate": key=u"logged in since "
+            elif key == "lastseen": key=u"logged out since "
             if key == "state":
                 key = u"<raw>"
-                if value == u"off": value=u"Der User ist derzeit °fb°°cr°Offline°fx°.°nn°"
-                elif value == u"on": value=u"Der User ist derzeit °fb°°cg°Online°fx°.°nn°"
-                elif value == u"mail": value=u"Der User ist derzeit °fb°°cr°Offline°fx°, empfängt aber °fb°°cb°Mails°fx°.°nn°"
+                if value == u"off": value=u"the user is currently °fb°°cr°offline°fx°.°nn°"
+                elif value == u"on": value=u"the user is currently °fb°°cg°online°fx°.°nn°"
+                elif value == u"mail": value=u"the user is currently °fb°°cr°offline°fx°, but receives °fb°°cb°mail°fx°.°nn°"
                 else:
-                    value=u"Der Status ist unbekannt.°nn°"
+                    value=u"the status is unknown.°nn°"
             if key == "kekz":
                 key=u"<raw>"
-                value=u"°cb° %s kann noch °fb°%sx°fb° kekzen." % (nick,value)
+                value=u"°cb° %s got °fb°%sx°fb° cookies left." % (nick,value)
             if key == "usertext":
                 key=u"<raw>"
             if key == "<h1>":
@@ -783,14 +783,14 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.printMsg(user+' [CTCPAnswer]',cpanswer,self.view.getActiveTab(),0)
 
     def sendMailsuccessful(self,id):
-        self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" wurde erfolgreich verschickt")
+        self.view.MailInfo("the mail to "+self.lookupSendId[id]+" was transmitted succesfully")
         del self.lookupSendId[id]
 
     def sendBullshit(self,bullshit):
         self.model.sendHandshake(bullshit)
 
     def sendMailfailed(self,id,msg):
-        self.view.MailInfo("Die Mail an "+self.lookupSendId[id]+" konnte nicht verschickt werden: "+msg)
+        self.view.MailInfo("the mail to "+self.lookupSendId[id]+" could not be transmitted: "+msg)
         del self.lookupSendId[id]
 
     def receivedMails(self,userid,mailcount,mails):
@@ -802,16 +802,16 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.view.receivedMails(userid,mailcount,mails)
 
     def receivedMailcount(self,unreadmails,allmails):
-        self.view.MailInfo(str(unreadmails)+" ungelesene Mails, insgesamt "+str(allmails)+" Mails")
+        self.view.MailInfo(str(unreadmails)+" unread messages, "+str(allmails)+" messages")
 
     def requestMailfailed(self,error):
-        self.view.MailInfo("Die Mail konnte nicht gefunden werden: "+error)
+        self.view.MailInfo("the mail wasn't found: "+error)
 
     def requestMailsuccessful(self,user,date,mail):
         self.view.printMail(user,date,mail)
 
     def receivedNewMail(self,nick,header):
-        self.view.minorInfo("Sie haben eine eine Nachricht von "+nick+" bekommen: "+header)
+        self.view.minorInfo("You received a message from "+nick+": "+header)
 
     def unknownMethod(self,name):
         pass

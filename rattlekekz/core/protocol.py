@@ -73,7 +73,7 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
         if self.isConnected:
             basic.LineOnlyReceiver.sendLine(self,"".join(line.split("\n")))
         else:
-            self.controller.gotException("Nicht verbunden")
+            self.controller.gotException("not connected")
 
     def startedConnecting(self, connector):
         """starts the connection"""
