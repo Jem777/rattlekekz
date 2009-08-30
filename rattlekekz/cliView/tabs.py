@@ -46,7 +46,7 @@ class rattlekekzBaseTab(urwid.Frame):
         self.upperDivider=urwid.Text(("divider",self.parent.Ping), "right")
         self.statelist=[("dividerstate",self.time),("dividerstate",self.nickname),("dividerstate"," ")]
         self.lowerDivider=urwid.Text(self.statelist, "left")
-        self.header = urwid.Text("rattlekekz","center")
+        self.header = titleWidget("rattlekekz","0.99")
         
         self.buildOutputWidgets()
         self.connectWidgets()
@@ -123,6 +123,11 @@ class titleWidget(urwid.Text):
         self.formatstring = "%s (v %s) - %s"
         title = self.formatstring % (self.name, self.version, self.tabname)
         urwid.Text.__init__(self, title, "center")
+
+    def set_text(self, tabname):
+        self.tabname = tabname
+        title = self.formatstring % (self.name, self.version, self.tabname)
+        urwid.Text.set_text(self, title)
 
 class editWidget(urwid.Edit):
     def __init__(self, parent):
@@ -239,6 +244,7 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
         rattlekekzBaseTab.__init__(self,room, parent)
+        self.hasInput = True
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile([
@@ -248,7 +254,7 @@ class rattlekekzLoginTab(rattlekekzBaseTab):
             ])
         self.hasOutput=False
         self.hasInput=True
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - welcome at kekznet | "+self.room)
+        self.header.set_text("welcome at kekznet | "+self.room)
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -392,6 +398,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = editWidget(self)
         rattlekekzBaseTab.__init__(self,room, parent)
+        self.hasInput = True
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile([
@@ -399,7 +406,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
             self.MainView, 
             ("flow",urwid.AttrWrap(self.lowerDivider, 'divider'))
             ])
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - private conversation "+self.room)
+        self.header.set_text("private conversation "+self.room)
         self.completion=[self.room[1:]]
 
     def connectWidgets(self):
@@ -434,7 +441,7 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
         self.upperCol=urwid.Columns([("weight",4,self.Topic), self.upperDivider])
         self.hsizer=urwid.Columns([self.MainView, ("fixed",1,urwid.AttrWrap( urwid.SolidFill(" "), 'divider' )),("fixed",18,self.Userlist)], 1, 0, 16)
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperCol, 'divider' )), self.hsizer,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - room: "+self.room)
+        self.header.set_text("room: "+self.room)
 
     def listUser(self,users,color=True):
         """takes a list of users and updates the Userlist of the room"""
@@ -501,7 +508,7 @@ class rattlekekzMailTab(rattlekekzPrivTab):
             self.MainView,
             ("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))
             ])
-        self.header.set_text("rattlekekz  (Beta: "+self.parent.revision+") - KekzMail")
+        self.header.set_text("KekzMail")
         solutions = ["/help", "/del", "/show", "/sendm", "/refresh"]
         solutions = map(lambda x: stringHandler(x), solutions)
         solutions.sort()
@@ -578,7 +585,7 @@ class rattlekekzMailTab(rattlekekzPrivTab):
 class rattlekekzInfoTab(rattlekekzBaseTab):
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView, ("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - mail tab")
+        self.header.set_text("information")
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -608,10 +615,11 @@ class rattlekekzSecureTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
         rattlekekzBaseTab.__init__(self,room, parent)
+        self.hasInput = True
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView, ("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - security identify")
+        self.header.set_text("secure identify")
         self.passwd=""
 
     def connectWidgets(self):
@@ -663,12 +671,13 @@ class rattlekekzEditTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
         rattlekekzBaseTab.__init__(self,room, parent)
+        self.hasInput = True
 
     def buildOutputWidgets(self):
         self.vsizer=urwid.Pile( [("flow",urwid.AttrWrap( self.upperDivider, 'divider' )), self.MainView,("flow",urwid.AttrWrap( self.lowerDivider, 'divider' ))])
         self.hasOutput=False
         self.hasInput=True
-        self.header.set_text("rattlekekz (Beta: "+self.parent.revision+") - edit profile ")
+        self.header.set_text("edit profile")
 
     def connectWidgets(self):
         self.set_header(self.header)
