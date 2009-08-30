@@ -190,7 +190,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.conf = ConfigFile(default_conf, path)
         if not debug:
             if not os.path.exists(path):
-                self.conf.createEmptyConf("# Dies ist die kekznet Konfigurationsdatei. Für nähere Infos siehe Wiki unter kekz.net")
+                self.conf.createEmptyConf("# this is the kekznet config. for more information visit the wiki at kekz.net")
             self.conf.readConf()
 
         def addKeyword(key, value):
