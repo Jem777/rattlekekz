@@ -130,6 +130,7 @@ class editWidget(urwid.Edit):
         urwid.Edit.__init__(self)
         self.history = [""]
         self.count = 0
+        self.tab = False
 
     def keypress(self, size, key):
         if key == 'tab':
@@ -501,6 +502,10 @@ class rattlekekzMailTab(rattlekekzPrivTab):
             ("flow",urwid.AttrWrap( self.lowerDivider, 'divider'  ))
             ])
         self.header.set_text("rattlekekz  (Beta: "+self.parent.revision+") - KekzMail")
+        solutions = ["/help", "/del", "/show", "/sendm", "/refresh"]
+        solutions = map(lambda x: stringHandler(x), solutions)
+        solutions.sort()
+        self.completion = solutions
 
     def connectWidgets(self):
         self.set_header(self.header)
@@ -566,6 +571,9 @@ class rattlekekzMailTab(rattlekekzPrivTab):
             self.Input.set_edit_pos(len(self.Input.get_edit_text()))
         if not key in ('page up', 'page down', 'enter'): 
             self.keypress(size, key)
+
+    def getSolutions(self, bol = True):
+        return self.completion
 
 class rattlekekzInfoTab(rattlekekzBaseTab):
     def buildOutputWidgets(self):
