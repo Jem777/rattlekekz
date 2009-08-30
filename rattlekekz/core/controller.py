@@ -42,9 +42,13 @@ class ConfigFile:
         path = os.path.dirname(self.path)
         if not os.path.exists(path):
             os.mkdir(path)
-        config = open(path+os.sep+"config", "w")
-        config.write(text)
-        config.flush()
+        try:
+            config = open(self.path, "w")
+            config.write(text)
+            config.flush()
+        except IOError, Arg:
+            print "Error when writing configfile: \n" + str(Arg)
+            sys.exit()
 
     def readConf(self):
         configfile = open(self.path)
@@ -168,17 +172,20 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             debug = kwds.pop("debug")
         else:
             debug = False
-        self.initConfig(debug, kwds)
+        if kwds.has_key("config"):
+            path = kwds.pop("config")
+            self.initConfig(debug, kwds, path)
+        else:
+            self.initConfig(debug, kwds)
         self.view.finishedReadingConfigfile()
 
-        self.revisioni = self.view.revision
         self.nickname=""
         self.nickpattern = re.compile("",re.IGNORECASE)
         
-        self.joinInfo=["Join","Login","Einladung"]
+        self.joinInfo=["Join","Login","Invite"]
         self.partInfo=["Part","Logout","Lost Connection","Nick-Collision","Ping Timeout","Kick"]
 
-    def initConfig(self, debug, kwds):
+    def initConfig(self, debug, kwds, alt_conf = None):
         default_conf = {"timestamp" : "[%H:%M] ",
                 "clock" : "[%H:%M:%S] ",
                 "writehistory" : 200,
@@ -186,10 +193,14 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                 "nick" : "",
                 "room" : "",
                 "passwd" : ""}
-        path = os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"config"
+        if alt_conf != None: 
+            escapedtilde = os.path.expanduser(alt_conf)
+            path = os.path.abspath(escapedtilde)
+        else: 
+            path = os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"config"
         self.conf = ConfigFile(default_conf, path)
         if not debug:
-            if not os.path.exists(path):
+            if not os.path.isfile(path):
                 self.conf.createEmptyConf("# this is the kekznet config. for more information visit the wiki at kekz.net")
             self.conf.readConf()
 
@@ -768,8 +779,6 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                 self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
             elif cpmsg.lower() == 'ping':
                 self.sendCPAnswer(user,cpmsg+' ping')
-            elif cpmsg.lower() in ('rev','revision'):
-                self.sendCPAnswer(user,cpmsg+' '+self.revision)
             else:
                 self.sendCPAnswer(user,cpmsg+' (unknown)')
 

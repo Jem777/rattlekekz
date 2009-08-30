@@ -93,8 +93,10 @@ def getOptions():
             "warranty", default = False)
     parser.add_option("-n", "--nousercolors", action = "store_false", dest =
             "usercolors", default = True, help = "Turns of the colors of the userlist in the cliView")
-    parser.add_option("-d", "--debug", action = "store_true", dest =
+    parser.add_option("-N", "--no-config", action = "store_true", dest =
             "debug", default = False, help = "Enables the debug mode")
+    parser.add_option("-C", "--config",  dest = "config", help = 
+            "Use the specified config file instead of the default.", metavar = "CONFIG")
     parser.add_option("-t", "--timestamp", type = "int", dest =
             "timestamp", metavar = "TIMESTAMP", help = "Determines the timestampformat to be used")
     (_options, args) = parser.parse_args()
