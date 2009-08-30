@@ -135,8 +135,8 @@ class editWidget(urwid.Edit):
         if key == 'tab':
             pos = self.edit_pos
             text = self.get_edit_text()
-            before = text[:pos]
-            after = text[pos:]
+            before = stringHandler(text[:pos])
+            after = stringHandler(text[pos:])
             self.tabcompletion(before, after)
             return
         self.tab = False
@@ -188,7 +188,7 @@ class editWidget(urwid.Edit):
                 before = new_word
             else:
                 before = prefix + " " + new_word
-            self.set_edit_text(stringHandler(before) + after)
+            self.set_edit_text(before + after)
             self.set_edit_pos(len(before))
             self.tab = False
         elif len(solutions) == 0:
@@ -203,7 +203,7 @@ class editWidget(urwid.Edit):
                     before = new_word
                 else:
                     before = prefix + " " + new_word
-                self.set_edit_text(stringHandler(before) + after)
+                self.set_edit_text(before + after)
                 self.set_edit_pos(len(before))
                 self.tab = False
 
@@ -418,10 +418,11 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
 
     def getSolutions(self, bol = True):
         if bol:
-            solutions = map(lambda x: x + ", ", self.completion)
+            solutions = map(lambda x: stringHandler(x + ", "), self.completion)
             return solutions
         else:
-            return self.completion
+            solutions = map(lambda x: stringHandler(x), self.completion)
+            return solutions
 
 class rattlekekzMsgTab(rattlekekzPrivTab):
     def buildOutputWidgets(self):
