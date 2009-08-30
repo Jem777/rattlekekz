@@ -202,12 +202,18 @@ class editWidget(urwid.Edit):
                 self.tab = False
 
     def trySolutions(self, before, solutions):
-        index = len(before)+1
+        index = len(before)
         for i in solutions[1:]:
-            if solutions[0][index].lower() != i[index].lower():
-                return before
-        before += first[index]
-        self.trySolutions(before, solutions)
+            try:
+                if solutions[0][index].lower() != i[index].lower():
+                    return before
+            except IndexError:
+                if len(solutions[0]) < len(i):
+                    return solutions[0]
+                else:
+                    return i
+        before += solutions[0][index]
+        return self.trySolutions(before, solutions)
 
     def sendStr(self, string):
         """sends the string to the tab"""
