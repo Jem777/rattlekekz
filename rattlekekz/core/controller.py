@@ -42,7 +42,7 @@ class ConfigFile:
         path = os.path.dirname(self.path)
         if not os.path.exists(path):
             os.mkdir(path)
-        config = open(file, "w")
+        config = open(path+os.sep+"config", "w")
         config.write(text)
         config.flush()
 
@@ -68,7 +68,7 @@ class ConfigFile:
     def parseConf(self, Conf):
         config = {}
         for i in Conf:
-            if not (i.isspace() or i.startswith("#")) or (i.find("=")!=-1):
+            if not (i.isspace() or i.startswith("#")) and (i.find("=")!=-1):
                 a=i.split("=")
                 a=a[:2]
                 config[a[0].strip()] = a[1].strip()

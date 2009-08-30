@@ -101,9 +101,9 @@ def getOptions():
     options = toDict(_options)
     if options.has_key("timestamp"):
         if options["timestamp"] == 2:
-            options["timestamp"] = "[%H:%M]"
+            options["timestamp"] = "[%H:%M:%S]"
         elif options["timestamp"] == 3:
-            options["timestamp"] = "[%H:%M]"
+            options["timestamp"] = "[%H%M]"
         else:
             options["timestamp"] = "[%H:%M]"
     if options["warranty"] == True:
