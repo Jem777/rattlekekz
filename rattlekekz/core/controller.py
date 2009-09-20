@@ -21,7 +21,7 @@ copyright = """
 """
 
 from rattlekekz.core import protocol, pluginmanager
-import os, sys, re, time, base64, random
+import os, sys, re, time, base64, random, webbrowser
 from hashlib import sha1, md5
 from twisted.internet.task import LoopingCall
 
@@ -178,6 +178,8 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         else:
             self.initConfig(debug, kwds)
         self.view.finishedReadingConfigfile()
+
+        self.browser=webbrowser.get()
 
         self.nickname=""
         self.nickpattern = re.compile("",re.IGNORECASE)
@@ -359,6 +361,10 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             return True
         else:
             return False
+
+    def openURL(self,url):
+        """opens the url given as a string in the default browser"""
+        self.browser.open(url)
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
