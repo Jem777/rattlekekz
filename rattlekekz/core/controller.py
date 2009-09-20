@@ -302,6 +302,9 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                     formatlist.append("hline")
                     formatlist.append(formatlist[-2])
                     textlist.append("")
+                else:
+                    formatlist.append(formatlist[-2])
+                    textlist.append("")
                 continue
             if array[i].startswith("l"):
                 if array[i][1:].startswith("/"):
