@@ -57,14 +57,14 @@ class ConfigFile:
         if parsed_conf.has_key("readhistory"):
             try:
                 parsed_conf["readhistory"] = int(parsed_conf["readhistory"])
-            except:
+            except ValueError:
                 del parsed_conf["readhistory"]
         if parsed_conf.has_key("writehistory"):
             try:
                 parsed_conf["writehistory"] = int(parsed_conf["writehistory"])
-            except:
+            except ValueError:
                 del parsed_conf["writehistory"]
-        self.config.update(self.parseConf(lines))
+        self.config.update(parsed_conf)
 
     def writeConf(self):
         pass

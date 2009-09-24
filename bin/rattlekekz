@@ -102,12 +102,14 @@ def getOptions():
     (_options, args) = parser.parse_args()
     options = toDict(_options)
     if options.has_key("timestamp"):
-        if options["timestamp"] == 2:
+        if options["timestamp"] == 1:
+            options["timestamp"] = "[%H:%M]"
+        elif options["timestamp"] == 2:
             options["timestamp"] = "[%H:%M:%S]"
         elif options["timestamp"] == 3:
             options["timestamp"] = "[%H%M]"
         else:
-            options["timestamp"] = "[%H:%M]"
+            del options["timestamp"]
     if options["warranty"] == True:
         print warranty
     elif options["copyright"] == True:
