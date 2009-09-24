@@ -64,6 +64,10 @@ class ConfigFile:
                 parsed_conf["writehistory"] = int(parsed_conf["writehistory"])
             except ValueError:
                 del parsed_conf["writehistory"]
+        if parsed_conf.has_key("timestamp"):
+            parsed_conf["timestamp"] = parsed_conf["timestamp"]+" "
+        if parsed_conf.has_key("clock"):
+            parsed_conf["clock"] = parsed_conf["clock"]+" "
         self.config.update(parsed_conf)
 
     def writeConf(self):
