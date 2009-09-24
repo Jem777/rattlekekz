@@ -594,21 +594,20 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         msg=[]
         msg.append(self.view.timestamp(time.strftime(self.getValue("timestamp") ,time.localtime(time.time()))))
         if state==0 or state==2 or state==4:
-            if nick.lower()==self.nickname.lower():
-                msg.append(self.view.colorizeText("green",nick+": "))
-            else:    
-                msg.append(self.view.colorizeText("blue",nick+": "))
+            if nick!="":
+                if nick.lower()==self.nickname.lower():
+                    msg.append(self.view.colorizeText("green",nick+": "))
+                else:    
+                    msg.append(self.view.colorizeText("blue",nick+": "))
         elif state==3:
             msg.append(self.view.colorizeText("green",str(self.nickname)+": "))
         if state==2 or state==3:
             room="#"+nick
             self.view.addRoom(room,"PrivRoom")
         if state==4:
-            if len(self.view.lookupRooms)==1:
-                self.view.addRoom("$info","InfoRoom")
-                self.view.changeTab("$info")
-                activeTab="$info"
-            room=activeTab
+            pre,room=self.view.minorInfo(room,nick)
+            if pre!=None:
+                msg.append(pre)
         if not (activeTab == "$login" or room.lower() == self.view.getActiveTab()):
             importance=2
             if (self.nickpattern.search(message) is not None) or state==2:
@@ -829,7 +828,8 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.view.printMail(user,date,mail)
 
     def receivedNewMail(self,nick,header):
-        self.view.minorInfo("You received a message from "+nick+": "+header)
+        #self.view.minorInfo("You received a message from "+nick+": "+header)
+        self.printMsg("","You received a message from "+nick+": "+header,"",4)
 
     def unknownMethod(self,name):
         pass

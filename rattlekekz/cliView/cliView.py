@@ -397,11 +397,19 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.getTab(self.ShownRoom).addLine(("divider","Info: "))
         self.getTab(self.ShownRoom).addLine(msg)
 
-    def minorInfo(self, message):
+    def minorInfo(self, room, nick):
+        """this method is used to determine wether a new info-tab must be opened to display e.g. a bot message"""
+        pre=None
+        if nick=="":
+            pre=("divider","Info:\n")
         if len(self.lookupRooms)==1:
-            self.addTab("$infos",rattlekekzInfoTab)
-            self.changeTab("$infos")
-        self.getTab(self.ShownRoom).addLine([("divider","Info:\n"),message])
+            self.addRoom("$info","InfoRoom")
+            self.changeTab("$info")
+            return (pre,"$info")
+        elif room=="":
+            return (pre,self.ShownRoom)
+        else:
+            return (pre,room)
 
     def receivedWhois(self,nick,array):
         self.addTab("$infos", rattlekekzInfoTab)
