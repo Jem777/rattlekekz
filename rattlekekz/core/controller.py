@@ -612,7 +612,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             pre,room=self.view.minorInfo(room,nick)
             if pre!=None:
                 msg.append(pre)
-        if not (activeTab == "$login" or room.lower() == self.view.getActiveTab()):
+        if not activeTab == "$login":
             importance=2
             if (self.nickpattern.search(message) is not None) or state==2:
                 importance=3 
