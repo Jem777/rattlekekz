@@ -126,7 +126,7 @@ class FileTransfer:
             self.sendJSON(self.transfers[uid]["user"],{"transfer":"finished", "id":uid, "hash":self.transfers[uid]["hash"].hexdigest()})
 
     def receivedData(self,uid,base64_data):
-        data = os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"transfers"+os.sep+self.transfers[uid]["filename"] # TODO: implement choosen filename and location
+        data = os.path.expanduser("~")+os.sep+".rattlekekz"+os.sep+"transfers"+os.sep+self.transfers[uid]["filename"] # TODO: implement choosen filename and location
         filepath = os.path.dirname(data)
         if os.path.exists(filepath):
             if os.path.isdir(filepath):
@@ -203,7 +203,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             escapedtilde = os.path.expanduser(alt_conf)
             path = os.path.abspath(escapedtilde)
         else: 
-            path = os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"config"
+            path = os.path.expanduser("~")+os.sep+".rattlekekz"+os.sep+"config"
         self.conf = ConfigFile(default_conf, path)
         if not debug:
             if not os.path.isfile(path):

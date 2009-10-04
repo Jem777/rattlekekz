@@ -64,7 +64,7 @@ under certain conditions; run 'rattlekekz -c' for details.
 import sys, os, types, optparse
 
 def initLogger():
-    logfile=os.environ["HOME"]+os.sep+'.rattlekekz'+os.sep+'error.log'
+    logfile=os.path.expanduser("~")+os.sep+'.rattlekekz'+os.sep+'error.log'
     logpath=os.path.dirname(logfile)
     errlog = sys.stderr
     if os.path.isdir(logpath):
