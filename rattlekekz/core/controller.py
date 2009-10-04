@@ -476,9 +476,9 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
     def sendMail(self,nick,msg):
         self.sendMailCount+=1
-        id="Mail_"+str(self.sendMailCount) # TODO: Fix usage of id to for example uid
-        self.lookupSendId.update({id:nick})
-        self.model.sendMail(nick,msg,id)
+        uid="Mail_"+str(self.sendMailCount)
+        self.lookupSendId.update({uid:nick})
+        self.model.sendMail(nick,msg,uid)
 
     def refreshMaillist(self):
         self.model.getMailCount()
@@ -486,19 +486,19 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
     def getMail(self,index):
         try:
-            id=self.lookupMailId[int(index)]
+            uid=self.lookupMailId[int(index)]
         except:
             self.view.MailInfo("mail number"+str(index)+" does not exist")
         else:
-            self.model.getMail(str(id))
+            self.model.getMail(str(uid))
 
     def deleteMail(self,index):
         try:
-            id=self.lookupMailId[int(index)]
+            uid=self.lookupMailId[int(index)]
         except:
             self.view.MailInfo("mail number"+str(index)+" does not exist")
         else:
-            self.model.deleteMail(str(id))
+            self.model.deleteMail(str(uid))
 
     def deleteAllMails(self):
         self.model.deleteAllMails()
@@ -803,16 +803,16 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
     def receivedCPAnswer(self,user,cpanswer):
         self.printMsg(user+' [CTCPAnswer]',cpanswer,self.view.getActiveTab(),0)
 
-    def sendMailsuccessful(self,id):
-        self.view.MailInfo("the mail to "+self.lookupSendId[id]+" was transmitted succesfully")
-        del self.lookupSendId[id]
+    def sendMailsuccessful(self,uid):
+        self.view.MailInfo("the mail to "+self.lookupSendId[uid]+" was transmitted succesfully")
+        del self.lookupSendId[uid]
 
     def sendBullshit(self,bullshit):
         self.model.sendHandshake(bullshit)
 
-    def sendMailfailed(self,id,msg):
-        self.view.MailInfo("the mail to "+self.lookupSendId[id]+" could not be transmitted: "+msg)
-        del self.lookupSendId[id]
+    def sendMailfailed(self,uid,msg):
+        self.view.MailInfo("the mail to "+self.lookupSendId[uid]+" could not be transmitted: "+msg)
+        del self.lookupSendId[uid]
 
     def receivedMails(self,userid,mailcount,mails):
         self.lookupMailId=[]
