@@ -490,6 +490,9 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.delTab(window)
         self.updateTabs()
 
+    def startedConnection(self):
+        self.getTab(self.ShownRoom).addLine("connecting ...")
+
     def connectionFailed(self):
         self.getTab(self.ShownRoom).addLine("connection failed")
 
