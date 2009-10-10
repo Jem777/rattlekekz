@@ -512,7 +512,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
     def startedConnection(self):
         """indicates that the model is connecting."""
-        self.view.startedConnection(self)
+        self.view.startedConnection()
 
     def lostConnection(self, reason):
         self.view.connectionLost(reason)
