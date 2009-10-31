@@ -717,7 +717,13 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                     value=u"the status is unknown.°nn°"
             if key == "kekz":
                 key=u"<raw>"
-                value=u"°cb° %s got °fb°%sx°fb° cookies left." % (nick,value)
+                table={"0":"no","1":"one","2":"two","3":"three","4":"four","5":"five","6":"six","7":"seven","8":"eight","9":"nine"}
+                if table.has_key(value):
+                    value=table[value]
+                if not value == "one":
+                    value=u"°cb° %s got °fb°%s°fb° cookies left." % (nick,value)
+                else:
+                    value=u"°cb° %s got °fb°%s°fb° cookie left." % (nick,value)
             if key == "usertext":
                 key=u"<raw>"
             if key == "<h1>":
