@@ -117,7 +117,8 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
                  "s5":";-)",
                  "sxmas":"o:)",
                  "s12":":-E",
-                 "s13":":-G"}
+                 "s13":":-G",
+                 "kekz": "cookie"}
         reactor.addReader(self)
         reactor.callWhenRunning(self.init)
         self.oldtime=""
