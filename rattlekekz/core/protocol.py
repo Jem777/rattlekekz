@@ -188,6 +188,9 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
     def kekzCode440(self,data):
         self.iterPlugins('sendMailsuccessful',[data])
 
+    def kekzCode400(self,data):
+        self.iterPlugins('openURL',[data])
+
     def kekzCode450(self,data):
         dic=self.decoder(data)
         userid=dic["quota"]
