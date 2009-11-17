@@ -521,7 +521,7 @@ class rattlekekzMailTab(rattlekekzPrivTab):
         self.set_focus('footer')
 
     def sendStr(self,string):
-        stringlist=string.split(" ")
+        stringlist=string.lower().split(" ")
         if stringlist[0]==("/refresh"):
             self.parent.refreshMaillist()
         elif stringlist[0]==("/show"):
@@ -544,40 +544,12 @@ class rattlekekzMailTab(rattlekekzPrivTab):
         delete mail: /del index 
         delete all readed mails: /del all 
         send mail: /sendm nick msg""")
+        elif stringlist[0] == ("/suspend"):
+            self.parent.suspendView(" ".join(stringlist[1:]))
+        elif stringlist[0] == ("/close"):
+            self.onClose()
         else:
             self.addLine("you've entered a invalid comand")
-
-    def onKeyPressed(self, size, key):
-        rattlekekzBaseTab.onKeyPressed(self, size, key)
-        if key == 'enter':
-            self.MainView.set_focus(len(self.Output) - 1)
-            text = self.Input.get_edit_text()
-            if text=="":
-                return
-            elif text.lower().startswith("/suspend"):
-                self.parent.suspendView(text.lower()[9:])
-            elif text.lower().startswith("/close"):
-                self.onClose()
-            else:
-                self.sendStr(str(text))
-            self.Input.set_edit_text("")
-        if key in ('up', 'down'):
-            if key in 'up' and len(self.history) is not (0 or self.count+1):
-                self.count+=1
-                if self.count is 0:
-                    self.current = self.Input.get_edit_text()
-                    self.Input.set_edit_text(self.history[self.count])
-                else:
-                    self.Input.set_edit_text(self.history[self.count])
-            elif key in 'down' and self.count is not -1:
-                self.count-=1
-                if self.count is -1:
-                    self.Input.set_edit_text(self.current)
-                else:
-                    self.Input.set_edit_text(self.history[self.count])
-            self.Input.set_edit_pos(len(self.Input.get_edit_text()))
-        if not key in ('page up', 'page down', 'enter'): 
-            self.keypress(size, key)
 
     def getSolutions(self, bol = True):
         return self.completion
