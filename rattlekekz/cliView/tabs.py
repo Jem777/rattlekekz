@@ -521,7 +521,8 @@ class rattlekekzMailTab(rattlekekzPrivTab):
         self.set_focus('footer')
 
     def sendStr(self,string):
-        stringlist=string.lower().split(" ")
+        stringlist=string.split(" ")
+        stringlist[0] = stringlist[0].lower()
         if stringlist[0]==("/refresh"):
             self.parent.refreshMaillist()
         elif stringlist[0]==("/show"):
