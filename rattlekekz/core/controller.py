@@ -425,21 +425,11 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             path = " ".join(string)
             self.offerFile(target,path)
         elif string.lower().startswith('/accept'):
-            uid=re.findall("\d\d\d",string[8:])
-            if len(uid) is 0:
-                uid=re.findall("\d\d",string[8:])
-                if len(uid) is 0:
-                    uid=re.findall("\d",string[8:])
-                    if len(uid) is not 1:
-                        self.botMsg("filetransfer","usage: /accept [id]")
-                    else:
-                        uid = int(uid[0])
-                else:
-                    uid = int(uid[0])
-            elif len(uid) is not 1:
-                self.botMsg("filetransfer","please type a proper id.")
+            uid=re.match(r"\d{1,3}",string[8:])
+            if not uid:
+                self.botMsg("filetransfer","usage: /accept [id]")
             else:
-                uid = int(uid[0])
+                uid = int(uid.group(0))
             if self.transfers.has_key(uid):
                 self.acceptOffer(uid)
             else:
