@@ -190,6 +190,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
         self.linkLists={}
         self.urls=re.compile(r"(?=\b)((?#Protocol)(?:(?:ht|f)tp(?:s?)\:\/\/|~/|/)(?#Username:Password)(?:\w+:\w+@)?(?#Subdomains)(?:(?:[-\w]+\.)+(?#TopLevel Domains)(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|museum|travel|edu|pro|asia|cat|coop|int|tel|post|xxx|[a-z]{2}))(?#Port)(?::[\d]{1,5})?(?#Directories)(?:(?:(?:/(?:[-\w~!$+|.,=]|%[a-f\d]{2})+)+|/)+|#)?(?#Query)(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?#Anchor)(?:#(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)?)(?=\b)",re.I)
+        self.linkSyntax=re.compile(r"(?:(tail|head)(?::(\d+))?)|(?:(file):(\w*(?:\.\w*)?))|(?:(copy)(?::(-?\d+))?)",re.I)
 
         self.joinInfo=["Join","Login","Invite"]
         self.partInfo=["Part","Logout","Lost Connection","Nick-Collision","Ping Timeout","Kick"]
@@ -379,12 +380,39 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         else:
             self.linkLists[room.lower()]=links
 
-    def openLinkTab(self,room):
+    def linkTab(self,room,command):
         """opens an infoTab with the list of URLs of the room"""
-        if self.linkLists.has_key(room.lower()):
-            self.view.openLinkTab(room,self.linkLists[room.lower()])
+        command=command.strip()
+        if command=="":
+            if self.linkLists.has_key(room.lower()):
+                self.view.openLinkTab(room,self.linkLists[room.lower()])
+            else:
+                self.botMsg("rattlekekz","no links for room "+room+".")
         else:
-            self.botMsg("rattlekekz","no links for room "+room+".")
+            command=self.linkSyntax.match(command)
+            if command:
+                if self.linkLists.has_key(room.lower()):
+                    if command.group(1) == "head":
+                        if command.group(2) == None:
+                            self.view.openLinkTab(room,self.linkLists[room.lower()])
+                        else:
+                            self.view.openLinkTab(room,self.linkLists[room.lower()][:int(command.group(2))])
+                    elif command.group(1) == "tail":
+                        if command.group(2) == None:
+                            self.view.openLinkTab(room,self.linkLists[room.lower()])
+                        else:
+                            self.view.openLinkTab(room,self.linkLists[room.lower()][-int(command.group(2)):])
+                    elif command.group(3) == "file":
+                        file=open(os.path.expanduser("~")+os.sep+command.group(4),"w")
+                        for i in self.linkLists[room.lower()]:
+                            file.write(i+"\n")
+                        file.close()
+                    elif command.group(5) == "copy":
+                        print "STUB: implement this" #TODO: do this
+                else:
+                    self.botMsg("rattlekekz","no links for room "+room+".")
+            else:
+                self.botMsg("rattlekekz","usage: /links [(head|tail)[:linecount], copy[:+/-lines], file:path].")
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
@@ -436,7 +464,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             string = string[8:].split(' ')
             self.unloadPlugin(string.pop(0))
         elif string.lower().startswith('/links'):
-            self.openLinkTab(channel)
+            self.linkTab(channel,string[6:])
         elif string.lower().startswith('/sendfile'):
             string = string[10:].split(" ")
             target = string.pop(0)
