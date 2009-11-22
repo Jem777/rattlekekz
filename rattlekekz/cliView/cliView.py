@@ -440,7 +440,10 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         if not len(mails)==0:
             self.getTab(self.ShownRoom).addLine(("green","\nmail: "))
             for i in mails:
-                self.getTab(self.ShownRoom).addLine(str(i["index"])+".: von "+i["from"]+", um "+i["date"]+": \n"+i["stub"])
+                if i["unread"]==1:
+                    self.getTab(self.ShownRoom).addLine(str(i["index"])+".: von "+i["from"]+", um "+i["date"]+" (unread): \n"+i["stub"])
+                else:
+                    self.getTab(self.ShownRoom).addLine(str(i["index"])+".: von "+i["from"]+", um "+i["date"]+": \n"+i["stub"])
 
     def printMail(self,user,date,mail):
         self.openMailTab()
