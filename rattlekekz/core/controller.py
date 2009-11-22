@@ -187,7 +187,10 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
         self.nickname=""
         self.nickpattern = re.compile("",re.IGNORECASE)
-        
+
+        self.linkLists={}
+        self.urls=re.compile(r"(?=\b)((?#Protocol)(?:(?:ht|f)tp(?:s?)\:\/\/|~/|/)(?#Username:Password)(?:\w+:\w+@)?(?#Subdomains)(?:(?:[-\w]+\.)+(?#TopLevel Domains)(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|museum|travel|edu|pro|asia|cat|coop|int|tel|post|xxx|[a-z]{2}))(?#Port)(?::[\d]{1,5})?(?#Directories)(?:(?:(?:/(?:[-\w~!$+|.,=]|%[a-f\d]{2})+)+|/)+|#)?(?#Query)(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?#Anchor)(?:#(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)?)(?=\b)",re.I)
+
         self.joinInfo=["Join","Login","Invite"]
         self.partInfo=["Part","Logout","Lost Connection","Nick-Collision","Ping Timeout","Kick"]
 
@@ -370,6 +373,19 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         """opens the url given as a string in the default browser"""
         self.browser.open(url)
 
+    def appendLinks(self,room,links):
+        if self.linkLists.has_key(room.lower()):
+            self.linkLists[room].extend(links)
+        else:
+            self.linkLists[room.lower()]=links
+
+    def openLinkTab(self,room):
+        """opens an infoTab with the list of URLs of the room"""
+        if self.linkLists.has_key(room.lower()):
+            self.view.openLinkTab(room,self.linkLists[room.lower()])
+        else:
+            self.botMsg("rattlekekz","no links for room "+room+".")
+
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
         self.nick,self.rooms=nick, rooms
@@ -419,6 +435,8 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         elif string.lower().startswith("/unload"):
             string = string[8:].split(' ')
             self.unloadPlugin(string.pop(0))
+        elif string.lower().startswith('/links'):
+            self.openLinkTab(channel)
         elif string.lower().startswith('/sendfile'):
             string = string[10:].split(" ")
             target = string.pop(0)
@@ -584,6 +602,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.printMsg(nick,msg,"",4)
 
     def printMsg(self,nick,message,room,state):
+        self.appendLinks(room,self.urls.findall(message))
         activeTab=self.view.getActiveTab()
         msg=[]
         msg.append(self.view.timestamp(time.strftime(self.getValue("timestamp") ,time.localtime(time.time()))))

@@ -420,6 +420,13 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         #    out.append(self.deparse(i))
         self.getTab("$infos").addWhois(nick, out)
 
+    def openLinkTab(self,room,links):
+        room,links=self.stringHandler(room),map(self.stringHandler,links)
+        self.addTab("$links of "+room,rattlekekzInfoTab)
+        self.changeTab("$links of "+room)
+        for i in links:
+            self.getTab("$links of "+room).addLine(i)
+
     def openMailTab(self):
         self.addTab("$mail",rattlekekzMailTab)
         #self.iterPlugins('refreshMaillist')
