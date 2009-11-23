@@ -56,7 +56,6 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.name,self.version = "rattlekekz","0.99"
         colors =[('normal','default','default'),
             ('divider', 'white', 'dark blue'),
-            ('divideryellow', 'yellow', 'dark blue'),
             ('dividerstate', 'light gray', 'dark blue'),
             ('dividerme', 'light red', 'dark blue'),
 
@@ -83,6 +82,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
             ('yellowbold','yellow,bold','default','bold'),  #chatop
             ('bluebold','light blue,bold','default','bold'), #roomop
             ('greenbold','light green,bold','default','bold'), #special
+            ('divideryellow', 'yellow,bold', 'dark blue'),
             ("magentabold","light magenta,bold","default",'bold'),
             ("cyanbold","light cyan,bold","default",'bold'),
             ("orangebold","brown,bold","default",'bold'),
@@ -94,6 +94,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
             ('yellowbold','yellow','default'),
             ('bluebold','light blue','default'),
             ('greenbold','light green','default'),
+            ('divideryellow', 'yellow', 'dark blue'),
             ("magentabold","light magenta","default"),
             ("cyanbold","light cyan","default"),
             ("orangebold","brown","default"),
@@ -189,6 +190,10 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         if self.ShownRoom != None:
             keys = self.tui.get_input()
             for key in keys:
+                if self.ShownRoom != "$login":
+                    self.lookupRooms[self.getTabId(self.ShownRoom.lower())][-1]=0
+                    self.updateTabs()
+                    self.setTitle()
                 if key == 'window resize':
                     self.size = self.tui.get_cols_rows()
                     for i in self.lookupRooms:

@@ -111,13 +111,11 @@ class TabManager:
     def highlightTab(self,tab,highlight):
         """highlights a tab highlight is of type int and tab is of type int (the id) or string (the tabname)"""
         tab = tab.lower()
-        if tab != self.ShownRoom.lower():
-            try:
-                if highlight>self.lookupRooms[tab][2]:
-                    self.lookupRooms[tab][2]=highlight
-                self.updateTabs()
-            except:
-                if highlight>self.lookupRooms[self.getTabId(tab)][2]:
-                    self.lookupRooms[self.getTabId(tab)][2]=highlight
-                self.updateTabs()
+        try:
+            if highlight>self.lookupRooms[tab][2]:
+                self.lookupRooms[tab][2]=highlight
+        except:
+            if highlight>self.lookupRooms[self.getTabId(tab)][2]:
+                self.lookupRooms[self.getTabId(tab)][2]=highlight
+        self.updateTabs()
 
