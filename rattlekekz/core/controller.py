@@ -675,16 +675,12 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
     def receivedUserlist(self,room,users):
         self.Userlist[room]=users
+        self.Userlist[room].sort(key=lambda x: self.stringHandler(x[0]).lower())
         self.view.listUser(room,users)
 
     def joinUser(self,room,nick,state,joinmsg):
         self.Userlist[room].append([nick,False,state])
         self.Userlist[room].sort(key=lambda x: self.stringHandler(x[0]).lower())
-        for i in self.Userlist[room]:
-            if i[0].startswith("~"):
-                index=self.Userlist[room].index(i)
-                self.Userlist[room].insert(0,i)
-                del self.Userlist[room][index+1] 
         self.view.listUser(room,self.Userlist[room])
         self.printMsg("","(>>>) "+nick+" enters the room ("+self.joinInfo[int(joinmsg)]+")",room,5)
 
