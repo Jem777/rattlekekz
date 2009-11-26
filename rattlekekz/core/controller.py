@@ -387,7 +387,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             if self.linkLists.has_key(room.lower()):
                 self.view.openLinkTab(room,self.linkLists[room.lower()])
             else:
-                self.botMsg("rattlekekz","no links for room "+room+".")
+                self.botMsg("","no links for room "+room+".")
         else:
             command=self.linkSyntax.match(command)
             if command:
