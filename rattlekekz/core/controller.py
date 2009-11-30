@@ -211,7 +211,21 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.conf = ConfigFile(default_conf, path)
         if not debug:
             if not os.path.isfile(path):
-                self.conf.createEmptyConf("# this is the kekznet config. for more information visit the wiki at kekz.net")
+                self.conf.createEmptyConf("""# this is the rattlekekz config. for more information visit the wiki at kekz.net
+                                          #uncomment the following line to enable autologin. You have to insert nick, passwd and room for this to work
+                                          #autologin = 1
+                                          nick =
+                                          #to generate the sha1 hash of your passwd execute this line: python -c 'import hashlib; print hashlib.sha1("YOUR_PASSWD").hexdigest()'
+                                          passwd=
+                                          
+                                          #possible values for timestamp and clock are [%H:%M], [%H:%M:%S], %H%M and others
+                                          timestamp = [%H:%M]
+                                          #formating for the clock in the lower divider of the cliView
+                                          clock = [%H:%M:%S]
+                                          
+                                          #the next two values are how many lines are stored in the history of the inputfield and the chatwindow
+                                          writehistory=200
+                                          readhistory=5000""")
             self.conf.readConf()
 
         def addKeyword(key, value):
