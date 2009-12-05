@@ -671,7 +671,8 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                 importance=1
             else:
                 importance=2
-            self.view.highlightTab(room,importance)
+            if  nick.lower()!=self.nickname.lower():
+                self.view.highlightTab(room,importance)
         if state==5:
             msg.append(self.view.colorizeText("blue",self.view.escapeText(message)))
         else:
