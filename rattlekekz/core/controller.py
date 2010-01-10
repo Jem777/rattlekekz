@@ -390,7 +390,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
     def appendLinks(self,room,links):
         if self.linkLists.has_key(room.lower()):
-            self.linkLists[room].extend(links)
+            self.linkLists[room.lower()].extend(links)
         else:
             self.linkLists[room.lower()]=links
 
