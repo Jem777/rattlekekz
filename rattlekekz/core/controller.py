@@ -637,9 +637,15 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
     def privMsg(self,nick,msg):
         self.printMsg(nick,msg,"",2)
 
+    def privOnline(self,nick):
+        self.printMsg("",nick+" is now online.","#"+nick,4)
+
+    def privOffline(self,nick):
+        self.printMsg("",nick+" has gone offline.","#"+nick,4)
+
     def ownprivMsg(self,nick,msg):
         self.printMsg(nick,msg,"",3)
-        
+
     def botMsg(self,nick,msg):
         self.printMsg(nick,msg,"",4)
 

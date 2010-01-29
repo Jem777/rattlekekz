@@ -356,6 +356,16 @@ class KekzChatClient(KekzMailClient):
         msg=" ".join(foo[1:])
         self.iterPlugins('ownprivMsg',[nick,msg])
 
+    def kekzCode104(self,data):
+        print "104"
+        nick = data.strip()
+        self.iterPlugins('privOffline',[nick])
+
+    def kekzCode105(self,data):
+        print "105"
+        nick = data.strip()
+        self.iterPlugins('privOnline',[nick])
+
     def kekzCode109(self,data):
         foo=data.split(" ")
         nick=foo[0]
