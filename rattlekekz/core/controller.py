@@ -21,9 +21,10 @@ copyright = """
 """
 
 from rattlekekz.core import protocol, pluginmanager
-import os, sys, re, time, base64, random, webbrowser
+import os, sys, re, time, base64, random, webbrowser, urllib
 from hashlib import sha1, md5
 from twisted.internet.task import LoopingCall
+from twisted.internet.threads import deferToThread
 
 
 class ConfigFile:
@@ -81,6 +82,31 @@ class ConfigFile:
                 a=a[:2]
                 config[a[0].strip()] = a[1].strip()
         return config
+
+class ImageLoader:
+    def __init__(self):
+        self.iterator = 0
+        self.images = {}
+
+    def loadImage(self,url):
+        if not self.images.has_key(url):
+            self.images[url]={"getter":None,"data":None,"finished":False,"ids":[self.id]}
+        else:
+            print "url taken" # TODO: some handling to reuse existing data
+        d = deferToThread(self.reallyLoadImage,url,self.id)
+        d.addCallback(finishedImage)
+        # TODO: return something like 'downloading with id x' to the view
+        self.id+=1
+
+    def reallyLoadImage(self,url,id):
+        self.image[url]["getter"]=urllib.urlopen(url)
+        self.image[url]["data"]=self.image[url]["getter"].read() # TODO: return chunks
+        return (url,id)
+
+    def finishedImage(self,result):
+        url,id=result
+        self.image[url]["finished"]=True
+        # TODO: return image to view with id as reference
 
 class FileTransfer:
     def __init__(self, encoder, decoder):
@@ -191,6 +217,8 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.linkLists={}
         self.urls=re.compile(r"(?=\b)((?#Protocol)(?:(?:ht|f)tp(?:s?)\:\/\/|~/|/)(?#Username:Password)(?:\w+:\w+@)?(?#Subdomains)(?:(?:[-\w]+\.)+(?#TopLevel Domains)(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|museum|travel|edu|pro|asia|cat|coop|int|tel|post|xxx|[a-z]{2}))(?#Port)(?::[\d]{1,5})?(?#Directories)(?:(?:(?:/(?:[-\w~!$+|.,=]|%[a-f\d]{2})+)+|/)+|#)?(?#Query)(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?#Anchor)(?:#(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)?)(?=\b)",re.I)
         self.linkSyntax=re.compile(r"(?:(tail|head)(?::(\d+))?)|(?:(file):(\w*(?:\.\w*)?))|(?:(copy)(?::(-?\d+))?)",re.I)
+
+        self.uid=0
 
         self.joinInfo=["Join","Login","Invite"]
         self.partInfo=["Part","Logout","Lost Connection","Nick-Collision","Ping Timeout","Kick"]
@@ -427,6 +455,13 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                     self.botMsg("rattlekekz","no links for room "+room+".")
             else:
                 self.botMsg("rattlekekz","usage: /links [(head|tail)[:linecount], copy[:+/-lines], file:path].")
+
+    def loadImage(self,url):
+        try:
+            self.ImageLoader.load(url)
+        except NameError:
+            self.ImageLoader = ImageLoader()
+            self.ImageLoader.load(url)
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
