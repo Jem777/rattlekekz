@@ -84,29 +84,35 @@ class ConfigFile:
         return config
 
 class ImageLoader:
-    def __init__(self):
-        self.iterator = 0
+    def __init__(self,controller):
+        self.controller = controller
+        self.id = 0
         self.images = {}
+        self.ids = {}
 
     def loadImage(self,url):
         if not self.images.has_key(url):
             self.images[url]={"getter":None,"data":None,"finished":False,"ids":[self.id]}
+            self.ids[self.id]=url
         else:
             print "url taken" # TODO: some handling to reuse existing data
         d = deferToThread(self.reallyLoadImage,url,self.id)
-        d.addCallback(finishedImage)
-        # TODO: return something like 'downloading with id x' to the view
+        d.addCallback(self.finishedImage)
         self.id+=1
+        return self.id-1
 
     def reallyLoadImage(self,url,id):
-        self.image[url]["getter"]=urllib.urlopen(url)
-        self.image[url]["data"]=self.image[url]["getter"].read() # TODO: return chunks
+        self.images[url]["getter"]=urllib.urlopen(url)
+        self.images[url]["data"]=self.images[url]["getter"].read() # TODO: return chunks
         return (url,id)
 
     def finishedImage(self,result):
         url,id=result
-        self.image[url]["finished"]=True
-        # TODO: return image to view with id as reference
+        self.images[url]["finished"]=True
+        self.controller.view.loadedImage(id)
+
+    def getImage(self,id):
+        return self.images[self.ids[id]]["data"]
 
 class FileTransfer:
     def __init__(self, encoder, decoder):
@@ -458,10 +464,13 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
     def loadImage(self,url):
         try:
-            self.ImageLoader.load(url)
-        except NameError:
-            self.ImageLoader = ImageLoader()
-            self.ImageLoader.load(url)
+            return self.ImageLoader.loadImage(url)
+        except AttributeError:
+            self.ImageLoader = ImageLoader(self)
+            return self.ImageLoader.loadImage(url)
+
+    def getImage(self,id):
+        return self.ImageLoader.getImage(id)
 
     """following methods transport data from the View to the model"""
     def sendLogin(self, nick, passwd, rooms):
