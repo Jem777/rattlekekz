@@ -624,9 +624,8 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         array = map(self.getValue, ["autologin", "nick", "passwd", "room"])
         if array[0]=="True" or array[0]=="1":
             self.model.sendLogin(array[1],array[2],array[3])
-        else:
-            self.view.receivedPreLoginData(rooms,array[1:])
-            # now the array is: [nick,passwd,room]
+        self.view.receivedPreLoginData(rooms,array[1:])
+        # now the array is: [nick,passwd,room]
 
 
     def successLogin(self,nick,status,room):
