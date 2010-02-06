@@ -12,5 +12,6 @@ setup(name='rattlekekz',
       requires=['twisted(>=8.1.0)','urwid','simplejson','OpenSSL'],
       url="http://kekz.net/",
       license="GPL v3 or higher",
-      data_files=[('share/emoticons/rattlekekz',glob("rattlekekz/emoticons/*.png"))]
+      data_files=[('share/emoticons/rattlekekz',glob("rattlekekz/emoticons/*.png")),
+        ('share/emoticons/rattlekekz/kekz',glob("rattlekekz/emoticons/kekz/*.png"))]
      )
