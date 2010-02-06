@@ -231,7 +231,7 @@ class editWidget(urwid.Edit):
         """sends the string to the tab"""
         if string.strip() == "":
             return
-        self.parent.sendStr(str(string))
+        self.parent.sendStr(string)
         if self.count != (len(self.history)-1):
             del self.history[self.count]
         del self.history[-1]
@@ -422,7 +422,7 @@ class rattlekekzPrivTab(rattlekekzBaseTab):
     def sendStr(self,string):
         """sends the string to the controller"""
         self.MainView.set_focus(len(self.Output) - 1)
-        self.parent.sendStr(self.room,string)
+        self.parent.sendStr(self.parent.stringHandler(self.room),self.parent.stringHandler(string))
 
     def getSolutions(self, bol = True):
         if bol:
