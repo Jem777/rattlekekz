@@ -622,9 +622,9 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
     def receivedRooms(self,rooms):
         array = map(self.getValue, ["autologin", "nick", "passwd", "room"])
+        self.view.receivedPreLoginData(rooms,array[1:])
         if array[0]=="True" or array[0]=="1":
             self.model.sendLogin(array[1],array[2],array[3])
-        self.view.receivedPreLoginData(rooms,array[1:])
         # now the array is: [nick,passwd,room]
 
 
