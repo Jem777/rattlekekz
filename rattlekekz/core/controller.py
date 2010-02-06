@@ -199,9 +199,12 @@ class FileTransfer:
             self.transfers[uid]["file"].close() # TODO: remove references from self.transfers
 
 class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't use interhitance for pluginmanagement
-    def __init__(self, interface, kwds):
+    def __init__(self, interface, host, kwds):
         self.model = protocol.KekzChatClient(self)
-        self.view = interface(self)
+        if host.lower().find("kekz.net") != -1:
+            self.view = interface(self,True) # tell the view if we're connecting to kekz.net because of the smilies ... this sucks
+        else:
+            self.view = interface(self,False)
         pluginmanager.manager.__init__(self)
         FileTransfer.__init__(self, self.model.encoder, self.model.decoder)
         if kwds.has_key("debug"):

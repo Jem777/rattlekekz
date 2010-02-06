@@ -139,7 +139,7 @@ def startRattlekekz(host, port, view="cliView", kwds={}):
         except ImportError, arg:
             print arg
         else:
-            kekzControl = controller.KekzController(viewModule.View, kwds)
+            kekzControl = controller.KekzController(viewModule.View, host, kwds)
             kekzControl.view.startConnection(host, port)
     else:
         print 'Error: Nullpointer Exception' # TODO: be more precise?
