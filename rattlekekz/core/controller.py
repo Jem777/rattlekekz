@@ -109,7 +109,7 @@ class ImageLoader:
     def finishedImage(self,result):
         url,id=result
         self.images[url]["finished"]=True
-        self.controller.view.loadedImage(id)
+        self.controller.view.loadedImage(id,self.images[url]["data"])
 
     def getImage(self,id):
         return self.images[self.ids[id]]["data"]
