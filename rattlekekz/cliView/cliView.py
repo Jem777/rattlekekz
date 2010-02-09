@@ -158,7 +158,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.tui.start()
 
     def startConnection(self, server, port):
-        reactor.connectSSL(server, port, self.controller.model, self.controller.model)
+        self.controller.model.connector = reactor.connectSSL(server, port, self.controller.model, self.controller.model)
         self.tui.run_wrapper(reactor.run)
 
     def addRoom(self, room, tab):
@@ -184,6 +184,14 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         if not self.ShownRoom == None:
             self.getTab(self.ShownRoom).clock(self.time)
             self.redisplay()
+
+    def getRooms(self):
+        rooms=[]
+        for i in self.lookupRooms:
+            if i[0] != None:
+                if not i[1].room.startswith("#"):
+                    rooms.append(i[1].room)
+        return rooms
 
     def doRead(self):
         """ Input is ready! """
@@ -229,7 +237,10 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.ShownRoom=room
         self.addTab(room,rattlekekzMsgTab)
         self.changeTab(room)
-        self.delTab("$login")
+        try:
+            self.delTab("$login")
+        except:
+            pass
 
 
     def successRegister(self):

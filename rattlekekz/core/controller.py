@@ -283,6 +283,12 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
     def startConnection(self,server,port):
         self.model.startConnection(server,port)
 
+    def startReconnect(self):
+        self.model.connector.disconnect()
+        TCP,server,port = self.model.connector.getDestination()
+        self.model = protocol.KekzChatClient(self)
+        self.model.startReconnect(server,port)
+
     def decode(self, string):
         if type(string) is str:
             array=string.split("°")
@@ -518,6 +524,8 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             #self.view.changeTab("$mail")
             self.view.openMailTab()
             self.refreshMaillist()
+        elif string.lower().startswith("/reconnect"):
+            self.startReconnect()
         elif string.lower().startswith("/load"):
             string = string[6:].split(' ')
             self.loadPlugin(string.pop(0),string)
@@ -624,11 +632,17 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.model.getRooms()
 
     def receivedRooms(self,rooms):
-        array = map(self.getValue, ["autologin", "nick", "passwd", "room"])
-        self.view.receivedPreLoginData(rooms,array[1:])
-        if array[0]=="True" or array[0]=="1":
-            self.model.sendLogin(array[1],array[2],array[3])
-        # now the array is: [nick,passwd,room]
+        if self.model.reconnecting:
+            rooms=",".join(self.view.getRooms())
+            self.model.sendLogin(self.nick,self.passwd,rooms)
+            self.model.reconnecting=False
+        else:
+            array = map(self.getValue, ["autologin", "nick", "passwd", "room"])
+            self.view.receivedPreLoginData(rooms,array[1:])
+            if array[0]=="True" or array[0]=="1":
+                self.view.loginInformation=(array[1],array[2],array[3])
+                self.model.sendLogin(array[1],array[2],array[3])
+            # now the array is: [nick,passwd,room]
 
 
     def successLogin(self,nick,status,room):

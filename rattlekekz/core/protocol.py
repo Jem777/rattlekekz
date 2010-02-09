@@ -49,6 +49,8 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
+        self.connector=None
+        self.reconnecting=False
         self.delimiter='\n'
         self.isConnected=False
 
@@ -62,8 +64,12 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
 
     def startConnection(self,server,port):
         """Initiate the connection."""
-        reactor.connectSSL(server, port, self, self)
+        self.connector = reactor.connectSSL(server, port, self, self)
         reactor.run()
+
+    def startReconnect(self,server,port):
+        self.reconnecting=True
+        self.connector = reactor.connectSSL(server, port, self, self)
 
     def buildProtocol(self, addr):
         return self
