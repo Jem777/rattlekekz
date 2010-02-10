@@ -92,14 +92,23 @@ class ImageLoader:
 
     def loadImage(self,url):
         if not self.images.has_key(url):
-            self.images[url]={"getter":None,"data":None,"finished":False,"ids":[self.id]}
+            self.images[url]={"getter":None,"data":None,"finished":False,"ids":[self.id],"waiting":[self.id]}
             self.ids[self.id]=url
         else:
-            print "url taken" # TODO: some handling to reuse existing data
+            if self.images[url]["finished"]:
+                self.images[url]["ids"].append(self.id)
+                self.ids[self.id]=url
+                self.id+=1
+                return ("image",self.id-1,self.images[url]["data"])
+            else:
+                self.images[url]["ids"].append(self.id)
+                self.images[url]["waiting"].append(self.id)
+                self.id+=1
+                return ("id",self.id-1)
         d = deferToThread(self.reallyLoadImage,url,self.id)
         d.addCallback(self.finishedImage)
         self.id+=1
-        return self.id-1
+        return ("id",self.id-1)
 
     def reallyLoadImage(self,url,id):
         self.images[url]["getter"]=urllib.urlopen(url)
@@ -109,7 +118,8 @@ class ImageLoader:
     def finishedImage(self,result):
         url,id=result
         self.images[url]["finished"]=True
-        self.controller.view.loadedImage(id,self.images[url]["data"])
+        for i in range(len(self.images[url]["waiting"])):
+            self.controller.view.loadedImage(self.images[url]["waiting"].pop(),self.images[url]["data"])
 
     def getImage(self,id):
         return self.images[self.ids[id]]["data"]
