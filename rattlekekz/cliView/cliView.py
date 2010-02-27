@@ -365,11 +365,13 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.getTab(self.ShownRoom).addLine("Error: " + message)
 
     def gotLoginException(self, message):
-        if len(self.lookupRooms)==1:
-            self.addTab("$login",rattlekekzInfoTab)
-            self.ShownRoom="$login"
-        self.getTab(self.ShownRoom).addLine("Error: "+message)
-        self.getTab(self.ShownRoom).reLogin()
+        try:
+            tab = self.getTab("$login")
+        except:
+            self.getTab(self.ShownRoom).addLine("Error: "+message)
+        else:
+            tab.addLine("Error: "+message)
+            tab.reLogin()
 
     def listUser(self,room,users):
         usercolors = self.controller.getValue("usercolors")
