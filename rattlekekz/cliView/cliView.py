@@ -431,12 +431,12 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
             return (pre,room)
 
     def receivedWhois(self,nick,array):
-        self.addTab("$infos", rattlekekzInfoTab)
-        self.changeTab("$infos")
+        self.addTab("whois: "+nick, rattlekekzInfoTab)
+        self.changeTab("whois: "+nick)
         out = map(self.deparse, array)
         #for i in array:
         #    out.append(self.deparse(i))
-        self.getTab("$infos").addWhois(nick, out)
+        self.getTab("whois: "+nick).addWhois(nick, out)
 
     def openLinkTab(self,room,links):
         room,links=self.stringHandler(room),map(self.stringHandler,links)

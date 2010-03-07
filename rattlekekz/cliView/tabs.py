@@ -575,10 +575,9 @@ class rattlekekzInfoTab(rattlekekzBaseTab):
 
     def addWhois(self, nick, whois):
         """ add a line to the internal list of lines"""
-        while len(self.Output) > self.parent.readhistory:
+        self.header.set_text("whois: "+nick)
+        for i in range(len(self.Output)):
             del self.Output[0]
-        whois.insert(0,("divider","whois of "+nick))
-        whois.append(("divider","end of whois"))
         for i in whois:
             self.Output.append(urwid.Text(i))
         self.MainView.set_focus(len(self.Output) - 1)
