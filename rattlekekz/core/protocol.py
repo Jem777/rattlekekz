@@ -298,6 +298,9 @@ class KekzChatClient(KekzMailClient):
     def sendJoin(self,room):
         self.sendLine("223 "+room)
 
+    def sendWhoisClosed(self,user):
+        self.sendLine("302 "+user)
+
     def sendCPMsg(self,user,msg):
         self.sendLine("310 "+user+" "+msg)
 

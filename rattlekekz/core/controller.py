@@ -212,8 +212,10 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
     def __init__(self, interface, host, kwds):
         self.model = protocol.KekzChatClient(self)
         if host.lower().find("kekz.net") != -1:
+            self.kekznet = True
             self.view = interface(self,True) # tell the view if we're connecting to kekz.net because of the smilies ... this sucks
         else:
+            self.kekznet = False
             self.view = interface(self,False)
         pluginmanager.manager.__init__(self)
         FileTransfer.__init__(self, self.model.encoder, self.model.decoder)
@@ -859,6 +861,10 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             value = self.stringHandler(value)
             Output.append(value)
         self.view.receivedWhois(self.stringHandler(nick), Output)
+
+    def closedWhois(self,user):
+        if not self.kekznet:
+            self.model.sendWhoisClosed(user)
 
     def receivedCPMsg(self,user,cpmsg):
         try:

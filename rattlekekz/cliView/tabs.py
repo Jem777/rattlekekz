@@ -583,6 +583,11 @@ class rattlekekzInfoTab(rattlekekzBaseTab):
         self.MainView.set_focus(len(self.Output) - 1)
         self.parent.redisplay()
 
+    def onClose(self):
+        if self.header.tabname.startswith("whois"):
+            self.parent.controller.closedWhois(self.parent.stringHandler(self.header.tabname.split(" ")[1]))
+        rattlekekzBaseTab.onClose(self)
+
 class rattlekekzSecureTab(rattlekekzBaseTab):
     def __init__(self,room, parent):
         self.Input = urwid.Edit()
