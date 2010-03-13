@@ -91,38 +91,24 @@ class ImageLoader:
         self.ids = {}
 
     def loadImage(self,url):
-        if not self.images.has_key(url):
-            self.images[url]={"getter":None,"data":None,"finished":False,"ids":[self.id],"waiting":[self.id]}
-            self.ids[self.id]=url
-        else:
-            if self.images[url]["finished"]:
-                self.images[url]["ids"].append(self.id)
-                self.ids[self.id]=url
-                self.id+=1
-                return ("image",self.id-1,self.images[url]["data"])
-            else:
-                self.images[url]["ids"].append(self.id)
-                self.images[url]["waiting"].append(self.id)
-                self.id+=1
-                return ("id",self.id-1)
+        self.images[self.id]={"getter":None,"data":None,"finished":False,"ids":[self.id],"url":url}
         d = deferToThread(self.reallyLoadImage,url,self.id)
         d.addCallback(self.finishedImage)
         self.id+=1
         return ("id",self.id-1)
 
     def reallyLoadImage(self,url,id):
-        self.images[url]["getter"]=urllib.urlopen(url)
-        self.images[url]["data"]=self.images[url]["getter"].read() # TODO: return chunks
+        self.images[id]["getter"]=urllib.urlopen(url)
+        self.images[id]["data"]=self.images[id]["getter"].read() # TODO: return chunks
         return (url,id)
 
     def finishedImage(self,result):
         url,id=result
-        self.images[url]["finished"]=True
-        for i in range(len(self.images[url]["waiting"])):
-            self.controller.view.loadedImage(self.images[url]["waiting"].pop(),self.images[url]["data"])
+        self.images[id]["finished"]=True
+        self.controller.view.loadedImage(id,self.images[id]["data"])
 
     def getImage(self,id):
-        return self.images[self.ids[id]]["data"]
+        return self.images[id]["data"]
 
 class FileTransfer:
     def __init__(self, encoder, decoder):
