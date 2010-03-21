@@ -232,6 +232,15 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.isConnected=True
         self.getTab(self.ShownRoom).receivedPreLoginData(rooms,array)
 
+    def updateRooms(self,rooms):
+        pass
+        #try:
+        #    tab=self.getTab("$login")
+        #except:
+        #    pass
+        #else:
+        #    tab.updateRooms(rooms) # TODO: implement updateRooms
+
     def successLogin(self,nick,status,room):
         self.nickname=nick
         self.ShownRoom=room

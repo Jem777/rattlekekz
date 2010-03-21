@@ -230,6 +230,8 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.joinInfo=["Join","Login","Invite"]
         self.partInfo=["Part","Logout","Lost Connection","Nick-Collision","Ping Timeout","Kick"]
 
+        self.receivedFirstRoomList = False
+
     def initConfig(self, debug, kwds, alt_conf = None):
         default_conf = {"timestamp" : "[%H:%M] ",
                 "clock" : "[%H:%M:%S] ",
@@ -635,12 +637,16 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             self.model.sendLogin(self.nick,self.passwd,rooms)
             self.model.reconnecting=False
         else:
-            array = map(self.getValue, ["autologin", "nick", "passwd", "room"])
-            self.view.receivedPreLoginData(rooms,array[1:])
-            if array[0]=="True" or array[0]=="1":
-                self.nick,self.passwd,self.rooms=array[1],array[2],array[3]
-                self.model.sendLogin(array[1],array[2],array[3])
-            # now the array is: [nick,passwd,room]
+            if not self.receivedFirstRoomList:
+                array = map(self.getValue, ["autologin", "nick", "passwd", "room"])
+                self.view.receivedPreLoginData(rooms,array[1:])
+                self.receivedFirstRoomList=True
+                if array[0]=="True" or array[0]=="1":
+                    self.nick,self.passwd,self.rooms=array[1],array[2],array[3]
+                    self.model.sendLogin(array[1],array[2],array[3])
+                # now the array is: [nick,passwd,room]
+            else:
+                self.view.updateRooms(rooms)
 
 
     def successLogin(self,nick,status,room):
