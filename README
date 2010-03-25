@@ -3,7 +3,7 @@ rattlekekz
 
 dependecies:
 
-python, twisted, urwid, simplejson, pyopenssl
+python, twisted, urwid, pyopenssl, python-erlastic, python-bert
 
 install:
 
