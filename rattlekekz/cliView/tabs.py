@@ -452,15 +452,15 @@ class rattlekekzMsgTab(rattlekekzPrivTab):
         if color is True:
             for i in users:
                 self.completion.append(i[0])
-                if i[2] in 'x':
+                if i[2] in 'normal':
                     self.color='normal'
-                elif i[2] in 's':
+                elif i[2] in 'special':
                     self.color='green'
-                elif i[2] in 'c':
+                elif i[2] in 'chanop':
                     self.color='blue'
-                elif i[2] in 'o':
+                elif i[2] in 'chatop':
                     self.color='yellow'
-                elif i[2] in 'a':
+                elif i[2] in 'admin':
                     self.color='red'
                 if i[1]:
                     self.color=self.color+'away'
