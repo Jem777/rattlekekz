@@ -77,12 +77,12 @@ def initLogger():
 
 def getOptions():
     parser = optparse.OptionParser(version = "%prog 0.99")
-    parser.add_option("-H", "--host", dest = "host", default = "kekz.net", 
-            help = "Host or IP to connect to, default is kekz.net", metavar = "HOST")
+    parser.add_option("-H", "--host", dest = "host", default = "netwichtig.de", 
+            help = "Host or IP to connect to, default is netwichtig.de", metavar = "HOST")
     parser.add_option("-l", "--localhost", dest = "host", action = "store_const", 
             const = "127.0.0.1", help = "connect to localhost")
-    parser.add_option("-p", "--port", type = "int", dest = "port", default = 23002, 
-            help = "Port to connect, default is 23002", metavar = "PORT")
+    parser.add_option("-p", "--port", type = "int", dest = "port", default = 24004, 
+            help = "Port to connect, default is 24004", metavar = "PORT")
     parser.add_option("-v", "--view", dest = "view", default = "cliView", 
             help = "select the frontend, default is cliView")
     parser.add_option("-c", "--copyright", action = "store_true", dest =

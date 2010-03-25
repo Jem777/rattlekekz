@@ -22,17 +22,15 @@ copyright = """
 import sys, os
 from time import time
 from OpenSSL.SSL import SSLv3_METHOD, Context
-if sys.version < "2.6.0":
-    import simplejson as json
-else:
-    import json
 from rattlekekz.core import pluginmanager
+
+import erlastic, bert
 
 # Modules for twisted
 from twisted.internet import reactor, protocol, task, ssl
 from twisted.protocols import basic
 
-class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.iterator): # TODO: Maybe don't use interhitance for pluginmanagement
+class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.iterator): # TODO: Maybe don't use interhitance for pluginmanagement
     """
     This is the main part of the Kekz.net protocol
     This class expects the controller instance as parameter.
@@ -44,14 +42,11 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
         """Takes one argument: the instance of the controller Class."""
         pluginmanager.iterator.__init__(self)
         self.controller=controller
-        self.encoder=json.JSONEncoder().encode
-        self.decoder=json.JSONDecoder().decode
         self.pingAnswer=False
         self.pwhash=None
         self.nickname=""
         self.connector=None
         self.reconnecting=False
-        self.delimiter='\n'
         self.isConnected=False
 
     def getPlugin(self):
@@ -74,10 +69,11 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
     def buildProtocol(self, addr):
         return self
 
-    def sendLine(self,line): # TODO: review this in context of plugins.
+    def sendTuple(self,data): # TODO: review this in context of plugins.
         """sends a line to the server if connected"""
         if self.isConnected:
-            basic.LineOnlyReceiver.sendLine(self,"".join(line.split("\n")))
+            data=bert.encode((bert.Atom(data[0]),)+data[1:])
+            basic.Int16StringReceiver.sendString(self,data)
         else:
             self.controller.gotException("not connected")
 
@@ -102,20 +98,37 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
 
     def sendHandshake(self,hash):
         """The Handshake has to be send first, after a ssl connection is established"""
-        self.sendLine('000 '+ hash)
+        data=("handshake",hash)
+        self.sendTuple(data)
 
-    def sendDebugInfo(self,client,ver,rev,os,java):
+    def sendIdentify(self,client,ver,os,python):
         """Sends client informations to the server. used for debugging purposes."""
-        Infos={"client":client,"ver":ver,"rev":rev,"os":os,"java":java}
-        self.sendLine("001 "+self.encoder(Infos))
+        data=("identify",client,ver,os,python)
+        self.sendTuple(data)
 
     def getRooms(self):
         """Request the List of Rooms for Login. You will receive a receivedRooms()"""
-        reactor.callLater(1, lambda: self.sendLine('010'))
+        self.sendTuple(("get_roomlist",))
 
-    def sendMailLogin(self,nick,passhash):
-        """Logs on to the Kekz.net mailsystem"""
-        self.sendLine('021 %s#%s' % (nick,passhash))
+    def sendLogin(self,nick,passhash,room):
+        """Logs on to the Kekz.net server and joins room "room" """
+        data=("login",nick,passhash,room)
+        self.sendTuple(data)
+
+    def registerNick(self,nick,pwhash,email):
+        """Register a new Nick"""
+        data=("register",nick,email,pwhash)
+        self.sendTuple(data)
+
+    def changePassword(self,passwd,passwdnew):
+        """Change passwd to passwdnew - Both have to be a hash; no hashing in the model"""
+        Data=("change_password",passwd,passwdnew)
+        self.sendTuple(data)
+
+    def updateProfile(self,name,location,homepage,hobbies,signature,passwd):
+        """Update the Profile - passwd has to be hashed"""
+        data=("update_profile",name,passwd,location,homepage,hobbies,signature)
+        self.sendTuple(data)
 
     def startPing(self):
         """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
@@ -125,160 +138,21 @@ class KekzMailClient(basic.LineOnlyReceiver, protocol.Factory, pluginmanager.ite
     def sendPing(self):
         """Sends the ping, this needn't to be called by the controller, just startPing"""
         if self.pingAnswer is False:
-            self.sendLine("088")
+            self.sendTuple(("ping",))
             self.lastPing = time()
             self.pingAnswer = True
         else:
             self.iterPlugins('pingTimeout')
             self.sendingPings.stop()
 
-    def sendMail(self,nick,msg,id):
-        mail={"id":id,"tonick":nick,"msg":msg}
-        self.sendLine("440 "+self.encoder(mail))
-
-    def getMaillist(self):
-        self.sendLine("450")
-
-    def getMailCount(self):
-        self.sendLine("460")
-
-    def getMail(self,id):
-        self.sendLine("461 "+id)
-
-    def deleteMail(self,id):
-        self.sendLine("462 "+id)
-
-    def deleteAllMails(self):
-        self.sendLine("463")
-
-    def quitConnection(self):
-        """ends the connection, usually getRooms is called afterwards"""
-        self.sendLine("900")
-
-
-# Following Methods are called if the server sends something
-    def connectionMade(self):
-        """It doesn't fit the naming pattern, i know"""
-        self.iterPlugins('gotConnection')
-
-    def lineReceived(self,data):
-        number=data[:3]
-        string=data[4:]
-        try:
-            attribut=getattr(self, "kekzCode"+number)
-        except AttributeError:
-            attribut=getattr(self, "kekzCodeUnknown")
-            string=data
-        attribut(string)
-
-    def kekzCode000(self,data):
-        self.pwhash=data
-        self.iterPlugins('receivedHandshake')
-        self.startPing()
-
-    def kekzCode010(self,data):
-        """Creates an array of rooms received """
-        rooms=self.decoder(data)
-        self.iterPlugins('receivedRooms',[rooms])
-
-    def kekzCode021(self,data):
-        self.iterPlugins('successMailLogin')
-
-    def kekzCode088(self,data):
-        self.iterPlugins('receivedPing',[int((time()-self.lastPing)*1000)])
-        self.pingAnswer=False
-
-    def kekzCode229(self,data):
-        self.iterPlugins('loggedOut')
-
-    def kekzCode440(self,data):
-        self.iterPlugins('sendMailsuccessful',[data])
-
-    def kekzCode400(self,data):
-        self.iterPlugins('openURL',[data])
-
-    def kekzCode450(self,data):
-        dic=self.decoder(data)
-        userid=dic["quota"]
-        mailcount=dic["int"]
-        mails=dic["list"]
-        self.iterPlugins('receivedMails',[userid,mailcount,mails])
-
-    def kekzCode460(self,data):
-        mails=data.split("#")
-        unreadmails,allmails=int(mails[0]),int(mails[1])
-        self.iterPlugins('receivedMailcount',[unreadmails,allmails])
-
-    def kekzCode461(self,data):
-        mail=self.decoder(data)
-        if mail["type"]=="Error":
-            self.iterPlugins('requestMailfailed',[mail["Error"]])
-        else:
-            self.iterPlugins('requestMailsuccessful',[mail["from"],mail["date"],mail["body"]])
-
-    def kekzCode470(self,data):
-        mails=data.split("#")
-        nick,header=str(mails[0]),str("#".join(mails[1:]))
-        self.iterPlugins('receivedNewMail',[nick,header])
-
-    def kekzCode901(self,data):
-        self.iterPlugins('gotHandshakeException',[data])
-
-    def kekzCode921(self,data):
-        self.iterPlugins('gotLoginException',[data])
-
-    def kekzCode940(self,data):
-        self.iterPlugins('gotException',[data])
-
-    def kekzCode941(self,data):
-        dic=self.decoder(data)
-        id,msg=dic["id"],dic["msg"]
-        self.iterPlugins('sendMailfailed',[id,msg])
-
-    def kekzCode988(self,data):
-        self.iterPlugins('gotException',[data])
-
-    def kekzCodeUnknown(self,data):
-        self.iterPlugins('gotException',[data])
-
-
-class KekzChatClient(KekzMailClient):
-    """
-    This is the main part of the Kekz.net protocol
-    This class expects the controller instance as parameter.
-    The class establishes an SSL/TLS connection to the server, and
-    sends occurring events to the controller, by saying controller.someEvent().
-    """
-
-    def sendLogin(self,nick,passhash,room):
-        """Logs on to the Kekz.net server and joins room "room" """
-        self.sendLine('020 %s#%s#%s' % (nick,passhash,room))
-
-    def registerNick(self,nick,pwhash,email):
-        """Register a new Nick"""
-        Daten={"nick":nick,"passwd":pwhash,"email":email}
-        self.sendLine("030 "+self.encoder(Daten))
-
-    def changePassword(self,passwd,passwdnew):
-        """Change passwd to passwdnew - Both have to be a hash; no hashing in the model"""
-        Data={"passwd":passwd,"passwdnew":passwdnew}
-        self.sendLine("031 "+self.encoder(Data))
-        
-    def updateProfile(self,name,location,homepage,hobbies,signature,passwd):
-        """Update the Profile - passwd has to be hashed"""
-        Data={"name":name,"ort":location,"homepage":homepage,"hobbies":hobbies,"freitext":signature,"passwd":passwd}
-        self.sendLine("041 "+self.encoder(Data))
-
-    def sendIdentify(self, data):
-        self.sendLine("070 "+data)
-
-    def sendMsg(self, channel, msg):
+    def sendPublic(self, channel, msg):
         """Send a message to a channel"""
         if msg.isspace(): pass
         else:
-            self.sendLine("100 %s %s" % (channel,msg))
+            data=("public",channel,msg)
+            self.sendTuple(data)
 
-    def sendSlashCommand(self,command,channel,msg):
+    def sendCommand(self,command,channel,msg):
         """Msg starting with a Slash / """
         if msg.isspace(): pass
         elif command=="/exit": pass
@@ -289,195 +163,248 @@ class KekzChatClient(KekzMailClient):
                 user=msg[0]
                 msg=" ".join(msg[1:])
                 self.sendPrivMsg(user,msg)
-        else: self.sendLine("101 %s %s %s" % (channel,command,msg))
+        else:
+            data = ("command",channel,command+" "+msg)
+            self.sendTuple(data)
 
-    def sendPrivMsg(self,nick,msg):
+    def sendPrivate(self,nick,msg):
         """Private Msgs, they call be send with /p or in another window like a room"""
-        self.sendLine('102 %s %s' % (nick,msg))
+        data = ("private",nick,msg)
+        self.sendTuple(data)
 
     def sendJoin(self,room):
-        self.sendLine("223 "+room)
+        data = ("join",room)
+        self.sendTuple(data)
 
-    def sendWhoisClosed(self,user):
-        self.sendLine("302 "+user)
+    def sendWhoisClose(self,user):
+        data = ("whois_close",user)
+        self.sendTuple(data)
 
-    def sendCPMsg(self,user,msg):
-        self.sendLine("310 "+user+" "+msg)
+    def sendCtcpRequest(self,user,msg):
+        data = ("ctcp_request",user,msg)
+        self.sendTuple(data)
 
-    def sendCPAnswer(self,user,msg):
-        self.sendLine("311 "+user+" "+msg)
+    def sendCtcpReply(self,user,msg):
+        data = ("ctcp_reply",user,msg)
+        self.sendTuple(data)
 
+    def sendMail(self,nick,msg,id):
+        data = ("send_mail",id, nick, msg)
+        self.sendTuple(data)
 
+    def getMailStubs(self):
+        data = ("get_mail_stubs",)
+        self.sendTuple(data)
+
+    def getMailCount(self):
+        data = ("get_mail_count",)
+        self.sendTuple(data)
+
+    def getMail(self,id):
+        data = ("get_mail",int(id))
+        self.sendTuple(data)
+
+    def deleteMail(self,id):
+        data = ("delete_mail",id)
+        self.sendTuple(data)
+
+    def deleteAllMails(self):
+        data = ("delete_all_mails",)
+        self.sendTuple(data)
+
+    def quitConnection(self):
+        """ends the connection, usually getRooms is called afterwards"""
+        data = ("logout",)
+        self.sendTuple(data)
 
 # Following Methods are called if the server sends something
-    def kekzCode020(self,data):
-        userdata=self.decoder(data)
-        nick,status,room=userdata["nick"],userdata["status"],userdata["room"]
+    def connectionMade(self):
+        """It doesn't fit the naming pattern, i know"""
+        self.iterPlugins('gotConnection')
+
+    def stringReceived(self,data):
+        data = bert.decode(data)
+        command = str(data[0])
+        params = data[1:]
+        try:
+            attribut=getattr(self, command)
+        except AttributeError:
+            attribut=getattr(self, "unknown")
+            params=data
+        attribut(params)
+
+    def handshake_ok(self,data):
+        self.pwhash=data[0]
+        self.iterPlugins('receivedHandshake')
+        self.startPing()
+
+    def roomlist(self,data):
+        """Creates an array of rooms received"""
+        rooms=[]
+        for i in data[0]:
+            rooms.append({"name":i[0],"users":i[1],"max":i[2]})
+        self.iterPlugins('receivedRooms',[rooms])
+
+    def login_ok(self,data):
+        nick,room,status=data
         self.nickname=nick
         self.iterPlugins('successLogin',[nick,status,room])
 
-    def kekzCode030(self,data):
+    def register_ok(self,data):
         self.iterPlugins('successRegister')
 
-    def kekzCode031(self,data):
-        if data.startswith("!ERROR "):
-            self.iterPlugins('gotException',[data[7:]])
-        else:
-            self.iterPlugins('successNewPassword')
+    def change_password_ok(self,data):
+        self.iterPlugins('successNewPassword')
 
-    def kekzCode040(self,data):
-        dic=self.decoder(data)
-        name,ort,homepage,hobbies,signature=dic["name"],dic["ort"],dic["homepage"],dic["hobbies"],dic["freitext"]
+    def change_password_error(self,data):
+        self.iterPlugins('gotException',[data[0]])
+
+    def profile(self,data):
+        name,ort,homepage,hobbies,signature=data
         self.iterPlugins('receivedProfile',[name,ort,homepage,hobbies,signature])
 
-    def kekzCode041(self,data):
-        if data.startswith("!ERROR "):
-            self.iterPlugins('gotException',[data[7:]])
-        else:
-            self.iterPlugins('successNewProfile')
+    def change_profile_ok(self,data):
+        self.iterPlugins('successNewProfile')
 
-    def kekzCode070(self,data):
-        self.iterPlugins('securityCheck',[data])
+    def change_profile_error(self,data):
+        self.iterPlugins('gotException',[data[0]])
 
-    def kekzCode100(self,data):
-        foo=data.split(" ")
-        channel,nick=foo[0],foo[1]
-        msg=" ".join(foo[2:])
-        if not msg: return
+    def ping(self,data):
+        self.iterPlugins('receivedPing',[int((time()-self.lastPing)*1000)])
+        self.pingAnswer=False
+
+    def public(self,data):
+        channel,nick,msg=data
         self.iterPlugins('receivedMsg',[nick,channel,msg])
 
-    def kekzCode101(self,data):
-        foo=data.split(" ")
-        channel=foo[0]
-        msg=" ".join(foo[1:])
-        if not msg: return
+    def rawmessage(self,data):
+        channel,msg=data
         self.iterPlugins('receivedRoomMsg',[channel,msg])
 
-    def kekzCode102(self,data):
-        foo=data.split(" ")
-        nick=foo[0]
-        msg=" ".join(foo[1:])
+    def private(self,data):
+        nick,msg=data
         self.iterPlugins('privMsg',[nick,msg])
 
-    def kekzCode103(self,data):
-        foo=data.split(" ")
-        nick=foo[0]
-        msg=" ".join(foo[1:])
+    def private_ok(self,data):
+        nick,msg=data
         self.iterPlugins('ownprivMsg',[nick,msg])
 
-    def kekzCode104(self,data):
+    def offline_notication(self,data):
         print "104"
-        nick = data.strip()
+        nick = data[0]
         self.iterPlugins('privOffline',[nick])
 
-    def kekzCode105(self,data):
-        print "105"
-        nick = data.strip()
-        self.iterPlugins('privOnline',[nick])
-
-    def kekzCode109(self,data):
-        foo=data.split(" ")
-        nick=foo[0]
-        msg=" ".join(foo[1:])
+    def botmessage(self,data):
+        nick,msg=data
         self.iterPlugins('botMsg',[nick,msg])
-    
-    def kekzCode110(self,data):
-        rooms=data.split("#")
-        for i in range(len(rooms)):
-            rooms[i]=rooms[i].split(",")
-        self.iterPlugins('receivedRoomlist',[rooms]) # rooms is build like this: [[roomname,user, max user, roomstatus, sysroom],[nextRoom...]]
-    
-    def kekzCode200(self,data):
-        foo=data.split(" ")
-        room=foo[0]
-        rawuser=" ".join(foo[1:])
-        rawuser=self.decoder(rawuser)
-        users=[]
-        for i in range(len(rawuser)):
-            username=rawuser[i]["name"]
-            if rawuser[i].has_key("away") and rawuser[i]["away"]=="z":
-                away=True
-            else:
-                away=False
-            if rawuser[i].has_key("stat"):
-                status=rawuser[i]["stat"]
-            else:
-                status="x"
-            users.append([username,away,status])
+
+    def userlist(self,data):
+        room,rawuser=data
+        users = []
+        for i in rawuser:
+            username,status,away=i
+            users.append([username,away,str(status)])
         self.iterPlugins('receivedUserlist',[room,users]) # users is build like this: [[username,away,status],[nextUser,..]]
+
+    def add_userlist(self,data):
+        room,nick,status,message=data
+        self.iterPlugins('joinUser',[room,nick,str(status),str(message)])
+
+    def remove_userlist(self,data):
+        room,nick,message=data
+        self.iterPlugins('quitUser',[room,nick,str(message)])
+
+    def update_userlist(self,data):
+        room,nick,away,status=data
+        self.iterPlugins('changedUserdata',[room,nick,away,status])
+
+    def join_ok(self,data):
+        self.iterPlugins('meJoin',[data[0],False])
+
+    def join_bg_ok(self,data):
+        self.iterPlugins('meJoin',[data[0],True])
+
+    def part_ok(self,data):
+        self.iterPlugins('mePart',[data[0]])
+
+    def go_ok(self,data):
+        self.iterPlugins('meGo',[data[0],data[1]])
+
+    def new_topic(self,data):
+        room,topic=data
+        self.iterPlugins('newTopic',[room,topic])
+
+    def delete_topic(self,data):
+        room = data[0]
+        self.iterPlugins('newTopic',[room,""])
+
+    def user_quit(self,data):
+        self.iterPlugins('loggedOut')
+
+    def whois(self,data):
+        whois=[]
+        for i in data[0]:
+            whois.append(str(i[0]))
+            whois.append(i[1])
+        self.iterPlugins('receivedWhois',[whois])
     
-    def kekzCode201(self,data):
-        foo=data.split(" ")
-        room=foo[0]
-        rawuser=foo[1].split(",")
-        self.iterPlugins('joinUser',[room,rawuser[0],rawuser[1],rawuser[2]])
+    def send_ctcp_reply(self,data):
+        user,cpmsg = data
+        self.iterPlugins('receivedCtcpRequest',[user,cpmsg])
 
-    def kekzCode202(self,data):
-        foo=data.split(" ")
-        room=foo[0]
-        rawuser=foo[1].split(",")
-        self.iterPlugins('quitUser',[room,rawuser[0],rawuser[1]])
+    def send_ctcp_request(self,data):
+        user,cpanswer=data
+        self.iterPlugins('receivedCtcpReply',[user,cpanswer])
 
-    def kekzCode205(self,data):
-        foo=data.split(" ")
-        room=foo[0]
-        rawuser=foo[1].split(",")
-        if rawuser[1]=="z": away=True
-        else: away=False
-        self.iterPlugins('changedUserdata',[room,rawuser[0],away,rawuser[2]])
- 
-    def kekzCode220(self,data):
-        if data.startswith("!"):
-            background=True
-            data=data[1:]
-        else: background=False
-        self.iterPlugins('meJoin',[data,background])
+    def popup_url(self,data):
+        self.iterPlugins('openURL',[data[0]])
 
-    def kekzCode221(self,data):
-        self.iterPlugins('mePart',[data])
+    def send_mail_ok(self,data):
+        id = data[0]
+        print id
+        self.iterPlugins('sendMailsuccessful',[id])
 
-    def kekzCode222(self,data):
-        room=data.split(" ")
-        self.iterPlugins('meGo',[room[0],room[1]])
+    def send_mail_error(self,data):
+        id,reason=data
+        self.iterPlugins('sendMailfailed',[id,reason])
 
-    def kekzCode225(self,data):
-        foo=data.split(" ")
-        topic=" ".join(foo[1:])
-        topic=topic
-        self.iterPlugins('newTopic',[foo[0],topic])
+    def mail_stubs(self,data):
+        count,mails=data
+        mail_list=[]
+        if mails:
+            for i in mails:
+                mail_list.append({"mid":i[0],"from":i[1],"stub":i[2],"date":i[3],"unread":i[4]})
+        self.iterPlugins('receivedMails',[0,count,mail_list])
 
-    def kekzCode226(self,data):
-        self.iterPlugins('newTopic',[data,""])
+    def mail_count(self,data):
+        unreadmails,allmails=int(data[0]),int(data[1])
+        self.iterPlugins('receivedMailcount',[unreadmails,allmails])
 
-    def kekzCode300(self,data):
-        self.iterPlugins('receivedInformation',[data])
+    def get_mail_ok(self,data):
+        sender,date,mail=data
+        self.iterPlugins('requestMailsuccessful',[sender,date,mail])
 
-    def kekzCode301(self,data):
-        data=self.decoder(data)
-        self.iterPlugins('receivedWhois',[data])
-    
-    def kekzCode310(self,data):
-        foo=data.split(" ")
-        cpmsg=" ".join(foo[1:])
-        user=foo[0]
-        cpmsg = cpmsg
-        self.iterPlugins('receivedCPMsg',[user,cpmsg])
+    def get_mail_error(self,data):
+        reason = data[0]
+        self.iterPlugins('requestMailfailed',[reason])
 
-    def kekzCode311(self,data):
-        foo=data.split(" ")
-        cpanswer=" ".join(foo[1:])
-        user=foo[0]
-        cpanswer=cpanswer
-        self.iterPlugins('receivedCPAnswer',[user,cpanswer])
+    def kekzCode470(self,data):
+        nick,header=data
+        self.iterPlugins('receivedNewMail',[nick,header])
 
-    def kekzCode901(self,data):
-        self.iterPlugins('gotHandshakeException',[data])
+    def handshake_error(self,data):
+        self.iterPlugins('gotHandshakeException',["client to old"])
 
-    def kekzCode920(self,data):
-        self.iterPlugins('gotLoginException',[data])
+    def login_error(self,data):
+        reason = str(data[0])
+        self.iterPlugins('gotLoginException',[reason])
 
-    def kekzCode930(self,data):
-        self.iterPlugins('gotException',[data])
+    def register_error(self,data):
+        reason = str(data[0])
+        self.iterPlugins('gotException',[reason])
 
-    def kekzCode988(self,data):
+    def protocol_error(self,data):
+        self.iterPlugins('gotException',["998, faggot!"])
+
+    def unknown(self,data):
         self.iterPlugins('gotException',[data])

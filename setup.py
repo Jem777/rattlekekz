@@ -12,6 +12,5 @@ setup(name='rattlekekz',
       description="python-based commandline client for the kekz.net chat",
       url="http://github.com/Jem777/rattlekekz",
       license="GPL v3 or higher",
-      data_files=[('share/emoticons/rattlekekz',glob("rattlekekz/emoticons/*.png")),
-        ('share/emoticons/rattlekekz/kekz',glob("rattlekekz/emoticons/kekz/*.png"))]
+      data_files=[('share/emoticons/rattlekekz',glob("rattlekekz/emoticons/*.png"))]
      )

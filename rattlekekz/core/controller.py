@@ -110,101 +110,11 @@ class ImageLoader:
     def getImage(self,id):
         return self.images[id]["data"]
 
-class FileTransfer:
-    def __init__(self, encoder, decoder):
-        self.offered = []
-        self.transfers = {}
-        self.decodeJSON = decoder
-        self.encodeJSON = encoder
-
-    def sendJSON(self,user,comand): # TODO: implement error handling (e.g. unreachable host)
-        self.sendCPMsg(user,self.encodeJSON(comand))
-
-    def offerFile(self,user,path):
-        if os.path.isfile(path):
-            data = open(path,"rb")
-            filename = data.name.split(os.sep).pop()
-            filesize = os.path.getsize(path)
-            comand = {"transfer":"init","filename":filename,"size":filesize}
-            self.offered.append(comand)
-            self.offered[-1]["file"]=data
-            self.offered[-1]["user"]=user
-            self.sendJSON(user,{"transfer":"init","filename":filename,"size":filesize})
-        elif os.path.isdir(path):
-            self.botMsg("filetransfer",path+" is a directory") # implement directory-transmission?
-        else:
-            self.botMsg("filetransfer",path+" does not exist")
-
-    def acceptOffer(self,uid):
-        self.sendJSON(self.transfers[uid]["user"],{"transfer":"accept", "filename":self.transfers[uid]["filename"], "id":uid})
-
-    def startSubmit(self,uid):
-        self.transfers[uid]["hash"]=md5()
-        self.transfers[uid]["loop"]=LoopingCall(self.doSubmit,uid)
-        self.transfers[uid]["loop"].start(1)
-
-    def doSubmit(self,uid):
-        data = self.transfers[uid]["file"].read(2684355) # only read 64 percent of 4kib because of 36 percent overhead by base64
-        self.transfers[uid]["hash"].update(data)
-        if data is not "":
-            data = base64.b64encode(data)
-            self.sendJSON(self.transfers[uid]["user"],{"transfer":"data", "id":uid, "base64":data})
-        else:
-            self.transfers[uid]["loop"].stop()
-            self.sendJSON(self.transfers[uid]["user"],{"transfer":"finished", "id":uid, "hash":self.transfers[uid]["hash"].hexdigest()})
-
-    def receivedData(self,uid,base64_data):
-        data = os.path.expanduser("~")+os.sep+".rattlekekz"+os.sep+"transfers"+os.sep+self.transfers[uid]["filename"] # TODO: implement choosen filename and location
-        filepath = os.path.dirname(data)
-        if os.path.exists(filepath):
-            if os.path.isdir(filepath):
-                pass
-            else:
-                self.botMsg("filetransfer",filepath+" is not a directory!")
-        else:
-            os.makedirs(filepath)
-        if not os.path.exists(data):
-            self.transfers[uid]["file"] = open(data,"ab")
-            self.transfers[uid]["file"].write(base64.b64decode(base64_data))
-            self.transfers[uid]["file"].flush()
-        else:
-            if self.transfers[uid].has_key("file"): # TODO: implement continue
-                self.transfers[uid]["file"].write(base64.b64decode(base64_data))
-                self.transfers[uid]["file"].flush()
-            else:
-                self.botMsg("filetransfer",data+"already exists!")
-
-    def finishedTransfer(self,uid,hash):
-        self.transfers[uid]["file"].close()
-        self.transfers[uid]["file"]=open(os.environ["HOME"]+os.sep+".rattlekekz"+os.sep+"transfers"+os.sep+self.transfers[uid]["filename"],"rb")
-        self.transfers[uid]["hash"]=hash
-        self.transfers[uid]["ownHash"]=md5()
-        self.transfers[uid]["loop"]=LoopingCall(self.getHash,uid)
-        self.transfers[uid]["loop"].start(1)
-
-    def getHash(self,uid):
-        data = self.transfers[uid]["file"].read()
-        if data is not "":
-            self.transfers[uid]["ownHash"].update(data)
-        else:
-            self.transfers[uid]["loop"].stop()
-            if self.transfers[uid]["hash"] == self.transfers[uid]["ownHash"].hexdigest():
-                self.botMsg("filetransfer",self.transfers[uid]["filename"]+" successful received and hashed.")
-            else:
-                self.botMsg("filetransfer",self.transfers[uid]["filename"]+" hash error")
-            self.transfers[uid]["file"].close() # TODO: remove references from self.transfers
-
-class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't use interhitance for pluginmanagement
+class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhitance for pluginmanagement
     def __init__(self, interface, host, kwds):
         self.model = protocol.KekzChatClient(self)
-        if host.lower().find("kekz.net") != -1:
-            self.kekznet = True
-            self.view = interface(self,True) # tell the view if we're connecting to kekz.net because of the smilies ... this sucks
-        else:
-            self.kekznet = False
-            self.view = interface(self,False)
+        self.view = interface(self)
         pluginmanager.manager.__init__(self)
-        FileTransfer.__init__(self, self.model.encoder, self.model.decoder)
         if kwds.has_key("debug"):
             debug = kwds.pop("debug")
         else:
@@ -508,15 +418,15 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
     def sendIdentify(self,passwd):
         sha1_hash=sha1(passwd).hexdigest()
         md5_hash= md5.new(sha1_hash).hexdigest()
-        self.model.sendIdentify(md5_hash)
+        self.model.sendSecureIdentify(md5_hash)
 
     def sendStr(self,channel, string):
         if string.startswith("/"):
             self.sendSlashCommand(channel,string)
         elif channel.startswith("#"):
-            self.model.sendPrivMsg(channel[1:],string)
+            self.model.sendPrivate(channel[1:],string)
         else:
-            self.model.sendMsg(channel,string)
+            self.model.sendPublic(channel,string)
 
     def sendSlashCommand(self,channel,string):
         if string.lower().startswith("/m ") or string.lower() is "/m":
@@ -539,16 +449,6 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             target = string.pop(0)
             path = " ".join(string)
             self.offerFile(target,path)
-        elif string.lower().startswith('/accept'):
-            uid=re.match(r"\d{1,3}",string[8:])
-            if not uid:
-                self.botMsg("filetransfer","usage: /accept [id]")
-            else:
-                uid = int(uid.group(0))
-            if self.transfers.has_key(uid):
-                self.acceptOffer(uid)
-            else:
-                self.botMsg("filetransfer","id doesn't exist.")
         elif string.lower().startswith("/quit"):
             self.view.quit()
         elif string.lower().startswith("/showtopic"):
@@ -559,7 +459,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             if len(cpmsg) > 1:
                 user=cpmsg.pop(0)
                 cpmsg=" ".join(cpmsg)
-                self.sendCPMsg(user,cpmsg)
+                self.sendCtcpRequest(user,cpmsg)
         elif string.lower().startswith("/sendm"):
             mail=string.split(' ')[1:]
             if len(mail) > 1:
@@ -571,10 +471,10 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             if len(string) > 1:
                 user=string.pop(0)
                 string=" ".join(string)
-                self.model.sendPrivMsg(user,string)
+                self.model.sendPrivate(user,string)
         elif not channel.startswith("#"):
             liste=string.split(" ")
-            self.model.sendSlashCommand(liste[0],channel," ".join(liste[1:]))
+            self.model.sendCommand(liste[0],channel," ".join(liste[1:]))
 
     def sendJoin(self,room):
         self.model.sendJoin(room)
@@ -628,7 +528,7 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
 
     def receivedHandshake(self):
         pythonversion=sys.version.split(" ")
-        self.model.sendDebugInfo(self.view.name, self.view.version, self.view.revision, sys.platform, "Python "+pythonversion[0])
+        self.model.sendIdentify(self.view.name, self.view.version, sys.platform, "Python "+pythonversion[0])
         self.model.getRooms()
 
     def receivedRooms(self,rooms):
@@ -767,14 +667,16 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.Userlist[room].append([nick,False,state])
         self.Userlist[room].sort(key=lambda x: self.stringHandler(x[0]).lower())
         self.view.listUser(room,self.Userlist[room])
-        self.printMsg("","(>>>) "+nick+" enters the room ("+self.joinInfo[int(joinmsg)]+")",room,5)
+        #self.printMsg("","(>>>) "+nick+" enters the room ("+self.joinInfo[int(joinmsg)]+")",room,5)
+        self.printMsg("","(>>>) "+nick+" enters the room ("+joinmsg+")",room,5)
 
     def quitUser(self,room,nick,partmsg):
         for i in self.Userlist[room]:
             if i[0]==nick:
                 self.Userlist[room].remove(i)
         self.view.listUser(room,self.Userlist[room])
-        self.printMsg("","(<<<) "+nick+" left the room ("+self.partInfo[int(partmsg)]+")",room,5)
+        #self.printMsg("","(<<<) "+nick+" left the room ("+self.partInfo[int(partmsg)]+")",room,5)
+        self.printMsg("","(<<<) "+nick+" left the room ("+partmsg+")",room,5)
 
     def changedUserdata(self,room,nick,away,state):
         for i in self.Userlist[room]:
@@ -827,14 +729,14 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
             elif key == "logindate": key=u"logged in since "
             elif key == "lastseen": key=u"logged out since "
             if key == "state":
-                key = u"<raw>"
+                key = u"raw"
                 if value == u"off": value=u"the user is currently °fb°°cr°offline°fx°.°nn°"
                 elif value == u"on": value=u"the user is currently °fb°°cg°online°fx°.°nn°"
                 elif value == u"mail": value=u"the user is currently °fb°°cr°offline°fx°, but receives °fb°°cb°mail°fx°.°nn°"
                 else:
                     value=u"the status is unknown.°nn°"
             if key == "kekz":
-                key=u"<raw>"
+                key=u"raw"
                 table={"0":"no","1":"one","2":"two","3":"three","4":"four","5":"five","6":"six","7":"seven","8":"eight","9":"nine"}
                 if table.has_key(value):
                     value=table[value]
@@ -843,11 +745,11 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
                 else:
                     value=u"°cb° %s got °fb°%s°fb° cookie left." % (nick,value)
             if key == "usertext":
-                key=u"<raw>"
-            if key == "<h1>":
-                key=u"<raw>"
+                key=u"raw"
+            if key == "header":
+                key=u"raw"
                 value=u"°nn°°nn°°cb°°fb°%s°fb°°cb°" % (value.capitalize())
-            if not key == u"<raw>":
+            if not key == u"raw":
                 key = self.stringHandler(key.capitalize(),True)
                 value=u"°fb°%s:°fb° %s" % (key,value)
             value = self.stringHandler(value)
@@ -855,80 +757,24 @@ class KekzController(pluginmanager.manager, FileTransfer): # TODO: Maybe don't
         self.view.receivedWhois(self.stringHandler(nick), Output)
 
     def closedWhois(self,user):
-        if not self.kekznet:
-            self.model.sendWhoisClosed(user)
+        self.model.sendWhoisClose(user)
 
-    def receivedCPMsg(self,user,cpmsg):
-        try:
-            data = self.decodeJSON(cpmsg)
-            if not type(data) == dict:
-                raise ValueError("json not a dictionary.")
-            if data.has_key("transfer"):
-                if data["transfer"] != "init":
-                    uid = data["id"]
-                    if data["transfer"] == "data":
-                        self.receivedData(data[uid],data["base64"])
-                    elif data["transfer"] == "resume":
-                        self.botMsg("filetransfer ["+user+"]","resume not implemented yet.") # TODO: well ... implement it fuck0r :P
-                    elif data["transfer"] == "accept":
-                        for i in range(len(self.offered)):
-                            if self.offered[i]["filename"] == data["filename"]:
-                                if not self.transfers.has_key(uid):
-                                    self.transfers[uid]=self.offered[i]
-                                    self.transfers[uid]["transfer"]=data["transfer"]
-                                    self.startSubmit(uid)
-                                else:
-                                    self.sendJSON(user,{"transfer":"error","id":uid,"description":"You accepted my transfer with an id I am already using"})
-                                del self.offered[i]
-                            elif i == len(self.offered)-1:
-                                self.sendJSON(user,{"transfer":"error","id":uid,"description":"You accepted a transfer I didn't offer"})
-                    elif data["transfer"] == "reject":
-                        for i in range(len(offered)):
-                            if self.offered[i]["filename"] == data["filename"]:
-                                self.controller.botMsg("filetransfer",user+" rejected Transmission of "+data["filename"])
-                                del offered[i]
-                    elif data["transfer"] == "finished":
-                        self.finishedTransfer(uid,data["hash"])
-                    elif data["transfer"] == "error": # TODO: handling for failed transmissions
-                        self.controller.botMsg("filetransfer",data["description"])
-                else:
-                    filename,size = data["filename"],data["size"]
-                    count=0
-                    while size > 1024:
-                        size = size/1024
-                        count=+1
-                    if count != 0:
-                        if count == 1:
-                            disp_size=str(size)+" KiB"
-                        elif count == 2:
-                            disp_size=str(size)+" MiB"
-                        elif count == 3:
-                            disp_size=str(size)+" GiB"
-                        elif count == 4:
-                            disp_size=str(size)+" TiB"
-                        size = size*(1024**count)
-                    uid = random.randint(1,999)
-                    self.transfers[uid]=data
-                    self.transfers[uid]["user"]=user
-                    self.botMsg("filetransfer",str(user)+" offered Transmission of "+str(filename)+" ("+disp_size+"). Type /accept "+str(uid)+" to accept the Transmission.")
-            else:
-                raise ValueError("not a filetransfer dictionary.")
-        except ValueError:
-            self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
-            if cpmsg.lower() == 'version':
-                self.sendCPAnswer(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
-            elif cpmsg.lower() == 'ping':
-                self.sendCPAnswer(user,cpmsg+' ping')
-            else:
-                self.sendCPAnswer(user,cpmsg+' (unknown)')
+    def receivedCtcpRequest(self,user,cpmsg):
+        self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
+        if cpmsg.lower() == 'version':
+            self.sendCtcpReply(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
+        elif cpmsg.lower() == 'ping':
+            self.sendCtcpReply(user,cpmsg+' ping')
+        else:
+            self.sendCtcpReply(user,cpmsg+' (unknown)')
 
-    def sendCPAnswer(self,user,cpmsg):
-        self.model.sendCPAnswer(user,cpmsg)
+    def sendCtcpReply(self,user,cpmsg):
+        self.model.sendCtcpReply(user,cpmsg)
 
-    def sendCPMsg(self,user,cpmsg):
-        self.model.sendCPMsg(user,cpmsg)
+    def sendCtcpRequest(self,user,cpmsg):
+        self.model.sendCtcpRequest(user,cpmsg)
 
-    def receivedCPAnswer(self,user,cpanswer):
+    def receivedCtcpReply(self,user,cpanswer):
         self.printMsg(user+' [CTCPAnswer]',cpanswer,self.view.getActiveTab(),0)
 
     def sendMailsuccessful(self,uid):

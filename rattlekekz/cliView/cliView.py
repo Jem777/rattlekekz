@@ -45,7 +45,7 @@ class TextTooLongError(Exception):
     pass
 
 class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interhitance for pluginmanagement
-    def __init__(self, controller, kekz=False):
+    def __init__(self, controller):
         TabManager.__init__(self)
         pluginmanager.iterator.__init__(self)
         sys.stdout.write('\033]0;rattlekekz\007') # TODO: some more maybe?
