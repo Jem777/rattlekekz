@@ -361,7 +361,6 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def send_mail_ok(self,data):
         id = data[0]
-        print id
         self.iterPlugins('sendMailsuccessful',[id])
 
     def send_mail_error(self,data):
