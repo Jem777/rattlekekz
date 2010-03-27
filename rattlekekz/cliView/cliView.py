@@ -521,7 +521,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
 
     def quit(self):
         self.iterPlugins('quitConnection')
-        reactor.stop()
+        reactor.callLater(1,reactor.stop)
         sys.exit()
 
     def fubar(self):
