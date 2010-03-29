@@ -126,7 +126,10 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
             self.initConfig(debug, kwds)
         self.view.finishedReadingConfigfile()
 
-        self.browser=webbrowser.get()
+        try:
+            self.browser=webbrowser.get()
+        except:
+            self.browser=False
 
         self.nickname=""
         self.nickpattern = re.compile("",re.IGNORECASE)
@@ -339,7 +342,10 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
     def openURL(self,url):
         """opens the url given as a string in the default browser"""
-        self.browser.open(url)
+        if self.browser:
+            self.browser.open(url)
+        else:
+            self.gotException("no browser detected")
 
     def appendLinks(self,room,links):
         if self.linkLists.has_key(room.lower()):
