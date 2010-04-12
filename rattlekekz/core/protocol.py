@@ -73,7 +73,10 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         """sends a line to the server if connected"""
         if self.isConnected:
             data=bert.encode((bert.Atom(data[0]),)+data[1:])
-            basic.Int16StringReceiver.sendString(self,data)
+            try:
+                self.sendString(data)
+            except StringTooLongError:
+                self.controller.gotException("you're trying to send to much data at once")
         else:
             self.controller.gotException("not connected")
 
@@ -103,6 +106,15 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def sendIdentify(self,client,ver,os,python):
         """Sends client informations to the server. used for debugging purposes."""
+        if type(ver) != (int or float):
+            try:
+                ver = float(ver)
+            except:
+                print "version has to be float or int!"
+                raise
+            else:
+                if ver.is_integer:
+                    ver = int(ver)
         data=("identify",client,ver,os,python)
         self.sendTuple(data)
 

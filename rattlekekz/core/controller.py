@@ -23,6 +23,7 @@ copyright = """
 from rattlekekz.core import protocol, pluginmanager
 import os, sys, re, time, base64, random, webbrowser, urllib
 from hashlib import sha1, md5
+from twisted.internet import reactor
 from twisted.internet.task import LoopingCall
 from twisted.internet.threads import deferToThread
 
@@ -144,6 +145,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.partInfo=["Part","Logout","Lost Connection","Nick-Collision","Ping Timeout","Kick"]
 
         self.receivedFirstRoomList = False
+        self.loggedIn = False
 
     def initConfig(self, debug, kwds, alt_conf = None):
         default_conf = {"timestamp" : "[%H:%M] ",
@@ -527,10 +529,23 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
     def lostConnection(self, reason):
         self.view.connectionLost(reason)
+        if self.loggedIn:
+            self.loggedIn = False
+            self.startReconnect()
+        else:
+            TCP,server,port = self.model.connector.getDestination()
+            self.model = protocol.KekzChatClient(self)
+            self.startConnection(server,port)
 
     def failConnection(self, reason):
         """the try to connect failed. Here should be a call to the view later on"""
         self.view.connectionFailed()
+        if self.model.reconnecting:
+            reactor.callLater(30,self.startReconnect)
+        else:
+            TCP,server,port = self.model.connector.getDestination()
+            self.model = protocol.KekzChatClient(self)
+            reactor.callLater(30,lambda: self.startConnection(server,port))
 
     def receivedHandshake(self):
         pythonversion=sys.version.split(" ")
@@ -556,6 +571,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
 
     def successLogin(self,nick,status,room):
+        self.loggedIn = True
         self.nickname=nick
         regex = self.conf.getValue("regex")
         if regex != None:
