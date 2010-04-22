@@ -199,7 +199,10 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.model.startConnection(server,port)
 
     def startReconnect(self):
-        self.model.connector.disconnect()
+        try:
+            self.model.connector.disconnect() # make sure we aren't connected
+        except:
+            pass
         TCP,server,port = self.model.connector.getDestination()
         self.model = protocol.KekzChatClient(self)
         self.model.startReconnect(server,port)
@@ -531,21 +534,12 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.view.connectionLost(reason)
         if self.loggedIn:
             self.loggedIn = False
-            self.startReconnect()
-        else:
-            TCP,server,port = self.model.connector.getDestination()
-            self.model = protocol.KekzChatClient(self)
-            self.startConnection(server,port)
+        self.startReconnect()
 
     def failConnection(self, reason):
         """the try to connect failed. Here should be a call to the view later on"""
         self.view.connectionFailed()
-        if self.model.reconnecting:
-            reactor.callLater(30,self.startReconnect)
-        else:
-            TCP,server,port = self.model.connector.getDestination()
-            self.model = protocol.KekzChatClient(self)
-            reactor.callLater(30,lambda: self.startConnection(server,port))
+        reactor.callLater(30,self.startReconnect)
 
     def receivedHandshake(self):
         pythonversion=sys.version.split(" ")
