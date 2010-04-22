@@ -48,6 +48,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         self.connector=None
         self.reconnecting=False
         self.isConnected=False
+        self.tries = 0
 
     def getPlugin(self):
         pass
@@ -62,9 +63,13 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         self.connector = reactor.connectSSL(server, port, self, self)
         reactor.run()
 
-    def startReconnect(self,server,port):
+    def startReconnect(self):
         self.reconnecting=True
-        self.connector = reactor.connectSSL(server, port, self, self)
+        if not self.tries:
+            self.connector.connect()
+        elif self.tries <= 10:
+            reactor.callLater(10,self.connector.reconnect())
+        self.tries+=1
 
     def buildProtocol(self, addr):
         return self
@@ -87,16 +92,24 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def clientConnectionFailed(self, connector, reason):
         """called if the client couldn't connect to the server"""
-        self.isConnected=False
-        self.iterPlugins('failConnection',[reason])
-
-    def clientConnectionLost(self, connector, reason):
-        """called if the Connection was lost"""
+        print "connection failed"
         try:
             self.sendingPings.stop()
         except:
             pass
         self.isConnected=False
+        self.startReconnect()
+        self.iterPlugins('failConnection',[reason])
+
+    def clientConnectionLost(self, connector, reason):
+        """called if the Connection was lost"""
+        print "connection lost"
+        try:
+            self.sendingPings.stop()
+        except:
+            pass
+        self.isConnected=False
+        self.startReconnect()
         self.iterPlugins('lostConnection',[reason])
 
     def sendHandshake(self,hash):
@@ -232,6 +245,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 # Following Methods are called if the server sends something
     def connectionMade(self):
         """It doesn't fit the naming pattern, i know"""
+        self.tries = 0
         self.iterPlugins('gotConnection')
 
     def stringReceived(self,data):
