@@ -75,7 +75,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
             data=bert.encode((bert.Atom(data[0]),)+data[1:])
             try:
                 self.sendString(data)
-            except StringTooLongError:
+            except basic.StringTooLongError:
                 self.controller.gotException("you're trying to send to much data at once")
         else:
             self.controller.gotException("not connected")
