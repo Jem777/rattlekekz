@@ -147,6 +147,8 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.receivedFirstRoomList = False
         self.loggedIn = False
 
+        self.version="20100425"
+
     def initConfig(self, debug, kwds, alt_conf = None):
         default_conf = {"timestamp" : "[%H:%M] ",
                 "clock" : "[%H:%M:%S] ",
@@ -533,7 +535,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
     def receivedHandshake(self):
         pythonversion=sys.version.split(" ")
-        self.model.sendIdentify(self.view.name, self.view.version, sys.platform, "Python "+pythonversion[0])
+        self.model.sendIdentify(self.view.name, self.version, sys.platform, "Python "+pythonversion[0])
         self.model.getRooms()
 
     def receivedRooms(self,rooms):
@@ -768,7 +770,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
     def receivedCtcpRequest(self,user,cpmsg):
         self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
         if cpmsg.lower() == 'version':
-            self.sendCtcpReply(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
+            self.sendCtcpReply(user,cpmsg+' '+self.view.name+' ('+str(self.view.version)+')')
         elif cpmsg.lower() == 'ping':
             self.sendCtcpReply(user,cpmsg+' ping')
         else:
