@@ -92,7 +92,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def clientConnectionFailed(self, connector, reason):
         """called if the client couldn't connect to the server"""
-        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6])),"connection failed")
+        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" connection failed")
         try:
             self.sendingPings.stop()
         except:
@@ -104,7 +104,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def clientConnectionLost(self, connector, reason):
         """called if the Connection was lost"""
-        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6])),"connection lost")
+        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))-" connection lost")
         try:
             self.sendingPings.stop()
         except:
@@ -171,11 +171,11 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
             except:
                 type,value,traceback = sys.exc_info()
                 sys.excepthook(type,value,traceback)
-            sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6])),"sending ping")
+            sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" sending ping")
             self.lastPing = time.time()
             self.pingAnswer = False
         else:
-            sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6])),"shit timeouted")
+            sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" shit timeouted")
             self.iterPlugins('pingTimeout')
             self.sendingPings.stop()
 
@@ -269,7 +269,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         attribut(params)
 
     def handshake_ok(self,data):
-        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6])),"got handshake")
+        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" got handshake")
         self.pwhash=data[0]
         self.iterPlugins('receivedHandshake')
         self.startPing()
@@ -306,7 +306,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         self.iterPlugins('gotException',[data[0]])
 
     def ping(self,data):
-        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6])),"got ping answer")
+        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" got ping answer")
         self.iterPlugins('receivedPing',[int((time.time()-self.lastPing)*1000)])
         self.pingAnswer=True
 
