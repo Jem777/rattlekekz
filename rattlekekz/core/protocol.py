@@ -104,7 +104,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def clientConnectionLost(self, connector, reason):
         """called if the Connection was lost"""
-        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))-" connection lost\n")
+        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" connection lost\n")
         try:
             self.sendingPings.stop()
         except:
