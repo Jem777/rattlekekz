@@ -147,6 +147,8 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.receivedFirstRoomList = False
         self.loggedIn = False
 
+        self.version="20100501"
+
     def initConfig(self, debug, kwds, alt_conf = None):
         default_conf = {"timestamp" : "[%H:%M] ",
                 "clock" : "[%H:%M:%S] ",
@@ -200,9 +202,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
     def startReconnect(self):
         self.model.connector.disconnect()
-        TCP,server,port = self.model.connector.getDestination()
-        self.model = protocol.KekzChatClient(self)
-        self.model.startReconnect(server,port)
 
     def decode(self, string):
         if type(string) is str:
@@ -524,27 +523,14 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
     def lostConnection(self, reason):
         self.view.connectionLost(reason)
-        if self.loggedIn:
-            self.loggedIn = False
-            self.startReconnect()
-        else:
-            TCP,server,port = self.model.connector.getDestination()
-            self.model = protocol.KekzChatClient(self)
-            self.startConnection(server,port)
 
     def failConnection(self, reason):
         """the try to connect failed. Here should be a call to the view later on"""
         self.view.connectionFailed()
-        if self.model.reconnecting:
-            reactor.callLater(30,self.startReconnect)
-        else:
-            TCP,server,port = self.model.connector.getDestination()
-            self.model = protocol.KekzChatClient(self)
-            reactor.callLater(30,lambda: self.startConnection(server,port))
 
     def receivedHandshake(self):
         pythonversion=sys.version.split(" ")
-        self.model.sendIdentify(self.view.name, self.view.version, sys.platform, "Python "+pythonversion[0])
+        self.model.sendIdentify(self.view.name, self.version, sys.platform, "Python "+pythonversion[0])
         self.model.getRooms()
 
     def receivedRooms(self,rooms):
@@ -776,7 +762,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
     def receivedCtcpRequest(self,user,cpmsg):
         self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
         if cpmsg.lower() == 'version':
-            self.sendCtcpReply(user,cpmsg+' '+self.view.name+' ('+self.view.version+')')
+            self.sendCtcpReply(user,cpmsg+' '+self.view.name+' ('+str(self.view.version)+')')
         elif cpmsg.lower() == 'ping':
             self.sendCtcpReply(user,cpmsg+' ping')
         else:

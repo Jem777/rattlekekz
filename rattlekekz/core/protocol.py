@@ -20,7 +20,7 @@ copyright = """
 
 # Modules
 import sys, os
-from time import time
+import time
 from OpenSSL.SSL import SSLv3_METHOD, Context
 from rattlekekz.core import pluginmanager
 
@@ -42,12 +42,13 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         """Takes one argument: the instance of the controller Class."""
         pluginmanager.iterator.__init__(self)
         self.controller=controller
-        self.pingAnswer=False
+        self.pingAnswer=True
         self.pwhash=None
         self.nickname=""
         self.connector=None
         self.reconnecting=False
         self.isConnected=False
+        self.tries = 0
 
     def getPlugin(self):
         pass
@@ -62,9 +63,13 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         self.connector = reactor.connectSSL(server, port, self, self)
         reactor.run()
 
-    def startReconnect(self,server,port):
+    def startReconnect(self):
         self.reconnecting=True
-        self.connector = reactor.connectSSL(server, port, self, self)
+        if not self.tries:
+            self.connector.connect()
+        elif self.tries <= 10:
+            reactor.callLater(10,self.connector.reconnect())
+        self.tries+=1
 
     def buildProtocol(self, addr):
         return self
@@ -75,7 +80,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
             data=bert.encode((bert.Atom(data[0]),)+data[1:])
             try:
                 self.sendString(data)
-            except StringTooLongError:
+            except basic.StringTooLongError:
                 self.controller.gotException("you're trying to send to much data at once")
         else:
             self.controller.gotException("not connected")
@@ -87,16 +92,26 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def clientConnectionFailed(self, connector, reason):
         """called if the client couldn't connect to the server"""
+        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" connection failed\n")
+        try:
+            self.sendingPings.stop()
+        except:
+            #pass
+            raise
         self.isConnected=False
+        self.startReconnect()
         self.iterPlugins('failConnection',[reason])
 
     def clientConnectionLost(self, connector, reason):
         """called if the Connection was lost"""
+        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" connection lost\n")
         try:
             self.sendingPings.stop()
         except:
-            pass
+            #pass
+            raise
         self.isConnected=False
+        self.startReconnect()
         self.iterPlugins('lostConnection',[reason])
 
     def sendHandshake(self,hash):
@@ -110,7 +125,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
             try:
                 ver = float(ver)
             except:
-                print "version has to be float or int!"
+                sys.stderr.write("version has to be float or int!\n")
                 raise
             else:
                 if ver.is_integer:
@@ -144,16 +159,23 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def startPing(self):
         """Should be called after the login. Starts the ping loop, with an initial delay of 10 seconds."""
+        self.pingAnswer = True
         self.sendingPings=task.LoopingCall(self.sendPing)
         reactor.callLater(10, lambda: self.sendingPings.start(60))
 
     def sendPing(self):
         """Sends the ping, this needn't to be called by the controller, just startPing"""
-        if self.pingAnswer is False:
-            self.sendTuple(("ping",))
-            self.lastPing = time()
-            self.pingAnswer = True
+        if self.pingAnswer:
+            try:
+                self.sendTuple(("ping",))
+            except:
+                type,value,traceback = sys.exc_info()
+                sys.excepthook(type,value,traceback)
+            sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" sending ping\n")
+            self.lastPing = time.time()
+            self.pingAnswer = False
         else:
+            sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" shit timeouted\n")
             self.iterPlugins('pingTimeout')
             self.sendingPings.stop()
 
@@ -232,6 +254,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 # Following Methods are called if the server sends something
     def connectionMade(self):
         """It doesn't fit the naming pattern, i know"""
+        self.tries = 0
         self.iterPlugins('gotConnection')
 
     def stringReceived(self,data):
@@ -246,6 +269,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         attribut(params)
 
     def handshake_ok(self,data):
+        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" got handshake\n")
         self.pwhash=data[0]
         self.iterPlugins('receivedHandshake')
         self.startPing()
@@ -282,8 +306,9 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         self.iterPlugins('gotException',[data[0]])
 
     def ping(self,data):
-        self.iterPlugins('receivedPing',[int((time()-self.lastPing)*1000)])
-        self.pingAnswer=False
+        sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" got ping answer\n")
+        self.iterPlugins('receivedPing',[int((time.time()-self.lastPing)*1000)])
+        self.pingAnswer=True
 
     def public(self,data):
         channel,nick,msg=data
@@ -302,7 +327,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         self.iterPlugins('ownprivMsg',[nick,msg])
 
     def offline_notication(self,data):
-        print "104"
+        #print "104"
         nick = data[0]
         self.iterPlugins('privOffline',[nick])
 
@@ -361,12 +386,12 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         self.iterPlugins('receivedWhois',[whois])
     
     def send_ctcp_reply(self,data):
-        user,cpmsg = data
-        self.iterPlugins('receivedCtcpRequest',[user,cpmsg])
+        user,cpanswer = data
+        self.iterPlugins('receivedCtcpReply',[user,cpanswer])
 
     def send_ctcp_request(self,data):
-        user,cpanswer=data
-        self.iterPlugins('receivedCtcpReply',[user,cpanswer])
+        user,cpmsg=data
+        self.iterPlugins('receivedCtcpRequest',[user,cpmsg])
 
     def popup_url(self,data):
         self.iterPlugins('openURL',[data[0]])
