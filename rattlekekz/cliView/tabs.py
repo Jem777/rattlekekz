@@ -46,7 +46,7 @@ class rattlekekzBaseTab(urwid.Frame):
         self.upperDivider=urwid.Text(("divider",self.parent.Ping), "right")
         self.statelist=[("dividerstate",self.time),("dividerstate",self.nickname),("dividerstate"," ")]
         self.lowerDivider=urwid.Text(self.statelist, "left")
-        self.header = titleWidget("rattlekekz","0.99")
+        self.header = titleWidget("rattlekekz")
         
         self.buildOutputWidgets()
         self.connectWidgets()
@@ -116,17 +116,16 @@ class rattlekekzBaseTab(urwid.Frame):
         self.parent.closeActiveWindow(self.room)
 
 class titleWidget(urwid.Text):
-    def __init__(self, name = "", version = "", tabname = ""):
+    def __init__(self, name = "", tabname = ""):
         self.name = name
-        self.version = version
         self.tabname = tabname
-        self.formatstring = "%s (v %s) - %s"
-        title = self.formatstring % (self.name, self.version, self.tabname)
+        self.formatstring = "%s - %s"
+        title = self.formatstring % (self.name, self.tabname)
         urwid.Text.__init__(self, title, "center")
 
     def set_text(self, tabname):
         self.tabname = tabname
-        title = self.formatstring % (self.name, self.version, self.tabname)
+        title = self.formatstring % (self.name, self.tabname)
         urwid.Text.set_text(self, title)
 
 class editWidget(urwid.Edit):
