@@ -762,7 +762,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
     def receivedCtcpRequest(self,user,cpmsg):
         self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
         if cpmsg.lower() == 'version':
-            self.sendCtcpReply(user,cpmsg+' '+self.view.name+' ('+str(self.view.version)+')')
+            self.sendCtcpReply(user,cpmsg+' '+self.view.name+' ('+str(self.view.version)+') [core: '+self.version+']')
         elif cpmsg.lower() == 'ping':
             self.sendCtcpReply(user,cpmsg+' ping')
         else:
