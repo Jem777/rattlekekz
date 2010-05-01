@@ -423,11 +423,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
     def updateProfile(self,name,location,homepage,hobbies,signature,passwd):
         self.model.updateProfile(name,location,homepage,hobbies,signature,sha1(passwd).hexdigest())
 
-    def sendIdentify(self,passwd):
-        sha1_hash=sha1(passwd).hexdigest()
-        md5_hash= md5.new(sha1_hash).hexdigest()
-        self.model.sendSecureIdentify(md5_hash)
-
     def sendStr(self,channel, string):
         if string.startswith("/"):
             self.sendSlashCommand(channel,string)
@@ -604,9 +599,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
     def successNewProfile(self):
         self.view.successNewProfile()
-
-    def securityCheck(self, infotext):
-        self.view.securityCheck(infotext)
 
     def receivedPing(self,deltaPing):
         self.view.receivedPing(deltaPing)
@@ -836,3 +828,4 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
     def __getattr__(self, name):
         return self.unknownMethod(name)
+

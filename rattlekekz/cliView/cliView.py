@@ -162,7 +162,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.tui.run_wrapper(reactor.run)
 
     def addRoom(self, room, tab):
-        tablist={"ChatRoom":rattlekekzMsgTab,"PrivRoom":rattlekekzPrivTab,"InfoRoom":rattlekekzInfoTab,"MailRoom":rattlekekzMailTab,"SecureRoom":rattlekekzSecureTab,"EditRoom":rattlekekzEditTab}
+        tablist={"ChatRoom":rattlekekzMsgTab, "PrivRoom":rattlekekzPrivTab, "InfoRoom":rattlekekzInfoTab, "MailRoom":rattlekekzMailTab, "EditRoom":rattlekekzEditTab}
         self.addTab(room,tablist[tab])
 
     def setTitle(self):
@@ -270,13 +270,6 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
     def successNewProfile(self):
         self.getTab("$edit").addLine("profile change sucessful")
         self.getTab("$edit").addLine("\npress alt+q to exit or ctrl+a to change your password")
-
-    def securityCheck(self,infotext):
-        self.addTab("$secure",rattlekekzSecureTab)
-        self.changeTab("$secure")
-        msg=self.deparse(infotext)
-        self.getTab(self.ShownRoom).addLine(("divider","Info: "))
-        self.getTab(self.ShownRoom).addLine(msg)
 
     def setClock(self):
         self.time = ("dividerstate", time.strftime(self.clock, time.localtime(time.time())))
@@ -500,9 +493,6 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
 
     def updateProfile(self, newName, newLocation, newHomepage, newHobbies, newSignature, passwd):
         self.iterPlugins('updateProfile', [newName, newLocation, newHomepage, newHobbies, newSignature, passwd])
-
-    def sendIdentify(self, passwd):
-        self.iterPlugins('sendIdentify', [passwd])
 
     def sendMail(self, nick, msg):
         self.iterPlugins('sendMail', [nick, msg])
