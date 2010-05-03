@@ -149,7 +149,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def changePassword(self,passwd,passwdnew):
         """Change passwd to passwdnew - Both have to be a hash; no hashing in the model"""
-        Data=("change_password",passwd,passwdnew)
+        data=("change_password",passwd,passwdnew)
         self.sendTuple(data)
 
     def updateProfile(self,name,location,homepage,hobbies,signature,passwd):
