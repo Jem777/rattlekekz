@@ -147,7 +147,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.receivedFirstRoomList = False
         self.loggedIn = False
 
-        self.version="20100503"
+        self.version="20100511"
 
     def initConfig(self, debug, kwds, alt_conf = None):
         default_conf = {"timestamp" : "[%H:%M] ",

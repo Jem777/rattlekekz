@@ -95,9 +95,8 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" connection failed\n")
         try:
             self.sendingPings.stop()
-        except:
-            #pass
-            raise
+        except AssertionError:
+            sys.excepthook(*sys.exc_info())
         self.isConnected=False
         self.startReconnect()
         self.iterPlugins('failConnection',[reason])
@@ -107,9 +106,8 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" connection lost\n")
         try:
             self.sendingPings.stop()
-        except:
-            #pass
-            raise
+        except AssertionError:
+            sys.excepthook(*sys.exc_info())
         self.isConnected=False
         self.startReconnect()
         self.iterPlugins('lostConnection',[reason])
