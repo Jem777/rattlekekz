@@ -68,7 +68,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         if not self.tries:
             self.connector.connect()
         elif self.tries <= 10:
-            reactor.callLater(10,self.connector.connect())
+            reactor.callLater(10,self.connector.connect)
         self.tries+=1
 
     def buildProtocol(self, addr):
