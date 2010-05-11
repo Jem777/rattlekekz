@@ -174,6 +174,8 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
             self.pingAnswer = False
         else:
             sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" shit timeouted\n")
+            self.connector.disconnect()
+            self.isConnected = False
             self.iterPlugins('pingTimeout')
             self.sendingPings.stop()
 
