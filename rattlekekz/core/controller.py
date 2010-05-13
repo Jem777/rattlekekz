@@ -489,7 +489,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
     def refreshMaillist(self):
         self.model.getMailCount()
-        self.model.getMaillist()
+        self.model.getMailStubs()
 
     def getMail(self,index):
         try:
