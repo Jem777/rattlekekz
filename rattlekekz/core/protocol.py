@@ -239,7 +239,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         self.sendTuple(data)
 
     def deleteMail(self,id):
-        data = ("delete_mail",id)
+        data = ("delete_mail",int(id))
         self.sendTuple(data)
 
     def deleteAllMails(self):
@@ -409,7 +409,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         mail_list=[]
         if mails:
             for i in mails:
-                mail_list.append({"mid":i[0],"from":i[1],"stub":i[2],"date":i[3],"unread":i[4]})
+                mail_list.append({"mid":i[0],"from":i[1],"stub":i[2],"date":i[3],"unread":not i[4]})
         self.iterPlugins('receivedMails',[0,count,mail_list])
 
     def mail_count(self,data):

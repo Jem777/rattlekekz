@@ -149,6 +149,8 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
         self.version="20100512"
 
+        self.lookupMailId=[]
+
     def initConfig(self, debug, kwds, alt_conf = None):
         default_conf = {"timestamp" : "[%H:%M] ",
                 "clock" : "[%H:%M:%S] ",
@@ -505,7 +507,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         except:
             self.view.MailInfo("mail number"+str(index)+" does not exist")
         else:
-            self.model.deleteMail(str(uid))
+            self.model.deleteMail(uid)
 
     def deleteAllMails(self):
         self.model.deleteAllMails()
@@ -789,7 +791,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         del self.lookupSendId[uid]
 
     def receivedMails(self,userid,mailcount,mails):
-        self.lookupMailId=[]
         for i in range(len(mails)):
             self.lookupMailId.append(mails[i]["mid"])
             del mails[i]["mid"]
