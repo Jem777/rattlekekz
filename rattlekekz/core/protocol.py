@@ -65,11 +65,12 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def startReconnect(self):
         self.reconnecting=True
-        if not self.tries:
-            self.connector.connect()
-        elif self.tries <= 10:
+        if self.tries < 3:
             reactor.callLater(10,self.connector.reconnect())
-        self.tries+=1
+        else:
+            reactor.callLater((2**self.tries),self.connector.reconnect())
+        self.tries += 1
+
 
     def buildProtocol(self, addr):
         return self
@@ -440,7 +441,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         self.iterPlugins('gotException',[reason])
 
     def protocol_error(self,data):
-        self.iterPlugins('gotException',["998, faggot!"])
+        self.iterPlugins('gotException',["Protocol Error"])
 
     def unknown(self,data):
         self.iterPlugins('gotException',[data])
