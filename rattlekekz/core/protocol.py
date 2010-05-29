@@ -65,12 +65,13 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def startReconnect(self):
         self.reconnecting=True
-        if self.tries < 3:
+        if not self.tries:
+            self.connector.connect()
+        elif self.tries < 3:
             reactor.callLater(10,self.connector.reconnect())
         else:
             reactor.callLater((2**self.tries),self.connector.reconnect())
         self.tries += 1
-
 
     def buildProtocol(self, addr):
         return self
@@ -96,9 +97,8 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" connection failed\n")
         try:
             self.sendingPings.stop()
-        except:
-            #pass
-            raise
+        except AssertionError:
+            sys.excepthook(*sys.exc_info())
         self.isConnected=False
         self.startReconnect()
         self.iterPlugins('failConnection',[reason])
@@ -108,9 +108,8 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" connection lost\n")
         try:
             self.sendingPings.stop()
-        except:
-            #pass
-            raise
+        except AssertionError:
+            sys.excepthook(*sys.exc_info())
         self.isConnected=False
         self.startReconnect()
         self.iterPlugins('lostConnection',[reason])
@@ -150,7 +149,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def changePassword(self,passwd,passwdnew):
         """Change passwd to passwdnew - Both have to be a hash; no hashing in the model"""
-        Data=("change_password",passwd,passwdnew)
+        data=("change_password",passwd,passwdnew)
         self.sendTuple(data)
 
     def updateProfile(self,name,location,homepage,hobbies,signature,passwd):
@@ -177,6 +176,8 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
             self.pingAnswer = False
         else:
             sys.stderr.write(":".join(map(str,time.localtime(time.time())[3:6]))+" shit timeouted\n")
+            self.connector.disconnect()
+            self.isConnected = False
             self.iterPlugins('pingTimeout')
             self.sendingPings.stop()
 
@@ -240,7 +241,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         self.sendTuple(data)
 
     def deleteMail(self,id):
-        data = ("delete_mail",id)
+        data = ("delete_mail",int(id))
         self.sendTuple(data)
 
     def deleteAllMails(self):
@@ -410,7 +411,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         mail_list=[]
         if mails:
             for i in mails:
-                mail_list.append({"mid":i[0],"from":i[1],"stub":i[2],"date":i[3],"unread":i[4]})
+                mail_list.append({"mid":i[0],"from":i[1],"stub":i[2],"date":i[3],"unread":not i[4]})
         self.iterPlugins('receivedMails',[0,count,mail_list])
 
     def mail_count(self,data):

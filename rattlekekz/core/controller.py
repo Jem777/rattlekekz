@@ -147,7 +147,9 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.receivedFirstRoomList = False
         self.loggedIn = False
 
-        self.version="20100501"
+        self.version="20100512"
+
+        self.lookupMailId=[]
 
     def initConfig(self, debug, kwds, alt_conf = None):
         default_conf = {"timestamp" : "[%H:%M] ",
@@ -489,7 +491,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
 
     def refreshMaillist(self):
         self.model.getMailCount()
-        self.model.getMaillist()
+        self.model.getMailStubs()
 
     def getMail(self,index):
         try:
@@ -505,7 +507,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         except:
             self.view.MailInfo("mail number"+str(index)+" does not exist")
         else:
-            self.model.deleteMail(str(uid))
+            self.model.deleteMail(uid)
 
     def deleteAllMails(self):
         self.model.deleteAllMails()
@@ -762,7 +764,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
     def receivedCtcpRequest(self,user,cpmsg):
         self.printMsg(user+' [CTCP]',cpmsg,self.view.getActiveTab(),0)
         if cpmsg.lower() == 'version':
-            self.sendCtcpReply(user,cpmsg+' '+self.view.name+' ('+str(self.view.version)+')')
+            self.sendCtcpReply(user,cpmsg+' '+self.view.name+' ('+str(self.view.version)+') [core: '+self.version+']')
         elif cpmsg.lower() == 'ping':
             self.sendCtcpReply(user,cpmsg+' ping')
         else:
@@ -789,7 +791,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         del self.lookupSendId[uid]
 
     def receivedMails(self,userid,mailcount,mails):
-        self.lookupMailId=[]
         for i in range(len(mails)):
             self.lookupMailId.append(mails[i]["mid"])
             del mails[i]["mid"]
