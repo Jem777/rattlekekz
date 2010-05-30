@@ -49,6 +49,7 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         self.reconnecting=False
         self.isConnected=False
         self.tries = 0
+        self.allowReconnect = True
 
     def getPlugin(self):
         pass
@@ -65,13 +66,21 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
 
     def startReconnect(self):
         self.reconnecting=True
+        self.allowReconnect = False
+        reactor.callLater(30,self.toogleReconnect)
         if not self.tries:
             self.connector.connect()
         elif self.tries < 3:
-            reactor.callLater(10,self.connector.reconnect())
+            reactor.callLater(10,self.connector.connect)
         else:
-            reactor.callLater((2**self.tries),self.connector.reconnect())
+            reactor.callLater((2**self.tries),self.connector.connect)
         self.tries += 1
+
+    def toogleReconnect(self):
+        if self.allowReconnect:
+            self.allowReconnect = False
+        else:
+            self.allowReconnect = True
 
     def buildProtocol(self, addr):
         return self
@@ -100,7 +109,8 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         except AssertionError:
             sys.excepthook(*sys.exc_info())
         self.isConnected=False
-        self.startReconnect()
+        if self.allowReconnect:
+            self.startReconnect()
         self.iterPlugins('failConnection',[reason])
 
     def clientConnectionLost(self, connector, reason):
@@ -111,7 +121,8 @@ class KekzChatClient(basic.Int16StringReceiver, protocol.Factory, pluginmanager.
         except AssertionError:
             sys.excepthook(*sys.exc_info())
         self.isConnected=False
-        self.startReconnect()
+        if self.allowReconnect:
+            self.startReconnect()
         self.iterPlugins('lostConnection',[reason])
 
     def sendHandshake(self,hash):

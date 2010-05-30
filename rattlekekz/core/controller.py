@@ -147,7 +147,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.receivedFirstRoomList = False
         self.loggedIn = False
 
-        self.version="20100512"
+        self.version="20100530"
 
         self.lookupMailId=[]
 
