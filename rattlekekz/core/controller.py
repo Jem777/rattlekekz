@@ -105,6 +105,8 @@ class ImageLoader:
 
     def finishedImage(self,result):
         url,id=result
+        self.images[id]["getter"].close()
+        del self.images[id]["getter"]
         self.images[id]["finished"]=True
         self.controller.view.loadedImage(id,self.images[id]["data"])
 
