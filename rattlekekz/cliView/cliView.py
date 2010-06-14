@@ -189,7 +189,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         rooms=[]
         for i in self.lookupRooms:
             if i[0] != None:
-                if not i[1].room.startswith("#"):
+                if not i[1].room.startswith("#") and not room.startswith("whois: "):
                     rooms.append(i[1].room)
         return rooms
 
