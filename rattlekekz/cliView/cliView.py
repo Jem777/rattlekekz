@@ -443,6 +443,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
             self.getTab(title).addWhois(nick, out)
         else:
             tab.addWhois(nick, out)
+        self.highlightTab(title,2)
 
     def openLinkTab(self,room,links):
         room,links=self.stringHandler(room),map(self.stringHandler,links)
