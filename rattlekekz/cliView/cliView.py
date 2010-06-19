@@ -53,7 +53,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.Ping=""
         self.nickname=""
         self.controller = controller
-        self.name,self.version = "rattlekekz","20100615"
+        self.name,self.version = "rattlekekz","20100614"
         colors =[('normal','default','default'),
             ('divider', 'white', 'dark blue'),
             ('dividerstate', 'light gray', 'dark blue'),
