@@ -173,6 +173,8 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
                                           #uncomment the following line to enable autologin. You have to insert nick, passwd and room for this to work
                                           #autologin = 1
                                           nick =
+                                          #room have to be a comma seperated list of rooms
+                                          room =
                                           #to generate the sha1 hash of your passwd execute this line: python -c 'import hashlib; print hashlib.sha1("YOUR_PASSWD").hexdigest()'
                                           passwd=
                                           
