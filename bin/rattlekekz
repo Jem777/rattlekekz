@@ -77,8 +77,8 @@ def initLogger():
 
 def getOptions():
     parser = optparse.OptionParser(version = "%prog 0.99")
-    parser.add_option("-H", "--host", dest = "host", default = "netwichtig.de", 
-            help = "Host or IP to connect to, default is netwichtig.de", metavar = "HOST")
+    parser.add_option("-H", "--host", dest = "host", default = "virvel.de",
+            help = "Host or IP to connect to, default is virvel.de", metavar = "HOST")
     parser.add_option("-l", "--localhost", dest = "host", action = "store_const", 
             const = "127.0.0.1", help = "connect to localhost")
     parser.add_option("-p", "--port", type = "int", dest = "port", default = 24004, 
