@@ -4,7 +4,7 @@ from distutils.core import setup
 from glob import glob
 
 setup(name='rattlekekz',
-      version='20100614',
+      version='20100801',
       author="Moritz Doll, Christian Scharkus",
       author_email="look@github.com",
       packages=['rattlekekz','rattlekekz.core','rattlekekz.cliView'],
