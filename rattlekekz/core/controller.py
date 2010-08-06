@@ -149,7 +149,7 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.receivedFirstRoomList = False
         self.loggedIn = False
 
-        self.version="20100613"
+        self.version="20100806"
 
         self.lookupMailId=[]
 
@@ -543,7 +543,6 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         if self.model.reconnecting:
             rooms=",".join(self.view.getRooms())
             self.model.sendLogin(self.nick,self.passwd,rooms)
-            self.model.reconnecting=False
         else:
             if not self.receivedFirstRoomList:
                 array = map(self.getValue, ["autologin", "nick", "passwd", "room"])
@@ -568,7 +567,11 @@ class KekzController(pluginmanager.manager): # TODO: Maybe don't use interhita
         self.lookupSendId={}
         self.sendMailCount=0
         self.Userlist={room:[]}
-        self.view.successLogin(nick,status,room)
+        if self.model.reconnecting:
+            self.view.successLogin(nick,status,room,True)
+            self.model.reconnecting = False
+        else:
+            self.view.successLogin(nick,status,room)
         autoload_plugins = self.getValue("autoload_plugins")
         if autoload_plugins != None:
             map(lambda x: self.loadPlugin(x.strip()), autoload_plugins.split(","))

@@ -53,7 +53,7 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         self.Ping=""
         self.nickname=""
         self.controller = controller
-        self.name,self.version = "rattlekekz","20100614"
+        self.name,self.version = "rattlekekz","20100806"
         colors =[('normal','default','default'),
             ('divider', 'white', 'dark blue'),
             ('dividerstate', 'light gray', 'dark blue'),
@@ -241,11 +241,12 @@ class View(TabManager, pluginmanager.iterator): # TODO: Maybe don't use interh
         #else:
         #    tab.updateRooms(rooms) # TODO: implement updateRooms
 
-    def successLogin(self,nick,status,room):
+    def successLogin(self,nick,status,room,reconnected=False):
         self.nickname=nick
-        self.ShownRoom=room
         self.addTab(room,rattlekekzMsgTab)
-        self.changeTab(room)
+        if not reconnected:
+            self.ShownRoom=room
+            self.changeTab(room)
         try:
             self.delTab("$login")
         except:
